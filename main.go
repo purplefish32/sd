@@ -5,9 +5,11 @@ import (
 	"log"
 	"os"
 
-	xl "sd/stream_decks/xl/publishers"
-	"sd/stream_decks/xl/subscribers"
-	"sd/stream_decks/xl/utils"
+	"sd/streamdeck"
+	"sd/streamdeck/xl"
+	"sd/streamdeck/xl/publishers"
+	"sd/streamdeck/xl/subscribers"
+	"sd/streamdeck/xl/utils"
 
 	"github.com/joho/godotenv"
 	"github.com/karalabe/hid"
@@ -17,8 +19,6 @@ import (
 type ButtonEvent struct {
 	Id int `json:"id"`
 }
-
-
 
 func main() {
 	// Load the .env file
@@ -44,15 +44,11 @@ func main() {
 
     defer nc.Close()
 
-	// Vendor and Product IDs for Stream Deck (adjust based on your model)
-	const vendorID = 0x0fd9
-	const productID = 0x006c
-
 	// List all HID devices
-	devices := hid.Enumerate(vendorID, productID)
+	devices := hid.Enumerate(streamdeck.VendorID, xl.ProductID)
 
 	if len(devices) == 0 {
-		log.Fatalf("No Stream Deck found with Vendor ID %04x and Product ID %04x", vendorID, productID)
+		log.Fatalf("No Stream Deck found with VendorID %04x and ProductID %04x", streamdeck.VendorID, xl.ProductID)
 	}
 
 	// Open the first Stream Deck found
@@ -67,7 +63,7 @@ func main() {
 	subscribers.SubscribeSdUpdate(nc, device)
 	subscribers.SubscribeSdAction(nc, device)
 
-	xl.PublishInitialization(nc)
+	publishers.SdInitialize(nc)
 
 	buf := make([]byte, 512)
 
