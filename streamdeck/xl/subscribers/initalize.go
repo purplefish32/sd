@@ -1,7 +1,7 @@
 package subscribers
 
 import (
-	"sd/stream_decks/xl/utils"
+	"sd/streamdeck/xl/utils"
 
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
