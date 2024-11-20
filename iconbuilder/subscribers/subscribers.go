@@ -10,9 +10,9 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func SubscribeIconBuilderCreate(nc *nats.Conn) {
+func SubscribeIconBuilderCreateBuffer(nc *nats.Conn) {
 	// Subscribe to the subject
-	subject := "sd.iconbuilder.create"
+	subject := "sd.iconbuilder.buffer.create"
 	nc.Subscribe(subject, func(m *nats.Msg) {
 		var req iconbuilder.IconRequest
 		if err := json.Unmarshal(m.Data, &req); err != nil {
@@ -20,17 +20,9 @@ func SubscribeIconBuilderCreate(nc *nats.Conn) {
 			return
 		}
 
-		icon, err := utils.Create(req)
-		response := iconbuilder.IconResponse{Success: err == nil}
-		if err != nil {
-			response.Message = err.Error()
-		} else {
-			response.Message = "Icon created successfully"
-			response.Data = icon
-		}
+		icon, _ := utils.CreateIconBuffer(req)
 
-		respData, _ := json.Marshal(response)
-		nc.Publish(m.Reply, respData)
+		nc.Publish(m.Reply, icon)
 	})
 
 	log.Println("Listening for icon creation requests on", subject)

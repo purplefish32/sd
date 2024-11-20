@@ -5,10 +5,11 @@ import (
 	"log"
 	"os"
 
+	iconBuilderSubscribers "sd/iconbuilder/subscribers"
 	"sd/streamdeck"
 	"sd/streamdeck/xl"
 	"sd/streamdeck/xl/publishers"
-	"sd/streamdeck/xl/subscribers"
+	streamdeckXlSubscribers "sd/streamdeck/xl/subscribers"
 	"sd/streamdeck/xl/utils"
 
 	"github.com/joho/godotenv"
@@ -59,9 +60,10 @@ func main() {
 		log.Fatalf("Failed to open Stream Deck: %v", err)
 	}
 
-	subscribers.SubscribeSdInitialize(nc, device)
-	subscribers.SubscribeSdUpdate(nc, device)
-	subscribers.SubscribeSdAction(nc, device)
+	streamdeckXlSubscribers.SubscribeInitialize(nc, device)
+	streamdeckXlSubscribers.SubscribeUpdate(nc, device)
+	streamdeckXlSubscribers.SubscribeAction(nc, device)
+	iconBuilderSubscribers.SubscribeIconBuilderCreateBuffer(nc)
 
 	publishers.SdInitialize(nc)
 
