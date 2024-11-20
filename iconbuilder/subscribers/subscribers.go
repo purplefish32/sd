@@ -10,7 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func SubscribeIconBuilderCreateBuffer(nc *nats.Conn) {
+func CreateIconBuffer(nc *nats.Conn) {
 	// Subscribe to the subject
 	subject := "sd.iconbuilder.buffer.create"
 	nc.Subscribe(subject, func(m *nats.Msg) {
