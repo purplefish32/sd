@@ -2,79 +2,86 @@ package xl
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	streamdeckXlSubscribers "sd/streamdeck/xl/subscribers"
+	"sd/streamdeck/xl/profiles"
 	"sd/streamdeck/xl/utils"
-	"sync"
+	"strconv"
+	"strings"
 
-	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
 )
 
 const ProductID = 0x006c
 
-
-type buttonEvent struct {
+type ButtonEvent struct {
 	Id int `json:"id"`
 	Type string `json:"type"`
 	Serial string `json:"serial"`
 	InstanceID string `json:"instanceId"`
 }
 
+type UpdateMessageData struct {
+	Key int `json:"key"`
+	Image string `json:"image"`
+}
+
+type UpdateMessage struct {
+	Id string `json:"id"`
+	Pattern string `json:"pattern"`
+	Data UpdateMessageData `json:"data"`
+}
+
+func Subscribe(nc *nats.Conn, kv nats.KeyValue, instanceID string, device *hid.Device) {
+	log.Printf("Subscribing to sd.update events for instance: %+v device: %+v", instanceID, device.Serial)
+
+	nc.Subscribe("sd.update", func(m *nats.Msg) {
+		log.Printf("Received a message on sd.update events for device: %+v", device.Serial)
+
+		// Parse the JSON message
+		var event UpdateMessage
+
+		err := json.Unmarshal(m.Data, &event)
+
+		if err != nil {
+			log.Printf("Failed to parse JSON message: %v", err)
+			return
+		}
+
+		//utils.SetKey(device, event.Data.Key-1, event.Data.Image)
+
+		// SetKVIconFromImage(kv, instanceID, device, event.Data.Key-1, event.Data.Image)
+	})
+}
+
 func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.KeyValue) {
-	log.Println("Stream Deck XL Initialization")
+	log.Printf("Stream Deck XL Initialization: %+v", device.Serial)
 
-	buf, err := bimg.Read("./assets/images/black.jpg")
+	Subscribe(nc, kv, instanceID, device);
+	
+	currentProfile, _ := profiles.GetCurrentProfile(kv, instanceID, device);
 
-	if err != nil {
-		log.Fatal("Error reading image:", err)
+	// If no default profile exists, create one and set is as the default profile.
+	if currentProfile == nil {
+		// Create a new profile.
+		profileId, _ := profiles.CreateProfile(kv, instanceID, device, "Default");
+
+		// Set the profile as the current profile.
+		profiles.SetCurrentProfile(kv, instanceID, device, profileId)
 	}
 
-	// Create all missing keys in Jetstream KV.
-	var wg sync.WaitGroup // To wait for all goroutines to finish.
+	//buf, err := bimg.Read("./assets/images/black.jpg")
 
-	for i := 0; i < 32; i++ {
-		// Increment the WaitGroup counter.
-		wg.Add(1)
-
-		// Generate the key for the current iteration.
-		key := instanceID + "." + device.Serial + "." + fmt.Sprintf("%v", i)
-
-		// Launch a goroutine for each iteration.
-		go func(i int, key string) {
-			defer wg.Done() // Decrement the counter when the goroutine finishes.
-
-			// Create the value (you can replace `buf` with the actual data you want to store).
-			_, err := kv.Create(key, []byte(buf))
-			if err != nil {
-				log.Printf("Error creating key %s: %v", key, err)
-				return
-			}
-
-			// Get the key-value entry.
-			entry, err := kv.Get(key)
-			if err != nil {
-				log.Printf("Error getting key %s: %v", key, err)
-				return
-			}
-
-			// Use the buffer (or call your utility function).
-			utils.SetKeyFromBuffer(device, i, entry.Value())
-		}(i, key)
-	}
-
-	// Wait for all goroutines to complete.
-	wg.Wait()
+	// if err != nil {
+	// 	log.Fatal("Error reading image:", err)
+	// }
 
 	log.Println("Rendering all icons completed")
 
-	// Listen for key updates.
-	streamdeckXlSubscribers.UpdateKey(nc, device)
+	go WatchKV(kv, instanceID, device)
 
 	// Buffer for outgoing events.
-	buf = make([]byte, 512)
+	buf := make([]byte, 512)
 
 	for {
 		n, err := device.Read(buf)
@@ -91,7 +98,7 @@ func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.Ke
 				for _, buttonIndex := range pressedButtons {
 
 					// Create a new buttonEvent struct for each pressed button.
-					event := buttonEvent{
+					event := ButtonEvent{
 						Id: buttonIndex,
 						Type: "XL",
 						Serial: device.DeviceInfo.Serial,
@@ -105,6 +112,68 @@ func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.Ke
 					nc.Publish("sd.event", eventJSON)
 				}
 			}
+		}
+	}
+}
+
+// func SetKVIconFromImage(kv nats.KeyValue, instanceID string, device *hid.Device, buttonId int, imagePath string) {
+// 	buf, _ := bimg.Read(imagePath)
+
+// 	kv.Put("instances." + instanceID + ".devices." + device.Serial + ".profiles.xxx.page.xxx.buttons." + fmt.Sprintf("%v", buttonId), buf)
+// }
+
+// WatchKV watches for changes in the given KeyValue store
+func WatchKV(kv nats.KeyValue, instanceID string, device *hid.Device) {
+	log.Printf("Starting KV Watcher")
+
+	// Start watching the KV bucket for all updates.
+	watcher, err := kv.Watch("instances." + instanceID + ".devices." + device.Serial + ".buttons.>", )
+
+	if err != nil {
+		log.Fatalf("Error creating watcher: %v", err)
+	}
+	defer watcher.Stop()
+
+	// Flag to track when all initial values have been processed.
+	initialValuesProcessed := false
+
+	// Start the watch loop.
+	for update := range watcher.Updates() {
+		// If the update is nil, it means all initial values have been received.
+		if update == nil {
+			if !initialValuesProcessed {
+				log.Println("All initial values have been processed. Waiting for updates.")
+				initialValuesProcessed = true
+			}
+			// Continue listening for future updates, so don't break here.
+			continue
+		}
+
+		// Process the update.
+		switch update.Operation() {
+			case nats.KeyValuePut:
+				log.Printf("Key added/updated: %s", update.Key())
+				// Get Stream Deck key id from the kv key.
+
+				// Split the string by the delimiter "."
+				segments := strings.Split(update.Key(), ".")
+
+				// Get the last segment
+				sdKeyId := segments[len(segments)-1]
+
+				// Concert to int
+				id, err := strconv.Atoi(sdKeyId)
+				if err != nil {
+					// ... handle error
+					panic(err)
+				}
+
+				// Update Key.
+				utils.SetKeyFromBuffer(device, id, update.Value())
+			case nats.KeyValueDelete:
+				log.Printf("Key deleted: %s", update.Key())
+			default:
+				log.Printf("Unknown operation on key: %s", update.Key())
 		}
 	}
 }

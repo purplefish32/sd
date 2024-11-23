@@ -4,9 +4,11 @@ go 1.23.2
 
 require (
 	github.com/go-vgo/robotgo v0.110.5
+	github.com/google/uuid v1.6.0
 	github.com/h2non/bimg v1.1.9
 	github.com/joho/godotenv v1.5.1
 	github.com/karalabe/hid v1.0.1-0.20190806082151-9c14560f9ee8
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/nats-io/nats.go v1.37.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 )
@@ -17,8 +19,6 @@ require (
 	github.com/gen2brain/shm v0.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jezek/xgb v1.1.1 // indirect
 	github.com/kbinani/screenshot v0.0.0-20240820160931-a8a2c5d0e191 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect

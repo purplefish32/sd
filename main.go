@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"sd/core"
 	"sd/plugins/browser"
 	"sd/plugins/command"
@@ -57,7 +59,7 @@ func main() {
 	}
 
 	// Check if the Key-Value bucket already exists
-	kv, err := js.KeyValue("sd")
+	kv, err := js.KeyValue("sd") // TODO get this from environment.
 	
 	// Try to access the bucket
 	if err == nats.ErrBucketNotFound {
