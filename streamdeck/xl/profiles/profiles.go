@@ -2,12 +2,13 @@ package profiles
 
 import (
 	"encoding/json"
-	"log"
+	natsconn "sd/nats"
 	"sd/streamdeck/xl/pages"
 
 	"github.com/google/uuid"
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog/log"
 )
 
 type Profile struct {
@@ -32,9 +33,11 @@ type CurrentProfile struct {
 // TODO UpdatePage, DeletePage
 
 
-func CreateProfile(kv nats.KeyValue, instanceID string, device *hid.Device, name string) (profileId string, err error) {
+func CreateProfile(instanceID string, device *hid.Device, name string) (profileId string, err error) {
+	_, kv := natsconn.GetNATSConn()
+
 	log.Printf("Creating Profile for Instance: %v, device: %v", instanceID, device.Serial)
-	
+
 	// Generate a new UUID
 	id := uuid.New()
 	idStr := id.String()
@@ -68,27 +71,31 @@ func CreateProfile(kv nats.KeyValue, instanceID string, device *hid.Device, name
 	}
 
 	// Create new page.
-	pages.CreatePage(kv, instanceID, device, profile.ID)
+	pageId, _ := pages.CreatePage(instanceID, device, profile.ID)
 
 	log.Printf("Profile created successfully: %+v", profile)
+
+	pages.SetCurrentPage(instanceID, device, idStr, pageId)
 
 	// Set page as default page.
 	return idStr, nil
 }
 
-func GetCurrentProfile(kv nats.KeyValue, instanceID string, device *hid.Device) (*Profile, error) {
+func GetCurrentProfile(instanceId string, device *hid.Device) (*Profile, error) {
+	_, kv := natsconn.GetNATSConn()
+
 	// Define the key for the current profile
-	key := "instances." + instanceID + ".devices." + device.Serial + ".profiles.current"
+	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles.current"
 
 	// Get current profile and page
 	entry, err := kv.Get(key)
 
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
-			log.Printf("No current profile found for device: %s", device.Serial)
+			log.Error().Err(err).Str("device_serial", device.Serial).Msg("No NATS key for current profile found")
 			return nil, nil
 		}
-		log.Printf("Failed to get current profile for device: %s, error: %v", device.Serial, err)
+		log.Error().Err(err).Str("device_serial", device.Serial).Msg("Failed to get current profile")
 		return nil, err
 	}
 
@@ -96,17 +103,24 @@ func GetCurrentProfile(kv nats.KeyValue, instanceID string, device *hid.Device) 
 	var profile Profile
 
 	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
-		log.Printf("Failed to parse profile data: %v", err)
+		log.Error().Err(err).Msg("Failed to parse JSON")
 		return nil, err
 	}
 
-	log.Printf("Current profile retrieved: %+v", profile)
+	log.Info().
+		Str("instance_id", instanceId).
+		Str("device_serial", device.Serial).
+		Str("profile_id", profile.ID).
+		Msg("Current profile found")
+
 	return &profile, nil
 }
 
-func SetCurrentProfile(kv nats.KeyValue, instanceID string, device *hid.Device, profileId string) error {
+func SetCurrentProfile(instanceId string, device *hid.Device, profileId string) error {
+	_, kv := natsconn.GetNATSConn()
+
 	// Define the key for the current profile
-	key := "instances." + instanceID + ".devices." + device.Serial + ".profiles.current"
+	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles.current"
 
 	currentProfile := CurrentProfile{
 		ID: profileId,
@@ -114,18 +128,27 @@ func SetCurrentProfile(kv nats.KeyValue, instanceID string, device *hid.Device, 
 
 	// Serialize the Profile struct to JSON
 	data, err := json.Marshal(currentProfile)
+
 	if err != nil {
-		log.Printf("Failed to serialize profile data: %v", err)
+		log.Error().Err(err).Msg("Failed to serialize json")
 		return err
 	}
 
 	// Put the serialized data into the KV store
 	if _, err := kv.Put(key, data); err != nil {
-		log.Printf("Failed to set current profile for device: %s, error: %v", device.Serial, err)
+		log.Error().
+			Str("instance_id", instanceId).
+			Str("device_serial", device.Serial).
+			Err(err).
+			Msg("Failed to set current profile")
+
 		return err
 	}
 
-	log.Printf("Current profile set successfully for device: %s", device.Serial)
+	log.Info().
+		Str("instance_id", instanceId).
+		Str("device_serial", device.Serial).
+		Msg("Current profile set successfully")
 
 	return nil
 }

@@ -2,24 +2,177 @@ package buttons
 
 import (
 	"encoding/json"
-	"log"
+	natsconn "sd/nats"
 
+	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog/log"
 )
 
-type ButtonMetadata struct {
+type Settings struct {
+}
+
+type Title struct {
+}
+
+type State struct {
+	Image string `json:"image"`
+}
+
+type StateId struct {
+	Id int `json:"id"`
 }
 
 type Button struct {
 	Plugin string `json:"plugin"`
 	Action string `json:"action"`
-	Image string `json:"image"`
-	MetaData ButtonMetadata `json:"metadata"`
+	Settings Settings `json:"settings"`
+	States []State `json:"states"`
+	Title Title `json:"title"`
+}
+
+func GetButton(key string) (button Button, err error){
+	_, kv := natsconn.GetNATSConn()
+
+	entry, err := kv.Get(key)
+	if err != nil {
+		log.Error().Str("key", key).Err(err).Msg("Failed to retrieve key")
+		return Button{}, err
+	}
+
+	err = json.Unmarshal(entry.Value(), &button)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse JSON")
+		return Button{}, err
+	}
+
+	return button, nil
+}
+
+func updateImageBuffer(key string, imagePath string) (err error) {
+	_, kv := natsconn.GetNATSConn()
+
+	log.Info().Str("image_path", imagePath).Str("key", key).Msg("Updating image buffer")
+
+	buf, _ := bimg.Read(imagePath)
+
+	_, err = kv.Put(key + ".buffer", buf)
+
+	if err != nil {
+		if err == nats.ErrKeyExists {
+			log.Printf("Button buffer key already exists: %s", key)
+		} else {
+			log.Printf("Failed to create key in KV store: %s %v", key, err)
+		}
+		return err
+	}
+
+	log.Info().Str("key", key).Msg("Updated button buffer")
+
+	return nil
+
+}
+
+func updateSettings(buttonKey string, settings Settings) (err error) {
+	_, kv := natsconn.GetNATSConn()
+
+	log.Printf("Setting settings to: %v", settings)
+	data := Settings{}
+
+	// Serialize the Profile struct to JSON
+	json, err := json.Marshal(data)
+
+	if err != nil {
+		log.Printf("Failed to serialize settings data: %v", err)
+		return err
+	}
+
+	_, err = kv.Create(buttonKey + ".settings", json)
+
+	if err != nil {
+		if err == nats.ErrKeyExists {
+			log.Printf("Button settings key already exists: %s", buttonKey)
+		} else {
+			log.Printf("Failed to create key in KV store: %s %v", buttonKey, err)
+		}
+		return err
+	}
+
+	log.Printf("Updated settings id: %v", buttonKey)
+
+	return nil
+}
+
+func updateStateId(buttonKey string, id int) (err error) {
+	_, kv := natsconn.GetNATSConn()
+	log.Printf("Setting state ID to: %v", id)
+	stateId := StateId{
+		Id: id,
+	}
+
+	// Serialize the Profile struct to JSON
+	data, err := json.Marshal(stateId)
+
+	if err != nil {
+		log.Printf("Failed to serialize StateId data: %v", err)
+		return err
+	}
+
+	_, err = kv.Create(buttonKey + ".state", data)
+
+	if err != nil {
+		if err == nats.ErrKeyExists {
+			log.Printf("Button state id key already exists: %s", buttonKey)
+		} else {
+			log.Printf("Failed to create key in KV store: %s %v", buttonKey, err)
+		}
+		return err
+	}
+
+	log.Printf("Updated state id: %v", buttonKey)
+
+	return nil
+}
+
+func updateTitle(buttonKey string, title Title) (err error) {
+	_, kv := natsconn.GetNATSConn()
+	log.Printf("Setting title to: %+v", title)
+	// TODO
+	data := Title{
+
+	}
+
+	// Serialize the Profile struct to JSON
+	json, err := json.Marshal(data)
+
+	if err != nil {
+		log.Printf("Failed to serialize title: %+v", err)
+		return err
+	}
+
+	_, err = kv.Create(buttonKey + ".title", json)
+
+	if err != nil {
+		if err == nats.ErrKeyExists {
+			log.Printf("Button title key already exists: %s", buttonKey)
+		} else {
+			log.Printf("Failed to create key in KV store: %s %v", buttonKey, err)
+		}
+		return err
+	}
+
+	log.Printf("Updated title: %+v", buttonKey)
+
+	return nil
 }
 
 // CreateButton
-func CreateButton(kv nats.KeyValue, instanceId string, device *hid.Device, profileId string, pageId string, buttonId string) (err error) {
+func CreateButton(instanceId string, device *hid.Device, profileId string, pageId string, buttonId string) (err error) {
+	_, kv := natsconn.GetNATSConn()
+	log.Printf("Creating button: %v", buttonId)
+
 	// Define the key for the current button
 	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages." + pageId + ".buttons." + buttonId
 
@@ -27,8 +180,11 @@ func CreateButton(kv nats.KeyValue, instanceId string, device *hid.Device, profi
 	button := Button{
 		Plugin: "",
 		Action: "",
-		Image: "./assets/images/black.jpg",
-		MetaData: ButtonMetadata{},
+		States: []State{
+			{
+				Image: "./assets/images/black.jpg",
+			},
+		},
 	}
 
 	// Serialize the Profile struct to JSON
@@ -51,12 +207,18 @@ func CreateButton(kv nats.KeyValue, instanceId string, device *hid.Device, profi
 		return err
 	}
 
-	log.Printf("Button %v created successfully: %+v", buttonId, button)
+	updateStateId(key, 0)
+	updateSettings(key, Settings{})
+	updateTitle(key, Title{})
+	updateImageBuffer(key, button.States[0].Image)
+
+	log.Printf("Created button: %v", buttonId)
 
 	return nil
 }
 
+
 // TODO
-// UpdateButton
-// ResetButton ?
-// MoveButton ?
+func UpdateButton(key string) {
+	updateImageBuffer(key, "./assets/images/red.jpg")
+}

@@ -2,11 +2,11 @@ package streamdeck
 
 import (
 	"encoding/json"
-	"log"
+	natsconn "sd/nats"
 	"sd/streamdeck/xl/utils"
 
 	"github.com/karalabe/hid"
-	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog/log"
 )
 
 const ProductID = 0x0086
@@ -18,8 +18,9 @@ type buttonEvent struct {
 	InstanceID string `json:"instanceId"`
 }
 
-func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.KeyValue) {
-	log.Println("Stream Deck Pedal Initialization")
+func Init(instanceID string, device *hid.Device) {
+	log.Info().Str("device_serial", device.Serial).Msg("Stream Deck Pedal Initialization")
+	nc, _ := natsconn.GetNATSConn()
 
 	// Buffer for outgoing events.
 	buf := make([]byte, 512)
@@ -28,10 +29,9 @@ func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.Ke
 		n, err := device.Read(buf)
 
 		if err != nil {
-			log.Printf("Error reading from Stream Deck Pedal: %v", err)
+			log.Error().Str("device_serial", device.Serial).Err(err).Msg("Unable to read buffer")
 			continue
 		}
-
 
 		if n > 0 {
 			pressedButtons := utils.ParseEventBuffer(buf)

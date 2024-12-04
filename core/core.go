@@ -2,14 +2,12 @@ package core
 
 import (
 	"sync"
-
-	"github.com/nats-io/nats.go"
 )
 
 // Plugin interface that all plugins must implement
 type Plugin interface {
-	Name() string         // Returns the plugin's name
-	Subscribe(nc *nats.Conn) error // Sets up the plugin's NATS subscriptions
+	Name() string // Returns the plugin's name
+	Init()   // Sets up the plugin's NATS subscriptions
 }
 
 // PluginRegistry manages the list of registered plugins

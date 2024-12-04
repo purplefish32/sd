@@ -2,7 +2,9 @@ package xl
 
 import (
 	"encoding/json"
-	"log"
+	natsconn "sd/nats"
+	"sd/streamdeck/xl/buttons"
+	"sd/streamdeck/xl/pages"
 	"sd/streamdeck/xl/profiles"
 	"sd/streamdeck/xl/utils"
 	"strconv"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog/log"
 )
 
 const ProductID = 0x006c
@@ -17,12 +20,14 @@ const ProductID = 0x006c
 type ButtonEvent struct {
 	Id int `json:"id"`
 	Type string `json:"type"`
-	Serial string `json:"serial"`
+	Device string `json:"device"`
+	Model string `json:"model"`
 	InstanceID string `json:"instanceId"`
+	Key string `json:"key"`
 }
 
 type UpdateMessageData struct {
-	Key int `json:"key"`
+	Key string `json:"key"`
 	Image string `json:"image"`
 }
 
@@ -32,21 +37,47 @@ type UpdateMessage struct {
 	Data UpdateMessageData `json:"data"`
 }
 
-func Subscribe(nc *nats.Conn, kv nats.KeyValue, instanceID string, device *hid.Device) {
-	log.Printf("Subscribing to sd.update events for instance: %+v device: %+v", instanceID, device.Serial)
+func Subscribe(instanceId string, device *hid.Device) {
+	nc, _ := natsconn.GetNATSConn()
+
+	log.Info().
+		Str("instance_id", instanceId).
+		Str("device_serial", device.Serial).
+		Msg("Subscribing to sd.update events")
 
 	nc.Subscribe("sd.update", func(m *nats.Msg) {
-		log.Printf("Received a message on sd.update events for device: %+v", device.Serial)
+		log.Info().Str("device_serial", device.Serial).Str("message", string(m.Data)).Msg("Received a message on sd.update channel", )
 
 		// Parse the JSON message
-		var event UpdateMessage
+		var updateMessage UpdateMessage
 
-		err := json.Unmarshal(m.Data, &event)
+		err := json.Unmarshal(m.Data, &updateMessage)
 
 		if err != nil {
-			log.Printf("Failed to parse JSON message: %v", err)
+			log.Error().Err(err).Msg("Failed to parse JSON")
 			return
 		}
+
+		// TODO update events:
+		// Update Image
+		// Update Settings
+		// Update Title
+		// Update State
+		// Update Current Profile
+		// Update Current Page
+		// Create Profile
+		// Create Page
+		// Delete Profile
+		// Delete Page
+
+		// TODO get button, update button
+		//log.Printf("HERE IS MY KEY: %+v", updateMessage.Data.Key)
+		//button, err := buttons.GetButton(kv, updateMessage.Data.Key)
+		//log.Printf("HERE IS MY BUTTON: %+v", button)
+
+		// TODO
+		buttons.UpdateButton("instances." + instanceId + ".devices." + device.Serial + ".profiles.ec3217e3-8713-4b86-8ec3-1c143877a72b.pages.c519c254-00e9-4000-8277-35f7be8af772.buttons.0")
+
 
 		//utils.SetKey(device, event.Data.Key-1, event.Data.Image)
 
@@ -54,31 +85,48 @@ func Subscribe(nc *nats.Conn, kv nats.KeyValue, instanceID string, device *hid.D
 	})
 }
 
-func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.KeyValue) {
-	log.Printf("Stream Deck XL Initialization: %+v", device.Serial)
+func Init(instanceID string, device *hid.Device) {
+	nc, _ := natsconn.GetNATSConn()
 
-	Subscribe(nc, kv, instanceID, device);
-	
-	currentProfile, _ := profiles.GetCurrentProfile(kv, instanceID, device);
+	log.Info().
+		Str("device_serial", device.Serial).
+		Msg("Stream Deck XL Initialization")
+
+	Subscribe(instanceID, device);
+
+	currentProfile, _ := profiles.GetCurrentProfile(instanceID, device);
 
 	// If no default profile exists, create one and set is as the default profile.
 	if currentProfile == nil {
 		// Create a new profile.
-		profileId, _ := profiles.CreateProfile(kv, instanceID, device, "Default");
+		profileId, _ := profiles.CreateProfile(instanceID, device, "Default");
 
 		// Set the profile as the current profile.
-		profiles.SetCurrentProfile(kv, instanceID, device, profileId)
+		profiles.SetCurrentProfile(instanceID, device, profileId)
 	}
 
-	//buf, err := bimg.Read("./assets/images/black.jpg")
+	go WatchKVForButtonImageBufferChanges(instanceID, device)
 
-	// if err != nil {
-	// 	log.Fatal("Error reading image:", err)
-	// }
 
-	log.Println("Rendering all icons completed")
+	// TEMP // TODO
 
-	go WatchKV(kv, instanceID, device)
+	if currentProfile != nil {
+		currentPage, _ := pages.GetCurrentPage(instanceID, device, currentProfile.ID)
+		var updateMessage = UpdateMessage{
+			Id: "",
+			Pattern: "",
+			Data: UpdateMessageData{
+				Key: "instances." + instanceID + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.1",
+				Image: "./assets/images/red.jpg",
+			},
+		}
+
+		// Marshal the event struct to JSON.
+		payload, _ := json.Marshal(updateMessage)
+
+		nc.Publish("sd.update", payload)
+	}
+	// END TEMP
 
 	// Buffer for outgoing events.
 	buf := make([]byte, 512)
@@ -87,34 +135,44 @@ func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.Ke
 		n, err := device.Read(buf)
 
 		if err != nil {
-			log.Printf("Error reading from Stream Deck: %v", err)
+			log.Error().Err(err).Msg("Error reading from Stream Deck")
 			continue
 		}
 
 		if n > 0 {
 			pressedButtons := utils.ParseEventBuffer(buf)
 
-			if len(pressedButtons) > 0 {
-				for _, buttonIndex := range pressedButtons {
+			profile, _ := profiles.GetCurrentProfile(instanceID, device)
+			page, _ := pages.GetCurrentPage(instanceID, device, profile.ID)
 
-					// Create a new buttonEvent struct for each pressed button.
-					event := ButtonEvent{
-						Id: buttonIndex,
-						Type: "XL",
-						Serial: device.DeviceInfo.Serial,
-						InstanceID: instanceID,
-					}
-
-					// Marshal the event struct to JSON.
-					eventJSON, _ := json.Marshal(event)
-
-					// Publish the JSON payload to the NATS topic.
-					nc.Publish("sd.event", eventJSON)
+			for _, buttonIndex := range pressedButtons {
+				// Create a new buttonEvent struct for each pressed button.
+				event := ButtonEvent{
+					Id: buttonIndex,
+					Type: "key",
+					Device: device.Serial,
+					Model: "XL",
+					InstanceID: instanceID,
+					Key: "instances." + instanceID + ".devices." + device.Serial + ".profiles." + profile.ID + ".pages." + page.ID + ".buttons." +  strconv.Itoa(buttonIndex) ,
 				}
+
+				// Marshal the event struct to JSON.
+				payload, _ := json.Marshal(event)
+
+				// Publish the JSON payload to the NATS topic.
+				nc.Publish("sd.event", payload)
+
+				log.Info().Msg("Published sd.event")
 			}
 		}
 	}
 }
+
+// func SetKeyBufferFromImagePath(kv nats.KeyValue, instanceId string, device *hid.Device, profileId string, pageId string, buttonId string, imagePath string) {
+// 	buf, _ := bimg.Read(imagePath)
+
+// 	kv.Put("instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".page." + pageId + ".buttons." + buttonId, buf)
+// }
 
 // func SetKVIconFromImage(kv nats.KeyValue, instanceID string, device *hid.Device, buttonId int, imagePath string) {
 // 	buf, _ := bimg.Read(imagePath)
@@ -123,15 +181,24 @@ func Initialize(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.Ke
 // }
 
 // WatchKV watches for changes in the given KeyValue store
-func WatchKV(kv nats.KeyValue, instanceID string, device *hid.Device) {
-	log.Printf("Starting KV Watcher")
+func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
+	_, kv := natsconn.GetNATSConn()
+
+	log.Info().
+		Str("instance_id", instanceId).
+		Str("device_serial", device.Serial).
+		Msg("Starting KV Watcher")
+
+	currentProfile, _ := profiles.GetCurrentProfile(instanceId, device)
+	currentPage, _ := pages.GetCurrentPage(instanceId, device, currentProfile.ID)
 
 	// Start watching the KV bucket for all updates.
-	watcher, err := kv.Watch("instances." + instanceID + ".devices." + device.Serial + ".buttons.>", )
+	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer" )
 
 	if err != nil {
-		log.Fatalf("Error creating watcher: %v", err)
+		log.Error().Err(err).Msg("Error creating watcher")
 	}
+
 	defer watcher.Stop()
 
 	// Flag to track when all initial values have been processed.
@@ -142,7 +209,7 @@ func WatchKV(kv nats.KeyValue, instanceID string, device *hid.Device) {
 		// If the update is nil, it means all initial values have been received.
 		if update == nil {
 			if !initialValuesProcessed {
-				log.Println("All initial values have been processed. Waiting for updates.")
+				log.Info().Msg("All initial values have been processed. Waiting for updates")
 				initialValuesProcessed = true
 			}
 			// Continue listening for future updates, so don't break here.
@@ -152,17 +219,18 @@ func WatchKV(kv nats.KeyValue, instanceID string, device *hid.Device) {
 		// Process the update.
 		switch update.Operation() {
 			case nats.KeyValuePut:
-				log.Printf("Key added/updated: %s", update.Key())
+				log.Info().Str("key", update.Key()).Msg("Key added/updated")
 				// Get Stream Deck key id from the kv key.
 
 				// Split the string by the delimiter "."
 				segments := strings.Split(update.Key(), ".")
 
 				// Get the last segment
-				sdKeyId := segments[len(segments)-1]
+				sdKeyId := segments[len(segments)-2]
 
 				// Concert to int
 				id, err := strconv.Atoi(sdKeyId)
+
 				if err != nil {
 					// ... handle error
 					panic(err)
@@ -171,9 +239,9 @@ func WatchKV(kv nats.KeyValue, instanceID string, device *hid.Device) {
 				// Update Key.
 				utils.SetKeyFromBuffer(device, id, update.Value())
 			case nats.KeyValueDelete:
-				log.Printf("Key deleted: %s", update.Key())
+				log.Info().Str("key", update.Key()).Msg("Key deleted")
 			default:
-				log.Printf("Unknown operation on key: %s", update.Key())
+				log.Info().Str("key", update.Key()).Msg("Unknown operation")
 		}
 	}
 }

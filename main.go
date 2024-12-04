@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"sd/core"
 	"sd/plugins/browser"
@@ -18,180 +18,145 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/karalabe/hid"
-	"github.com/nats-io/nats.go"
 )
 
 func main() {
-	// Retrieve or create the instance UUID
+	// Set global time format for logger.
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	// Configure the global logger.
+    log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+
+	log.Info().Msg("Starting application")
+
+	// Retrieve or create the instance UUID.
 	instanceID := getOrCreateUUID()
 
-	// Print the instance UUID
-	log.Printf("Instance UUID: %s\n", instanceID)
-
-	// Load the .env file
+	// Load the .env file.
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Fatal().Err(err).Msg("Error loading .env file")
+		os.Exit(1) // Explicitly terminate the program.
 	}
 
-	// Get NATS server address from the .env file
-	natsServer := os.Getenv("NATS_SERVER")
-
-	if natsServer == "" {
-		log.Fatal("NATS_SERVER is not set in the .env file")
-	}
-
-	// Connect to NATS
-	nc, err := nats.Connect(natsServer)
-
-	if err != nil {
-		log.Fatalf("Error connecting to NATS: %v", err)
-	}
-
-    defer nc.Close()
-
-	// Enable JetStream Context
-	js, err := nc.JetStream()
-
-	if err != nil {
-		log.Fatalf("Error enabling JetStream: %v", err)
-	}
-
-	// Check if the Key-Value bucket already exists
-	kv, err := js.KeyValue("sd") // TODO get this from environment.
-	
-	// Try to access the bucket
-	if err == nats.ErrBucketNotFound {
-		// Create the bucket if it doesn't exist
-		kv, err = js.CreateKeyValue(&nats.KeyValueConfig{
-			Bucket: "sd", // Name of the bucket
-		})
-		if err != nil {
-			log.Fatalf("Error creating Key-Value bucket: %v", err)
-		}
-		log.Println("Key-Value bucket 'sd' created successfully")
-	} else if err != nil {
-		log.Fatalf("Error accessing Key-Value bucket: %v", err)
-	} else {
-		log.Println("Key-Value bucket 'sd' already exists")
-	}
-
-	// Register plugins
+	// Register plugins.
 	registry := core.NewPluginRegistry()
 	registry.Register(&browser.BrowserPlugin{})
 	registry.Register(&command.CommandPlugin{})
 	registry.Register(&keyboard.KeyboardPlugin{})
 
-	// Subscribe plugins to NATS topics
+	// Initialize plugins.
 	for _, plugin := range registry.All() {
-		log.Printf("Registering plugin: %s", plugin.Name())
-		if err := plugin.Subscribe(nc); err != nil {
-			log.Printf("Error subscribing plugin %s: %v", plugin.Name(), err)
-		} else {
-			log.Printf("Plugin %s subscribed successfully.", plugin.Name())
-		}
+		log.Info().Str("plugin", plugin.Name()).Msg("Registering plugin")
+		plugin.Init();
+        log.Info().Str("plugin", plugin.Name()).Msg("Plugin subscribed successfully")
 	}
 
-	// Define the devices you want to manage
+	// Define devices.
 	deviceTypes := []struct {
 		Name      string
 		VendorID  uint16
 		ProductID uint16
-		Initialize func(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.KeyValue)
-		RequiresKV bool
+		Init      func(instanceID string, device *hid.Device)
 
 	}{
-		{"Stream Deck XL", streamdeck.VendorID, streamdeckXl.ProductID, streamdeckXl.Initialize, true},
-		{"Stream Deck Pedal", streamdeck.VendorID, streamdeckPedal.ProductID, streamdeckPedal.Initialize, false},
+		{"Stream Deck XL", streamdeck.VendorID, streamdeckXl.ProductID, streamdeckXl.Init},
+		{"Stream Deck Pedal", streamdeck.VendorID, streamdeckPedal.ProductID, streamdeckPedal.Init},
 		//{"Stream Deck +", streamdeck.VendorID, streamdeckPlus.ProductID, streamdeckPlus.Initialize},
 	}
 
-	// Process each device type
+	// Process each device type.
 	for _, deviceType := range deviceTypes {
 		go func(dt struct {
 			Name       string
 			VendorID   uint16
 			ProductID  uint16
-			Initialize func(nc *nats.Conn, instanceID string, device *hid.Device, kv nats.KeyValue)
-			RequiresKV bool
+			Init func(instanceID string, device *hid.Device)
 		}) {
-			// Find the devices
+			// Find the devices.
 			hidDevices := hid.Enumerate(dt.VendorID, dt.ProductID)
+
 			if len(hidDevices) == 0 {
-				log.Printf("No %s found", dt.Name)
+				log.Warn().Str("device_name", dt.Name).Msg("Device not found")
 				return
 			}
 
-			// Process each device of this type
+			// Process each device of this type.
 			for i, hidDeviceInfo := range hidDevices {
 				go func(deviceIndex int, deviceInfo hid.DeviceInfo) {
-					// Open the device
+
+					// Open the device.
 					hidDevice, err := deviceInfo.Open()
+
 					if err != nil {
-						log.Printf("Failed to open %s (Device %d): %v", dt.Name, deviceIndex, err)
+						log.Error().Err(err).Str("device_name", dt.Name).Msg("Failed to open Device")
 						return
 					}
 
-					// Initialize the device
-					log.Printf("Initializing %s (Device %d)...", dt.Name, deviceIndex)
-
-
-					// Conditionally pass kv or nil
-					if dt.RequiresKV {
-						dt.Initialize(nc, instanceID, hidDevice, kv)  // Pass pointer to kv if required
-					} else {
-						dt.Initialize(nc, instanceID, hidDevice, nil)  // Pass nil if not required
-					}
-
-					log.Printf("%s (Device %d) initialized successfully.", dt.Name, deviceIndex)
+					// Initialize the device.
+					dt.Init(instanceID, hidDevice)
 				}(i, hidDeviceInfo)
 			}
 		}(deviceType)
 	}
 
-	// iconBuilderSubscribers.CreateIconBuffer(nc)
-
-	// Keep the main program running
-	select {} // Blocks forever
+	// Keep the main program running.
+	select {}
 }
 
 func getOrCreateUUID() string {
+
 	// Use a directory in the user's home folder
 	homeDir, err := os.UserHomeDir()
+
 	if err != nil {
-		log.Fatalf("Error retrieving user home directory: %v", err)
+		log.Fatal().Err(err).Msg("Error retrieving user home directory")
 	}
+
 	uuidDir := filepath.Join(homeDir, ".config/sd")
 	uuidFilePath := filepath.Join(uuidDir, "instance-id")
 
 	// Ensure the directory exists
 	if _, err := os.Stat(uuidDir); os.IsNotExist(err) {
 		err := os.MkdirAll(uuidDir, 0755) // Create the directory
+
 		if err != nil {
-			log.Fatalf("Error creating directory %s: %v", uuidDir, err)
+			log.Fatal().Err(err).Str("uuidDir", uuidDir).Msg("Error creating directory")
+			os.Exit(1)
 		}
 	}
 
 	// Check if the UUID file exists
 	if _, err := os.Stat(uuidFilePath); err == nil {
+
 		// Read the existing UUID
 		data, err := os.ReadFile(uuidFilePath)
+
+		uuid := string(data)
+
 		if err != nil {
-			log.Fatalf("Error reading UUID file: %v", err)
+			log.Fatal().Err(err).Msg("Error reading UUID file")
+			os.Exit(1)
 		}
-		return string(data)
+
+		log.Info().Str("uuid", uuid).Msg("UUID file exists")
+
+		return uuid
 	}
 
 	// Generate a new UUID
 	id := uuid.New()
-	idStr := id.String()
+	uuid := id.String()
 
 	// Save the UUID to the file
-	err = os.WriteFile(uuidFilePath, []byte(idStr), 0600)
+	err = os.WriteFile(uuidFilePath, []byte(uuid), 0600)
+
 	if err != nil {
-		log.Fatalf("Error saving UUID to file: %v", err)
+		log.Fatal().Err(err).Msg("Error saving UUID to file")
 	}
 
-	return idStr
+	log.Info().Str("uuid", uuid).Msg("UUID file created")
+
+	return uuid
 }
