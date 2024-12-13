@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
@@ -35,6 +36,21 @@ type UpdateMessage struct {
 	Id string `json:"id"`
 	Pattern string `json:"pattern"`
 	Data UpdateMessageData `json:"data"`
+}
+
+type Settings struct {
+}
+
+type State struct {
+	Id string `json:"id"`
+	ImagePath string `json:"imagePath"`
+}
+type ActionInstance struct {
+	UUID string `json:"uuid"`
+	Settings map[string]interface{} `json:"settings"`
+	State string `json:"state"`
+	States []State `json:"states"`
+	Title string `json:"title"`
 }
 
 func Subscribe(instanceId string, device *hid.Device) {
@@ -86,7 +102,7 @@ func Subscribe(instanceId string, device *hid.Device) {
 }
 
 func Init(instanceID string, device *hid.Device) {
-	nc, _ := natsconn.GetNATSConn()
+	nc, kv := natsconn.GetNATSConn()
 
 	log.Info().
 		Str("device_serial", device.Serial).
@@ -105,27 +121,28 @@ func Init(instanceID string, device *hid.Device) {
 		profiles.SetCurrentProfile(instanceID, device, profileId)
 	}
 
+	go WatchForButtonChanges()
 	go WatchKVForButtonImageBufferChanges(instanceID, device)
 
 
 	// TEMP // TODO
 
-	if currentProfile != nil {
-		currentPage, _ := pages.GetCurrentPage(instanceID, device, currentProfile.ID)
-		var updateMessage = UpdateMessage{
-			Id: "",
-			Pattern: "",
-			Data: UpdateMessageData{
-				Key: "instances." + instanceID + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.1",
-				Image: "./assets/images/red.jpg",
-			},
-		}
+	// if currentProfile != nil {
+	// 	currentPage, _ := pages.GetCurrentPage(instanceID, device, currentProfile.ID)
+	// 	var updateMessage = UpdateMessage{
+	// 		Id: "",
+	// 		Pattern: "",
+	// 		Data: UpdateMessageData{
+	// 			Key: "instances." + instanceID + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.1",
+	// 			Image: "./assets/images/red.jpg",
+	// 		},
+	// 	}
 
-		// Marshal the event struct to JSON.
-		payload, _ := json.Marshal(updateMessage)
+	// 	// Marshal the event struct to JSON.
+	// 	payload, _ := json.Marshal(updateMessage)
 
-		nc.Publish("sd.update", payload)
-	}
+	// 	nc.Publish("sd.update", payload)
+	// }
 	// END TEMP
 
 	// Buffer for outgoing events.
@@ -147,22 +164,45 @@ func Init(instanceID string, device *hid.Device) {
 
 			for _, buttonIndex := range pressedButtons {
 				// Create a new buttonEvent struct for each pressed button.
-				event := ButtonEvent{
-					Id: buttonIndex,
-					Type: "key",
-					Device: device.Serial,
-					Model: "XL",
-					InstanceID: instanceID,
-					Key: "instances." + instanceID + ".devices." + device.Serial + ".profiles." + profile.ID + ".pages." + page.ID + ".buttons." +  strconv.Itoa(buttonIndex) ,
+				// event := ButtonEvent{
+				// 	Id: buttonIndex,
+				// 	Type: "key",
+				// 	Device: device.Serial,
+				// 	Model: "XL",
+				// 	InstanceID: instanceID,
+				// 	Key: "instances." + instanceID + ".devices." + device.Serial + ".profiles." + profile.ID + ".pages." + page.ID + ".buttons." +  strconv.Itoa(buttonIndex) ,
+				// }
+
+				// Ignore button up event for now.
+				if buttonIndex == 0 {
+					continue
 				}
 
-				// Marshal the event struct to JSON.
-				payload, _ := json.Marshal(event)
+				key := "instances." + instanceID + ".devices." + device.Serial + ".profiles." + profile.ID + ".pages." + page.ID + ".buttons." +  strconv.Itoa(buttonIndex);
+
+				entry, err := nats.KeyValue.Get(kv, key)
+
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get value from KV store")
+					continue
+				}
+				log.Debug().Msg(string(entry.Value()))
+
+				// Unmarshal the JSON into the Payload struct
+				var payload ActionInstance
+				if err := json.Unmarshal(entry.Value(), &payload); err != nil {
+					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
+					return
+				}
+
+				// Use the `UUID` field as the topic
+				if payload.UUID == "" {
+					log.Error().Msg("Missing UUID field in JSON payload")
+					return
+				}
 
 				// Publish the JSON payload to the NATS topic.
-				nc.Publish("sd.event", payload)
-
-				log.Info().Msg("Published sd.event")
+				nc.Publish(payload.UUID, entry.Value())
 			}
 		}
 	}
@@ -181,18 +221,56 @@ func Init(instanceID string, device *hid.Device) {
 // }
 
 // WatchKV watches for changes in the given KeyValue store
-func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
+
+func WatchForButtonChanges() {
 	_, kv := natsconn.GetNATSConn()
 
-	log.Info().
-		Str("instance_id", instanceId).
-		Str("device_serial", device.Serial).
-		Msg("Starting KV Watcher")
+	// Start watching the KV bucket for all button changes.
+	watcher, err := kv.Watch("instances.*.devices.*.profiles.*.pages.*.buttons.*" )
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error creating watcher")
+	}
+
+	defer watcher.Stop()
+
+	// Start the watch loop.
+	for update := range watcher.Updates() {
+		if update == nil {
+			continue
+		}
+
+		log.Debug().Msg("update")
+		log.Debug().Msg(string(update.Value()))
+		log.Debug().Msg(string(update.Key()))
+
+		// Parse JSON from update.Value()
+		var jsonData map[string]interface{}
+		err := json.Unmarshal(update.Value(), &jsonData)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to unmarshal JSON")
+			continue
+		}
+
+		// Log the JSON data and key
+		log.Debug().Msgf("Key: %s", update.Key())
+		log.Debug().Msgf("JSON Data: %+v", jsonData)
+
+		buf, _ := bimg.Read("./assets/images/red.jpg")
+
+		// Put the serialized data into the KV store
+		if _, err := kv.Put(string(update.Key()) + ".buffer", buf); err != nil {
+			log.Error().Err(err).Msg("Error")
+		}
+	}
+}
+func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
+	_, kv := natsconn.GetNATSConn()
 
 	currentProfile, _ := profiles.GetCurrentProfile(instanceId, device)
 	currentPage, _ := pages.GetCurrentPage(instanceId, device, currentProfile.ID)
 
-	// Start watching the KV bucket for all updates.
+	// Start watching the KV bucket for updates.
 	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer" )
 
 	if err != nil {

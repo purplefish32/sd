@@ -2,11 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -52,16 +52,8 @@ func ParseEventBuffer(buf []byte) []int {
 // 	image := bimg.NewImage(buffer)
 
 // 	// first crop image
-// 	_, err = image.Resize(96, 96)
-// 	if err != nil {
-// 		fmt.Fprintln(os.Stderr, err)
-// 	}
-
-// 	// then flip it
-// 	newImage, err := image.Rotate(180)
-// 	if err != nil {
-// 		fmt.Fprintln(os.Stderr, err)
-// 	}
+// 	_, err = image.Resg
+// 	newImage, err := image	"log"
 
 // 	// Calculate the total length of the image data
 // 	content := newImage
@@ -70,12 +62,7 @@ func ParseEventBuffer(buf []byte) []int {
 // 	iteration := 0
 
 // 	// Ensure the device is opened for communication
-// 	// device.Open() may not be necessary since you're passing a device object already open, but you can modify it based on your code
-// 	if device != nil {
-// 		for remainingBytes > 0 {
-// 			// Slice the image to fit into the payload size
-// 			sliceLength := min(remainingBytes, ImageReportPayloadLength)
-// 			bytesSent := iteration * ImageReportPayloadLength
+// 	// device.Open() 	"log"
 
 // 			// Determine if this is the final chunk
 // 			var finalizer byte
@@ -99,13 +86,8 @@ func ParseEventBuffer(buf []byte) []int {
 // 				finalizer,     // Final chunk indicator
 // 				bitmaskedLength,
 // 				shiftedLength,
-// 				bitmaskedIteration,
-// 				shiftedIteration,
-// 			}
-
-// 			// Slice the image data
-// 			payload := append(header, content[bytesSent:bytesSent+sliceLength]...)
-// 			padding := make([]byte, ImageReportLength-len(payload))
+// 				bitmask	"log"
+//make([]byte, ImageReportLength-len(payload))
 
 // 			// Final payload with padding
 // 			finalPayload := append(payload, padding...)
@@ -119,13 +101,11 @@ func ParseEventBuffer(buf []byte) []int {
 
 // 			remainingBytes -= sliceLength
 // 			iteration++
-// 		}
-// 		return true
-// 	}
-// 	return false
-// }
+// 		}	"log"
 
 func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) bool {
+	log.Debug().Msg("Button buffer changed")
+
 	image := bimg.NewImage(buffer)
 
 	// first crop image

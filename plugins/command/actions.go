@@ -1,18 +1,17 @@
-package actions
+package command
 
 import (
 	"encoding/json"
-	"log"
 	"os/exec"
 	natsconn "sd/nats"
 
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog/log"
 )
 
 var msg struct {
 	Command string `json:"command"`
 }
-
 
 // Subscribe sets up the NATS subscription for this plugin.
 func SubscribeActionExec(pluginNamespace string) {
@@ -22,7 +21,7 @@ func SubscribeActionExec(pluginNamespace string) {
 
 		// Parse the incoming message
 		if err := json.Unmarshal(m.Data, &msg); err != nil {
-			log.Printf("Error unmarshaling JSON: %v\n", err)
+			log.Error().Err(err).Msg("Error unmarshaling JSON")
 			return
 		}
 
@@ -31,7 +30,7 @@ func SubscribeActionExec(pluginNamespace string) {
 
  		// Run the command.
 		if err := cmd.Run(); err != nil {
-			log.Printf("Error executing command: %v\n", err)
+			log.Error().Err(err).Msg("Can not run command")
 		}
 
 	})

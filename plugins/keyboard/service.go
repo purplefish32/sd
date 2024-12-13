@@ -1,8 +1,6 @@
 package keyboard
 
-import "sd/plugins/keyboard/actions"
-
-var pluginNamespace = "sd.plugin.core.keyboard"
+var pluginNamespace = "sd.plugin.keyboard"
 
 // KeyboardPlugin represents the keyboard plugin.
 type KeyboardPlugin struct{}
@@ -14,5 +12,5 @@ func (k *KeyboardPlugin) Name() string {
 
 // Subscribe sets up the NATS subscription for this plugin.
 func (k *KeyboardPlugin) Init() {
-	actions.SubscribeActionType(pluginNamespace)
+	SubscribeActionType(pluginNamespace)
 }

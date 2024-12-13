@@ -1,13 +1,13 @@
-package actions
+package keyboard
 
 import (
 	"encoding/json"
-	"log"
 
 	natsconn "sd/nats"
 
 	"github.com/go-vgo/robotgo"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog/log"
 )
 
 var msg struct {
@@ -22,7 +22,7 @@ func SubscribeActionType(pluginNamespace string) {
 
 		// Parse the incoming message.
 		if err := json.Unmarshal(m.Data, &msg); err != nil {
-			log.Printf("Error unmarshaling JSON: %v\n", err)
+			log.Error().Err(err).Msg("Error unmarshaling JSON")
 			return
 		}
 

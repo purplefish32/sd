@@ -8,15 +8,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var (
+	nc   *nats.Conn
+	kv   nats.KeyValue
+	once sync.Once
+)
+
 // GetNATSConn returns a singleton NATS connection.
 func GetNATSConn() (*nats.Conn, nats.KeyValue) {
-
-	var (
-		nc   *nats.Conn
-		kv   nats.KeyValue
-		once sync.Once
-	)
-
 	once.Do(func() {
 		log.Info().Msg("Init NATS connection")
 

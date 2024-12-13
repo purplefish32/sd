@@ -64,6 +64,7 @@ func SetCurrentPage(instanceId string, device *hid.Device, profileId string, pag
 	_, kv := natsconn.GetNATSConn()
 
 	log.Printf("Setting current page for profile: %v", profileId)
+	
 	// Define the key for the current page
 	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages.current"
 
