@@ -1,4 +1,4 @@
-package action
+package actions
 
 import "github.com/nats-io/nats.go"
 
@@ -7,9 +7,17 @@ type Action struct {
 	Params string `json:"params"`
 }
 
-// func Create(kv nats.KeyValue, actionType string, params struct{}) {
-// 	kv.Create("", _) // Try storing as byte[]
-// }
+type State struct {
+	Id        string `json:"id"`
+	ImagePath string `json:"imagePath"`
+}
+type ActionInstance struct {
+	UUID     string  `json:"uuid"`
+	Settings any     `json:"settings"`
+	State    string  `json:"state"`
+	States   []State `json:"states"`
+	Title    string  `json:"title"`
+}
 
 func Update(kv nats.KeyValue, actionType string, params struct{}) {
 	kv.PutString("", "") // Try storing as byte[]

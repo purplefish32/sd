@@ -16,9 +16,11 @@ require (
 require (
 	github.com/dblohm7/wingoes v0.0.0-20240820181039-f2b84150679e // indirect
 	github.com/ebitengine/purego v0.8.0 // indirect
+	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/gen2brain/shm v0.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/jezek/xgb v1.1.1 // indirect
 	github.com/kbinani/screenshot v0.0.0-20240820160931-a8a2c5d0e191 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect

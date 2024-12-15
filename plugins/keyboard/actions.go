@@ -2,8 +2,7 @@ package keyboard
 
 import (
 	"encoding/json"
-
-	natsconn "sd/nats"
+	"sd/natsconn"
 
 	"github.com/go-vgo/robotgo"
 	"github.com/nats-io/nats.go"

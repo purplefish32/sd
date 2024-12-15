@@ -1,18 +1,15 @@
 package utils
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
 	"github.com/rs/zerolog/log"
 )
 
 const (
-	ImageReportLength        = 1024  // The expected length of the HID report
-	ImageReportPayloadLength = 1016  // The size of each payload chunk
-	ImageReportHeaderLength  = 8     // The size of the header in the report
+	ImageReportLength        = 1024 // The expected length of the HID report
+	ImageReportPayloadLength = 1016 // The size of each payload chunk
+	ImageReportHeaderLength  = 8    // The size of the header in the report
 )
 
 func ParseEventBuffer(buf []byte) []int {
@@ -42,86 +39,11 @@ func ParseEventBuffer(buf []byte) []int {
 	return pressedButtons
 }
 
-
-// func SetKey(device *hid.Device, keyId int, imagePath string) bool {
-// 	buffer, err := bimg.Read(imagePath)
-// 	if err != nil {
-// 		fmt.Fprintln(os.Stderr, err)
-// 	}
-
-// 	image := bimg.NewImage(buffer)
-
-// 	// first crop image
-// 	_, err = image.Resg
-// 	newImage, err := image	"log"
-
-// 	// Calculate the total length of the image data
-// 	content := newImage
-
-// 	remainingBytes := len(content)
-// 	iteration := 0
-
-// 	// Ensure the device is opened for communication
-// 	// device.Open() 	"log"
-
-// 			// Determine if this is the final chunk
-// 			var finalizer byte
-// 			if sliceLength == remainingBytes {
-// 				finalizer = 1
-// 			} else {
-// 				finalizer = 0
-// 			}
-
-// 			// Prepare the header with bit manipulation
-// 			bitmaskedLength := byte(sliceLength & 0xFF)
-// 			shiftedLength := byte(sliceLength >> 8)
-// 			bitmaskedIteration := byte(iteration & 0xFF)
-// 			shiftedIteration := byte(iteration >> 8)
-
-// 			// Create the header (This can be adjusted based on the actual protocol you are working with)
-// 			header := []byte{
-// 				0x02,  // Report ID for key setting
-// 				0x07,  // Command for setting key image (check your device documentation)
-// 				byte(keyId),  // Key ID
-// 				finalizer,     // Final chunk indicator
-// 				bitmaskedLength,
-// 				shiftedLength,
-// 				bitmask	"log"
-//make([]byte, ImageReportLength-len(payload))
-
-// 			// Final payload with padding
-// 			finalPayload := append(payload, padding...)
-
-// 			// Write the payload to the Stream Deck
-// 			_, err := device.Write(finalPayload)
-// 			if err != nil {
-// 				log.Printf("Error writing to device: %v", err)
-// 				return false
-// 			}
-
-// 			remainingBytes -= sliceLength
-// 			iteration++
-// 		}	"log"
-
 func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) bool {
 	log.Debug().Msg("Button buffer changed")
 
-	image := bimg.NewImage(buffer)
-
-	// first crop image
-	_, err := image.Resize(96, 96)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-
-	// then flip it
-	newImage, err := image.Rotate(180)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-
 	// Calculate the total length of the image data
-	content := newImage
+	content := buffer
 
 	remainingBytes := len(content)
 	iteration := 0
@@ -150,10 +72,10 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) bool {
 
 			// Create the header (This can be adjusted based on the actual protocol you are working with)
 			header := []byte{
-				0x02,  // Report ID for key setting
-				0x07,  // Command for setting key image (check your device documentation)
-				byte(keyId),  // Key ID
-				finalizer,     // Final chunk indicator
+				0x02,            // Report ID for key setting
+				0x07,            // Command for setting key image (check your device documentation)
+				byte(keyId - 1), // Key ID
+				finalizer,       // Final chunk indicator
 				bitmaskedLength,
 				shiftedLength,
 				bitmaskedIteration,
@@ -180,4 +102,38 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) bool {
 		return true
 	}
 	return false
+}
+
+func ConvertImageToBuffer(imagePath string) []byte {
+
+	// Read the image file into a buffer using bimg
+	buffer, err := bimg.Read(imagePath)
+	if err != nil {
+		log.Error().Err(err).Msg("Cannot read image.")
+		return nil
+	}
+
+	// Create an image object
+	image := bimg.NewImage(buffer)
+
+	// Resize the image
+	resizedImage, err := image.Resize(96, 96)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error resizing image")
+		return nil
+	}
+
+	// Rotate the image 180 deg.
+	rotatedImage, err := bimg.NewImage(resizedImage).Rotate(180)
+
+	// Convert to JPEG.
+	finalImage, _ := bimg.NewImage(rotatedImage).Convert(bimg.JPEG)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error rotating image")
+		return nil
+	}
+
+	return finalImage
 }

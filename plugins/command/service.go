@@ -12,5 +12,5 @@ func (c *CommandPlugin) Name() string {
 
 // Subscribe sets up the NATS subscription for this plugin.
 func (c *CommandPlugin) Init() {
-	SubscribeActionExec(pluginNamespace)
+	OpenSubscriber()
 }

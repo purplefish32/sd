@@ -2,7 +2,7 @@ package buttons
 
 import (
 	"encoding/json"
-	natsconn "sd/nats"
+	"sd/natsconn"
 
 	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
@@ -25,14 +25,14 @@ type StateId struct {
 }
 
 type Button struct {
-	Plugin string `json:"plugin"`
-	Action string `json:"action"`
+	Plugin   string   `json:"plugin"`
+	Action   string   `json:"action"`
 	Settings Settings `json:"settings"`
-	States []State `json:"states"`
-	Title Title `json:"title"`
+	States   []State  `json:"states"`
+	Title    Title    `json:"title"`
 }
 
-func GetButton(key string) (button Button, err error){
+func GetButton(key string) (button Button, err error) {
 	_, kv := natsconn.GetNATSConn()
 
 	entry, err := kv.Get(key)
@@ -58,7 +58,7 @@ func updateImageBuffer(key string, imagePath string) (err error) {
 
 	buf, _ := bimg.Read(imagePath)
 
-	_, err = kv.Put(key + ".buffer", buf)
+	_, err = kv.Put(key+".buffer", buf)
 
 	if err != nil {
 		if err == nats.ErrKeyExists {
@@ -89,7 +89,7 @@ func updateSettings(buttonKey string, settings Settings) (err error) {
 		return err
 	}
 
-	_, err = kv.Create(buttonKey + ".settings", json)
+	_, err = kv.Create(buttonKey+".settings", json)
 
 	if err != nil {
 		if err == nats.ErrKeyExists {
@@ -120,7 +120,7 @@ func updateStateId(buttonKey string, id int) (err error) {
 		return err
 	}
 
-	_, err = kv.Create(buttonKey + ".state", data)
+	_, err = kv.Create(buttonKey+".state", data)
 
 	if err != nil {
 		if err == nats.ErrKeyExists {
@@ -140,9 +140,7 @@ func updateTitle(buttonKey string, title Title) (err error) {
 	_, kv := natsconn.GetNATSConn()
 	log.Printf("Setting title to: %+v", title)
 	// TODO
-	data := Title{
-
-	}
+	data := Title{}
 
 	// Serialize the Profile struct to JSON
 	json, err := json.Marshal(data)
@@ -152,7 +150,7 @@ func updateTitle(buttonKey string, title Title) (err error) {
 		return err
 	}
 
-	_, err = kv.Create(buttonKey + ".title", json)
+	_, err = kv.Create(buttonKey+".title", json)
 
 	if err != nil {
 		if err == nats.ErrKeyExists {
@@ -215,10 +213,4 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 	log.Printf("Created button: %v", buttonId)
 
 	return nil
-}
-
-
-// TODO
-func UpdateButton(key string) {
-	updateImageBuffer(key, "./assets/images/red.jpg")
 }

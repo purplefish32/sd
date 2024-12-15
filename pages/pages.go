@@ -2,10 +2,7 @@ package pages
 
 import (
 	"encoding/json"
-	"fmt"
-	natsconn "sd/nats"
-	"sd/streamdeck/xl/buttons"
-	"sync"
+	"sd/natsconn"
 
 	"github.com/google/uuid"
 	"github.com/karalabe/hid"
@@ -21,7 +18,7 @@ type CurrentPage struct {
 	ID string `json:"id"` // Unique identifier for the profile
 }
 
-func GetCurrentPage(instanceId string, device *hid.Device, profileId string) (*Page, error) {
+func GetCurrentPage(instanceId string, device *hid.Device, profileId string) *Page {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current page
@@ -34,11 +31,11 @@ func GetCurrentPage(instanceId string, device *hid.Device, profileId string) (*P
 		if err == nats.ErrKeyNotFound {
 			log.Printf("No current page found for device: %s", device.Serial)
 
-			return nil, nil
+			return nil
 		}
 		log.Printf("Failed to get current page for device: %s, error: %v", device.Serial, err)
 
-		return nil, err
+		return nil
 	}
 
 	// Parse the value into a Page struct
@@ -47,7 +44,7 @@ func GetCurrentPage(instanceId string, device *hid.Device, profileId string) (*P
 	if err := json.Unmarshal(entry.Value(), &page); err != nil {
 		log.Error().Err(err).Msg("Failed to parse JSON")
 
-		return nil, err
+		return nil
 	}
 
 	log.Info().
@@ -57,14 +54,14 @@ func GetCurrentPage(instanceId string, device *hid.Device, profileId string) (*P
 		Str("page_id", page.ID).
 		Msg("Current page found")
 
-	return &page, nil
+	return &page
 }
 
 func SetCurrentPage(instanceId string, device *hid.Device, profileId string, pageId string) error {
 	_, kv := natsconn.GetNATSConn()
 
 	log.Printf("Setting current page for profile: %v", profileId)
-	
+
 	// Define the key for the current page
 	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages.current"
 
@@ -91,7 +88,7 @@ func SetCurrentPage(instanceId string, device *hid.Device, profileId string, pag
 	return nil
 }
 
-func CreatePage(instanceId string, device *hid.Device, profileId string) (pageId string, err error) {
+func CreatePage(instanceId string, device *hid.Device, profileId string) (page Page) {
 	_, kv := natsconn.GetNATSConn()
 	log.Printf("Creating Page for Instance: %v, device: %v, profile: %v", instanceId, device.Serial, profileId)
 
@@ -103,16 +100,16 @@ func CreatePage(instanceId string, device *hid.Device, profileId string) (pageId
 	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages." + idStr
 
 	// Define a new page.
-	page := Page{
+	p := Page{
 		ID: idStr,
 	}
 
 	// Serialize the Profile struct to JSON
-	data, err := json.Marshal(page)
+	data, err := json.Marshal(p)
 
 	if err != nil {
 		log.Printf("Failed to serialize page data: %v", err)
-		return "", err
+		return Page{}
 	}
 
 	// Put the serialized data into the KV store
@@ -124,64 +121,11 @@ func CreatePage(instanceId string, device *hid.Device, profileId string) (pageId
 		} else {
 			log.Printf("Failed to create key in KV store: %s %v", key, err)
 		}
-		return "", err
+		return Page{}
 	}
-
-	// Create the default button.
-	// button := buttons.Button{
-	// 	Plugin: "",
-	// 	Action: "",
-	// 	Image: "./assets/images/black.jpg",
-	// 	MetaData: buttons.ButtonMetadata{},
-	// }
-
-	// Convert button struct to JSON byte array
-	//buttonData, err := json.Marshal(button)
-
-	// if err != nil {
-	// 	log.Fatal("Error Marshaling button:", err)
-	// }
-
-	// Create all missing keys in JetStream KV.
-	var wg sync.WaitGroup // To wait for all goroutines to finish.
-
-	for i := 0; i < 32; i++ {
-		// Increment the WaitGroup counter.
-		wg.Add(1)
-
-		// Generate the key for the current iteration.
-		//key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages." + pageId + ".buttons." + fmt.Sprintf("%v", i)
-
-		// Launch a goroutine for each iteration.
-		go func(i int) {
-			defer wg.Done() // Decrement the counter when the goroutine finishes.
-
-			buttons.CreateButton(instanceId, device, profileId, idStr, fmt.Sprintf("%v", i))
-
-			// // Get the key-value entry.
-			// entry, err := kv.Get(key)
-			// if err != nil {
-			// 	log.Printf("Error getting key %s: %v", key, err)
-			// 	return
-			// }
-
-			// // Create the value (you can replace `buf` with the actual data you want to store).
-			// _, err = kv.Create(key, buttonData)
-			// if err != nil {
-			// 	log.Printf("Error creating key %s: %v", key, err)
-			// 	return
-			// }
-
-			// // Use the buffer (or call your utility function).
-			// utils.SetKeyFromBuffer(device, i, entry.Value())
-		}(i)
-	}
-
-	// Wait for all goroutines to complete.
-	wg.Wait()
 
 	log.Printf("Page created successfully: %+v", page)
 
-	// Return the page UUID.
-	return idStr, nil
+	// Return the page.
+	return p
 }
