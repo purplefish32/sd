@@ -2,8 +2,8 @@ package profiles
 
 import (
 	"encoding/json"
-	"sd/natsconn"
-	"sd/pages"
+	"sd/pkg/natsconn"
+	"sd/pkg/pages"
 
 	"github.com/google/uuid"
 	"github.com/karalabe/hid"

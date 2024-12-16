@@ -6,12 +6,13 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"sd/core"
-	"sd/instance"
-	"sd/plugins/browser"
-	"sd/plugins/command"
-	"sd/plugins/keyboard"
-	"sd/streamdeck"
+	"sd/pkg/core"
+	"sd/pkg/instance"
+	"sd/pkg/plugins/browser"
+	"sd/pkg/plugins/command"
+	"sd/pkg/plugins/keyboard"
+	"sd/pkg/streamdeck"
+	"sd/pkg/watchers"
 
 	"github.com/joho/godotenv"
 	"github.com/karalabe/hid"
@@ -50,6 +51,8 @@ func main() {
 		log.Info().Str("plugin", plugin.Name()).Msg("Plugin subscribed successfully")
 	}
 
+	go watchers.WatchForButtonChanges()
+
 	// Process each device type.
 	for _, streamDeckType := range streamdeck.StreamDeckTypes {
 		// Find all locally connected Stream Decks of the given type.
@@ -76,7 +79,7 @@ func main() {
 
 			// Initialize the device.
 			sd := streamdeck.New(instanceID, openDevice)
-			sd.Init()
+			go sd.Init()
 		}
 	}
 

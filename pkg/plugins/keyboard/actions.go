@@ -2,7 +2,7 @@ package keyboard
 
 import (
 	"encoding/json"
-	"sd/natsconn"
+	"sd/pkg/natsconn"
 
 	"github.com/go-vgo/robotgo"
 	"github.com/nats-io/nats.go"
@@ -10,14 +10,14 @@ import (
 )
 
 var msg struct {
-	Text   string `json:"text"`
+	Text string `json:"text"`
 }
 
 // Subscribe sets up the NATS subscription for this plugin.
 func SubscribeActionType(pluginNamespace string) {
 	nc, _ := natsconn.GetNATSConn()
 
-	nc.Subscribe(pluginNamespace + ".type", func(m *nats.Msg) {
+	nc.Subscribe(pluginNamespace+".type", func(m *nats.Msg) {
 
 		// Parse the incoming message.
 		if err := json.Unmarshal(m.Data, &msg); err != nil {

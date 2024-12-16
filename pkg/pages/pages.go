@@ -2,7 +2,7 @@ package pages
 
 import (
 	"encoding/json"
-	"sd/natsconn"
+	"sd/pkg/natsconn"
 
 	"github.com/google/uuid"
 	"github.com/karalabe/hid"

@@ -2,7 +2,7 @@ package buttons
 
 import (
 	"encoding/json"
-	"sd/natsconn"
+	"sd/pkg/natsconn"
 
 	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"

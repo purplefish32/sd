@@ -2,11 +2,11 @@ package watchers
 
 import (
 	"encoding/json"
-	"sd/actions"
-	"sd/natsconn"
-	"sd/pages"
-	"sd/profiles"
-	"sd/utils"
+	"sd/pkg/actions"
+	"sd/pkg/natsconn"
+	"sd/pkg/pages"
+	"sd/pkg/profiles"
+	"sd/pkg/utils"
 	"strconv"
 	"strings"
 

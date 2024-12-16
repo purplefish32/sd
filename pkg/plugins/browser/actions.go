@@ -1,24 +1,25 @@
-package command
+package browser
 
 import (
 	"encoding/json"
-	"os/exec"
-	"sd/actions"
-	"sd/natsconn"
+	"sd/pkg/actions"
+	"sd/pkg/natsconn"
+
+	b "github.com/pkg/browser"
+	"github.com/rs/zerolog/log"
 
 	"github.com/nats-io/nats.go"
-	"github.com/rs/zerolog/log"
 )
 
 type Settings struct {
-	Command string `json:"command"`
+	URL string `json:"url"`
 }
 
 // Subscribe sets up the NATS subscription for this plugin.
 func OpenSubscriber() {
 	nc, _ := natsconn.GetNATSConn()
 
-	if _, err := nc.Subscribe("sd.plugin.command.exec", func(m *nats.Msg) {
+	if _, err := nc.Subscribe("sd.plugin.browser.open", func(m *nats.Msg) {
 		log.Debug().Msg("Received message for browser plugin")
 
 		var actionInstance actions.ActionInstance
@@ -31,7 +32,6 @@ func OpenSubscriber() {
 
 		// Convert actionInstance.Settings to Settings
 		settingsMap, ok := actionInstance.Settings.(map[string]any)
-
 		if !ok {
 			log.Error().Msg("Settings is not a valid object")
 			return
@@ -45,48 +45,29 @@ func OpenSubscriber() {
 		}
 
 		var settings Settings
-
 		if err := json.Unmarshal(settingsBytes, &settings); err != nil {
 			log.Error().Err(err).Msg("Error unmarshaling settings to Settings")
 			return
 		}
 
 		// Validate URL
-		if settings.Command == "" {
-			log.Error().Msg("Command is empty")
+		if settings.URL == "" {
+			log.Error().Msg("URL is empty")
 			return
 		}
 
-		log.Debug().Msg(settings.Command)
+		// Open the URL in the default browser
+		log.Info().Msg("Open URL")
+		err = b.OpenURL(settings.URL)
 
-		cmd := exec.Command("sh", "-c", settings.Command)
-
-		if err := cmd.Run(); err != nil {
-			log.Error().Err(err).Msg("Can not run command")
+		if err != nil {
+			log.Error().Err(err).Msg("Cannot open URL")
+			return
 		}
 
+		// Log the successful URL opening
+		log.Info().Str("URL", settings.URL).Msg("Opened URL successfully")
 	}); err != nil {
-		log.Fatal().Err(err).Msg("Failed to subscribe to sd.plugin.command.exec")
+		log.Fatal().Err(err).Msg("Failed to subscribe to sd.plugin.browser.open")
 	}
-
-	// nc.Subscribe(pluginNamespace+".exec", func(m *nats.Msg) {
-	// 	log.Info().Msg("HI")
-
-	// 	// Parse the incoming message
-	// 	if err := json.Unmarshal(m.Data, &msg); err != nil {
-	// 		log.Error().Err(err).Msg("Error unmarshaling JSON")
-	// 		return
-	// 	}
-
-	// 	// Define the command.
-	// 	cmd := exec.Command("sh", "-c", msg.Command)
-
-	// 	log.Info().Msg(msg.Command)
-
-	// 	// Run the command.
-	// 	if err := cmd.Run(); err != nil {
-	// 		log.Error().Err(err).Msg("Can not run command")
-	// 	}
-
-	// })
 }

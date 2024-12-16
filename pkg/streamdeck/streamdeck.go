@@ -1,10 +1,11 @@
 package streamdeck
 
 import (
-	"sd/watchers"
-	"sd/xl"
+	"sd/pkg/pedal"
+	"sd/pkg/xl"
 
 	"github.com/karalabe/hid"
+	"github.com/rs/zerolog/log"
 )
 
 const ElgatoVendorID = 0x0fd9
@@ -19,9 +20,10 @@ var StreamDeckTypes = []streamdeckType{
 		Name:      "Stream Deck XL",
 		ProductID: 0x006c,
 	},
-	// {
-	// 	Name: "Pedal",
-	// },
+	{
+		Name:      "Stream Deck Pedal",
+		ProductID: 0x0086,
+	},
 	// {
 	// 	Name: "Plus",
 	// },
@@ -40,11 +42,16 @@ func New(instanceID string, device *hid.Device) StreamDeck {
 }
 
 func (sd StreamDeck) Init() {
-	go watchers.WatchForButtonChanges()
+	log.Warn().Msg(sd.device.Product)
 
 	if sd.device.Product == "Stream Deck XL" {
 		xl := xl.New(sd.instanceID, sd.device)
 		xl.Init()
+	}
+
+	if sd.device.Product == "Stream Deck Pedal" {
+		pedal := pedal.New(sd.instanceID, sd.device)
+		pedal.Init()
 	}
 }
 

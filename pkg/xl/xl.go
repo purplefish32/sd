@@ -2,12 +2,12 @@ package xl
 
 import (
 	"encoding/json"
-	"sd/actions"
-	"sd/natsconn"
-	"sd/pages"
-	"sd/profiles"
-	"sd/utils"
-	"sd/watchers"
+	"sd/pkg/actions"
+	"sd/pkg/natsconn"
+	"sd/pkg/pages"
+	"sd/pkg/profiles"
+	"sd/pkg/utils"
+	"sd/pkg/watchers"
 	"strconv"
 
 	"github.com/karalabe/hid"
