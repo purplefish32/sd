@@ -1,8 +1,8 @@
 package streamdeck
 
 import (
-	"sd/pkg/pedal"
-	"sd/pkg/xl"
+	"sd/pkg/streamdeck/pedal"
+	"sd/pkg/streamdeck/xl"
 
 	"github.com/karalabe/hid"
 	"github.com/rs/zerolog/log"

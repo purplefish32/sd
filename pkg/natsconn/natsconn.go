@@ -21,13 +21,13 @@ func GetNATSConn() (*nats.Conn, nats.KeyValue) {
 		env.LoadEnv()
 
 		// Get NATS server address from the .env file.
-		natsServer := os.Getenv("NATS_SERVER")
+		natsServer := env.Get("NATS_SERVER", "nats://127.0.0.1:4222")
 
 		if natsServer == "" {
 			log.Fatal().Msg("NATS_SERVER is not set in the .env file")
 		}
 
-		natsKVBucket := os.Getenv("NATS_KV_BUCKET")
+		natsKVBucket := env.Get("NATS_KV_BUCKET", "sd")
 
 		if natsServer == "" {
 			log.Fatal().Msg("NATS_KV_BUCKET is not set in the .env file")

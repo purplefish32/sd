@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"sd/cmd/cli/pkg/config"
 	"sd/pkg/instance"
 	"sd/pkg/natsconn"
 	"sd/pkg/util"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // lsCmd represents the ls command
@@ -17,7 +17,6 @@ var lsCmd = &cobra.Command{
 	Short: "List all instance IDs",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load the current configuration
-		conf, _ := config.LoadConfig()
 
 		// Connect to NATS.
 		_, kv := natsconn.GetNATSConn()
@@ -29,7 +28,7 @@ var lsCmd = &cobra.Command{
 		}
 
 		localInstanceId := instance.GetInstanceId()
-		currentInstanceId := conf.CurrentInstance
+		currentInstanceId := viper.GetString("current-instance")
 
 		// Extract unique instance IDs
 		instanceIDs := make(map[string]struct{}) // Use a map to ensure uniqueness
@@ -47,7 +46,7 @@ var lsCmd = &cobra.Command{
 
 		// Add rows
 		for id := range instanceIDs {
-			localMark := "" // Default: no mark
+			localMark := "REMOTE" // Default: no mark
 			if id == localInstanceId {
 				localMark = "LOCAL" // Mark the local instance with a star
 			}
