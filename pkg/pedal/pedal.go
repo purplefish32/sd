@@ -5,7 +5,7 @@ import (
 	"sd/pkg/actions"
 	"sd/pkg/natsconn"
 	"sd/pkg/profiles"
-	"sd/pkg/utils"
+	"sd/pkg/util"
 	"strconv"
 
 	"github.com/karalabe/hid"
@@ -65,7 +65,7 @@ func (pedal Pedal) Init() {
 		}
 
 		if n > 0 {
-			pressedButtons := utils.ParseEventBuffer(buf)
+			pressedButtons := util.ParseEventBuffer(buf)
 
 			// TODO implement long press.
 			for _, buttonIndex := range pressedButtons {
@@ -112,43 +112,3 @@ func (pedal Pedal) Init() {
 		}
 	}
 }
-
-// func Init(instanceID string, device *hid.Device) {
-// 	log.Info().Str("device_serial", device.Serial).Msg("Stream Deck Pedal Initialization")
-// 	nc, _ := natsconn.GetNATSConn()
-
-// 	// Buffer for outgoing events.
-// 	buf := make([]byte, 512)
-
-// 	for {
-// 		n, err := device.Read(buf)
-
-// 		if err != nil {
-// 			log.Error().Str("device_serial", device.Serial).Err(err).Msg("Unable to read buffer")
-// 			continue
-// 		}
-
-// 		if n > 0 {
-// 			pressedButtons := utils.ParseEventBuffer(buf)
-
-// 			if len(pressedButtons) > 0 {
-// 				for _, buttonIndex := range pressedButtons {
-
-// 					// Create a new buttonEvent struct for each pressed button
-// 					event := buttonEvent{
-// 						Id:         buttonIndex,
-// 						Type:       "Pedal",
-// 						Serial:     device.DeviceInfo.Serial,
-// 						InstanceID: instanceID,
-// 					}
-
-// 					// Marshal the event struct to JSON
-// 					eventJSON, _ := json.Marshal(event)
-
-// 					// Publish the JSON payload to the NATS topic
-// 					nc.Publish("sd.event", eventJSON)
-// 				}
-// 			}
-// 		}
-// 	}
-// }

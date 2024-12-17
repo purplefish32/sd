@@ -2,7 +2,7 @@ package subscribers
 
 import (
 	"encoding/json"
-	"sd/natsconn"
+	"sd/pkg/natsconn"
 
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"

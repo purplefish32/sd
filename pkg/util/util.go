@@ -1,9 +1,13 @@
-package utils
+package util
 
 import (
+	"io"
+
 	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
 	"github.com/rs/zerolog/log"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 const (
@@ -11,6 +15,20 @@ const (
 	ImageReportPayloadLength = 1016 // The size of each payload chunk
 	ImageReportHeaderLength  = 8    // The size of the header in the report
 )
+
+// NewTable creates a pre-configured tablewriter instance
+func NewTable(output io.Writer) *tablewriter.Table {
+	table := tablewriter.NewWriter(output)
+	table.SetBorder(false)
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetTablePadding("   ") // Add spacing for readability
+	table.SetNoWhiteSpace(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT}) // Left-align all columns
+	return table
+}
 
 func ParseEventBuffer(buf []byte) []int {
 	var pressedButtons []int

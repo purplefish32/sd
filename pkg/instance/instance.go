@@ -8,6 +8,29 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func GetInstanceId() string {
+	// Use a directory in the user's home folder
+	homeDir, err := os.UserHomeDir()
+
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error retrieving user home directory")
+	}
+
+	uuidDir := filepath.Join(homeDir, ".config/sd")
+	uuidFilePath := filepath.Join(uuidDir, "instance-id")
+
+	// Read the existing UUID
+	data, err := os.ReadFile(uuidFilePath)
+
+	uuid := string(data)
+
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error reading UUID file")
+		os.Exit(1)
+	}
+
+	return uuid
+}
 
 func GetOrCreateInstanceUUID() string {
 

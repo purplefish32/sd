@@ -6,7 +6,7 @@ import (
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
 	"sd/pkg/profiles"
-	"sd/pkg/utils"
+	"sd/pkg/util"
 	"sd/pkg/watchers"
 	"strconv"
 
@@ -84,7 +84,7 @@ func (xl XL) Init() {
 		}
 
 		if n > 0 {
-			pressedButtons := utils.ParseEventBuffer(buf)
+			pressedButtons := util.ParseEventBuffer(buf)
 
 			// TODO implement long press.
 			for _, buttonIndex := range pressedButtons {

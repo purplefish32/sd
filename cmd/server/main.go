@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"sd/pkg/core"
+	"sd/pkg/env"
 	"sd/pkg/instance"
 	"sd/pkg/plugins/browser"
 	"sd/pkg/plugins/command"
@@ -14,7 +15,6 @@ import (
 	"sd/pkg/streamdeck"
 	"sd/pkg/watchers"
 
-	"github.com/joho/godotenv"
 	"github.com/karalabe/hid"
 )
 
@@ -30,13 +30,8 @@ func main() {
 	// Retrieve or create the instance UUID.
 	instanceID := instance.GetOrCreateInstanceUUID()
 
-	// Load the .env file.
-	err := godotenv.Load()
-
-	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading .env file")
-		os.Exit(1) // Explicitly terminate the program.
-	}
+	// Load environment variables
+	env.LoadEnv()
 
 	// Register plugins.
 	registry := core.NewPluginRegistry()

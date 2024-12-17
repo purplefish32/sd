@@ -6,7 +6,7 @@ import (
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
 	"sd/pkg/profiles"
-	"sd/pkg/utils"
+	"sd/pkg/util"
 	"strconv"
 	"strings"
 
@@ -42,7 +42,7 @@ func WatchForButtonChanges() {
 		}
 
 		// TODO take into account multiple states ?
-		buf := utils.ConvertImageToBuffer(actionInstance.States[0].ImagePath)
+		buf := util.ConvertImageToBuffer(actionInstance.States[0].ImagePath)
 
 		// Put the serialized data into the KV store.
 		if _, err := kv.Put(string(update.Key())+".buffer", buf); err != nil {
@@ -106,7 +106,7 @@ func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 			}
 
 			// Update Key.
-			utils.SetKeyFromBuffer(device, id, update.Value())
+			util.SetKeyFromBuffer(device, id, update.Value())
 		case nats.KeyValueDelete:
 			log.Info().Str("key", update.Key()).Msg("Key deleted")
 		default:
