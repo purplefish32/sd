@@ -3,9 +3,9 @@ package streamdeck
 import (
 	"sd/pkg/streamdeck/pedal"
 	"sd/pkg/streamdeck/xl"
+	"sync"
 
 	"github.com/karalabe/hid"
-	"github.com/rs/zerolog/log"
 )
 
 const ElgatoVendorID = 0x0fd9
@@ -29,9 +29,27 @@ var StreamDeckTypes = []streamdeckType{
 	// },
 }
 
+var devices = struct {
+	sync.RWMutex
+	list map[string]*StreamDeck
+}{
+	list: make(map[string]*StreamDeck),
+}
+
 type StreamDeck struct {
 	instanceID string
 	device     *hid.Device
+}
+
+func RemoveDevice(devicePath string) {
+	devices.Lock()
+	defer devices.Unlock()
+
+	if sd, exists := devices.list[devicePath]; exists {
+		// Close the device and clean up resources.
+		sd.device.Close()
+		delete(devices.list, devicePath)
+	}
 }
 
 func New(instanceID string, device *hid.Device) StreamDeck {
@@ -42,8 +60,6 @@ func New(instanceID string, device *hid.Device) StreamDeck {
 }
 
 func (sd StreamDeck) Init() {
-	log.Warn().Msg(sd.device.Product)
-
 	if sd.device.Product == "Stream Deck XL" {
 		xl := xl.New(sd.instanceID, sd.device)
 		xl.Init()

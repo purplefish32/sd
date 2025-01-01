@@ -12,10 +12,7 @@ import (
 	"sd/pkg/plugins/browser"
 	"sd/pkg/plugins/command"
 	"sd/pkg/plugins/keyboard"
-	"sd/pkg/streamdeck"
 	"sd/pkg/watchers"
-
-	"github.com/karalabe/hid"
 )
 
 func main() {
@@ -46,37 +43,8 @@ func main() {
 		log.Info().Str("plugin", plugin.Name()).Msg("Plugin subscribed successfully")
 	}
 
-	go watchers.WatchForButtonChanges()
-
-	// Process each device type.
-	for _, streamDeckType := range streamdeck.StreamDeckTypes {
-		// Find all locally connected Stream Decks of the given type.
-		devices := hid.Enumerate(streamdeck.ElgatoVendorID, streamDeckType.ProductID)
-
-		if len(devices) == 0 {
-			log.Warn().Msg("No Stream Decks connected")
-			return
-		}
-
-		// Process each Stream Deck type.
-		for _, device := range devices {
-			log.Info().Interface("device", device).Msg("Stream Deck found")
-
-			// Open the device.
-			openDevice, err := hid.DeviceInfo.Open(device)
-
-			if err != nil {
-				log.Error().Err(err).Str("device_name", streamDeckType.Name).Msg("Failed to open Device")
-				return
-			}
-
-			log.Info().Interface("stream_deck", openDevice).Msg("Stream Deck opened")
-
-			// Initialize the device.
-			sd := streamdeck.New(instanceID, openDevice)
-			go sd.Init()
-		}
-	}
+	// Start watching for Stream Deck devices.
+	go watchers.WatchForStreamDecks(instanceID)
 
 	// Keep the main program running.
 	select {}

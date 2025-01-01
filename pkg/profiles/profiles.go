@@ -69,7 +69,7 @@ func CreateProfile(instanceID string, device *hid.Device, name string) (profile 
 	return p, nil
 }
 
-func GetCurrentProfile(instanceId string, device *hid.Device) *Profile {
+func GetCurrentProfile(instanceId string, device *hid.Device) *Profile { // TODO move this to the device.
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current profile
@@ -104,11 +104,11 @@ func GetCurrentProfile(instanceId string, device *hid.Device) *Profile {
 	return &profile
 }
 
-func SetCurrentProfile(instanceId string, device *hid.Device, profileId string) error {
+func SetCurrentProfile(instanceId string, deviceId string, profileId string) error {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles.current"
+	key := "instances." + instanceId + ".devices." + deviceId + ".profiles.current"
 
 	currentProfile := CurrentProfile{
 		ID: profileId,
@@ -126,7 +126,7 @@ func SetCurrentProfile(instanceId string, device *hid.Device, profileId string) 
 	if _, err := kv.Put(key, data); err != nil {
 		log.Error().
 			Str("instance_id", instanceId).
-			Str("device_serial", device.Serial).
+			Str("device_id", deviceId).
 			Err(err).
 			Msg("Failed to set current profile")
 
@@ -135,7 +135,7 @@ func SetCurrentProfile(instanceId string, device *hid.Device, profileId string) 
 
 	log.Info().
 		Str("instance_id", instanceId).
-		Str("device_serial", device.Serial).
+		Str("device_id", deviceId).
 		Msg("Current profile set successfully")
 
 	return nil

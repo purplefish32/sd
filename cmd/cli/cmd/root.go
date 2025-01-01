@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"sd/cmd/cli/cmd/button"
 	"sd/cmd/cli/cmd/device"
 	"sd/cmd/cli/cmd/page"
 	"sd/cmd/cli/cmd/profile"
@@ -45,4 +46,5 @@ func init() {
 	rootCmd.AddCommand(device.NewCmd())
 	rootCmd.AddCommand(page.NewCmd())
 	rootCmd.AddCommand(profile.NewCmd())
+	rootCmd.AddCommand(button.NewCmd())
 }

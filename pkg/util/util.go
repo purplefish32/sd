@@ -57,8 +57,7 @@ func ParseEventBuffer(buf []byte) []int {
 	return pressedButtons
 }
 
-func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) bool {
-	log.Debug().Msg("Button buffer changed")
+func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) {
 
 	// Calculate the total length of the image data
 	content := buffer
@@ -111,24 +110,23 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) bool {
 			_, err := device.Write(finalPayload)
 			if err != nil {
 				log.Printf("Error writing to device: %v", err)
-				return false
+				return err
 			}
 
 			remainingBytes -= sliceLength
 			iteration++
 		}
-		return true
+		return err
 	}
-	return false
+	return nil
 }
 
-func ConvertImageToBuffer(imagePath string) []byte {
+func ConvertImageToBuffer(imagePath string) (buffer []byte, err error) {
 
 	// Read the image file into a buffer using bimg
-	buffer, err := bimg.Read(imagePath)
+	buffer, err = bimg.Read(imagePath)
 	if err != nil {
-		log.Error().Err(err).Msg("Cannot read image.")
-		return nil
+		return buffer, err
 	}
 
 	// Create an image object
@@ -138,8 +136,7 @@ func ConvertImageToBuffer(imagePath string) []byte {
 	resizedImage, err := image.Resize(96, 96)
 
 	if err != nil {
-		log.Error().Err(err).Msg("Error resizing image")
-		return nil
+		return buffer, err
 	}
 
 	// Rotate the image 180 deg.
@@ -149,9 +146,8 @@ func ConvertImageToBuffer(imagePath string) []byte {
 	finalImage, _ := bimg.NewImage(rotatedImage).Convert(bimg.JPEG)
 
 	if err != nil {
-		log.Error().Err(err).Msg("Error rotating image")
-		return nil
+		return buffer, err
 	}
 
-	return finalImage
+	return finalImage, nil
 }

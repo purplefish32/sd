@@ -18,6 +18,8 @@ type Pedal struct {
 	device     *hid.Device
 }
 
+var ProductID uint16 = 0x0086
+
 func New(instanceID string, device *hid.Device) Pedal {
 	return Pedal{
 		instanceID: instanceID,
@@ -28,7 +30,7 @@ func New(instanceID string, device *hid.Device) Pedal {
 func (pedal Pedal) Init() {
 	log.Info().
 		Str("device_serial", pedal.device.Serial).
-		Msg("Stream Deck XL Initialization")
+		Msg("Stream Deck Pedal Initialization")
 
 	currentProfile := profiles.GetCurrentProfile(pedal.instanceID, pedal.device)
 
@@ -42,7 +44,7 @@ func (pedal Pedal) Init() {
 		log.Info().Str("profileId", profile.ID).Msg("Profile created")
 
 		// Set the profile as the current profile.
-		profiles.SetCurrentProfile(pedal.instanceID, pedal.device, profile.ID)
+		profiles.SetCurrentProfile(pedal.instanceID, pedal.device.Serial, profile.ID)
 	}
 
 	currentProfile = profiles.GetCurrentProfile(pedal.instanceID, pedal.device)
@@ -57,12 +59,12 @@ func (pedal Pedal) Init() {
 
 	// Listen for incoming device input.
 	for {
-		n, err := pedal.device.Read(buf)
+		n, _ := pedal.device.Read(buf)
 
-		if err != nil {
-			log.Error().Err(err).Msg("Error reading from Stream Deck")
-			continue
-		}
+		// if err != nil {
+		// 	log.Error().Err(err).Msg("Error reading from Stream Deck")
+		// 	continue
+		// }
 
 		if n > 0 {
 			pressedButtons := util.ParseEventBuffer(buf)

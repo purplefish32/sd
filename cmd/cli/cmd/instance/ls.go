@@ -16,8 +16,6 @@ var lsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List all instance IDs",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Load the current configuration
-
 		// Connect to NATS.
 		_, kv := natsconn.GetNATSConn()
 
@@ -32,6 +30,7 @@ var lsCmd = &cobra.Command{
 
 		// Extract unique instance IDs
 		instanceIDs := make(map[string]struct{}) // Use a map to ensure uniqueness
+
 		for _, key := range entries {
 			parts := strings.Split(key, ".")
 			if len(parts) > 1 && parts[0] == "instances" {
@@ -39,7 +38,6 @@ var lsCmd = &cobra.Command{
 			}
 		}
 
-		// Create table
 		// Create table using the helper function
 		table := util.NewTable(cmd.OutOrStdout())
 		table.SetHeader([]string{"INSTANCE ID", "LOCAL", "CURRENT"})
