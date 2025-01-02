@@ -18,8 +18,6 @@ type Pedal struct {
 	device     *hid.Device
 }
 
-var ProductID uint16 = 0x0086
-
 func New(instanceID string, device *hid.Device) Pedal {
 	return Pedal{
 		instanceID: instanceID,
@@ -60,11 +58,6 @@ func (pedal Pedal) Init() {
 	// Listen for incoming device input.
 	for {
 		n, _ := pedal.device.Read(buf)
-
-		// if err != nil {
-		// 	log.Error().Err(err).Msg("Error reading from Stream Deck")
-		// 	continue
-		// }
 
 		if n > 0 {
 			pressedButtons := util.ParseEventBuffer(buf)

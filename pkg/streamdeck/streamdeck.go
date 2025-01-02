@@ -2,6 +2,7 @@ package streamdeck
 
 import (
 	"sd/pkg/streamdeck/pedal"
+	"sd/pkg/streamdeck/plus"
 	"sd/pkg/streamdeck/xl"
 	"sync"
 
@@ -9,25 +10,6 @@ import (
 )
 
 const ElgatoVendorID = 0x0fd9
-
-type streamdeckType struct {
-	Name      string
-	ProductID uint16
-}
-
-var StreamDeckTypes = []streamdeckType{
-	{
-		Name:      "Stream Deck XL",
-		ProductID: 0x006c,
-	},
-	{
-		Name:      "Stream Deck Pedal",
-		ProductID: 0x0086,
-	},
-	// {
-	// 	Name: "Plus",
-	// },
-}
 
 var devices = struct {
 	sync.RWMutex
@@ -65,20 +47,13 @@ func (sd StreamDeck) Init() {
 		xl.Init()
 	}
 
+	if sd.device.Product == "Stream Deck Plus" {
+		plus := plus.New(sd.instanceID, sd.device)
+		plus.Init()
+	}
+
 	if sd.device.Product == "Stream Deck Pedal" {
 		pedal := pedal.New(sd.instanceID, sd.device)
 		pedal.Init()
 	}
 }
-
-// func (sd StreamDeck) GetSerial() string {
-// 	return sd.serial
-// }
-
-// func (sd StreamDeck) GetProduct() string {
-// 	return sd.product
-// }
-
-// func (sd StreamDeck) GetProductID() uint16 {
-// 	return sd.productID
-// }

@@ -43,8 +43,8 @@ func main() {
 		log.Info().Str("plugin", plugin.Name()).Msg("Plugin subscribed successfully")
 	}
 
-	// Start watching for Stream Deck devices.
-	go watchers.WatchForStreamDecks(instanceID)
+	// Start watching Stream Deck devices.
+	go watchers.WatchStreamDecks(instanceID)
 
 	// Keep the main program running.
 	select {}

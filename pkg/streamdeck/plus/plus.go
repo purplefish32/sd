@@ -1,4 +1,4 @@
-package xl
+package plus
 
 import (
 	"encoding/json"
@@ -16,60 +16,60 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type XL struct {
+type Plus struct {
 	instanceID string
 	device     *hid.Device
 }
 
 var ProductID uint16 = 0x006c
 
-func New(instanceID string, device *hid.Device) XL {
-	return XL{
+func New(instanceID string, device *hid.Device) Plus {
+	return Plus{
 		instanceID: instanceID,
 		device:     device,
 	}
 }
 
-func (xl XL) Init() {
+func (plus Plus) Init() {
 	log.Info().
-		Str("device_serial", xl.device.Serial).
+		Str("device_serial", plus.device.Serial).
 		Msg("Stream Deck XL Initialization")
 
 	// Blank all keys.
-	BlankAllKeys(xl.device)
+	BlankAllKeys(plus.device)
 
-	currentProfile := profiles.GetCurrentProfile(xl.instanceID, xl.device)
+	currentProfile := profiles.GetCurrentProfile(plus.instanceID, plus.device)
 
 	// If no default profile exists, create one and set is as the default profile.
 	if currentProfile == nil {
 		log.Warn().Msg("Current profile not found creating one")
 
 		// Create a new profile.
-		profile, _ := profiles.CreateProfile(xl.instanceID, xl.device, "Default")
+		profile, _ := profiles.CreateProfile(plus.instanceID, plus.device, "Default")
 
 		log.Info().Str("profileId", profile.ID).Msg("Profile created")
 
 		// Set the profile as the current profile.
-		profiles.SetCurrentProfile(xl.instanceID, xl.device.Serial, profile.ID)
+		profiles.SetCurrentProfile(plus.instanceID, plus.device.Serial, profile.ID)
 	}
 
-	currentProfile = profiles.GetCurrentProfile(xl.instanceID, xl.device)
+	currentProfile = profiles.GetCurrentProfile(plus.instanceID, plus.device)
 
 	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
 
-	currentPage := pages.GetCurrentPage(xl.instanceID, xl.device, currentProfile.ID)
+	currentPage := pages.GetCurrentPage(plus.instanceID, plus.device, currentProfile.ID)
 
 	// If no default page exists, create one and set is as the default page for the given profile.
 	if currentPage == nil {
 		log.Warn().Msg("Current page not found creating one")
 
 		// Create a new page.
-		page := pages.CreatePage(xl.instanceID, xl.device, currentProfile.ID)
+		page := pages.CreatePage(plus.instanceID, plus.device, currentProfile.ID)
 
 		log.Info().Interface("page", page).Msg("Page created")
 
 		// Set the page as the current page.
-		pages.SetCurrentPage(xl.instanceID, xl.device, currentProfile.ID, page.ID)
+		pages.SetCurrentPage(plus.instanceID, plus.device, currentProfile.ID, page.ID)
 	}
 
 	// Buffer for outgoing events.
@@ -78,12 +78,12 @@ func (xl XL) Init() {
 	// Get NATS connection an KV store.
 	nc, kv := natsconn.GetNATSConn()
 
-	go WatchKVForButtonImageBufferChanges(xl.instanceID, xl.device)
+	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
 	go WatchForButtonChanges()
 
 	// Listen for incoming device input.
 	for {
-		n, _ := xl.device.Read(buf)
+		n, _ := plus.device.Read(buf)
 
 		if n > 0 {
 			pressedButtons := util.ParseEventBuffer(buf)
@@ -93,13 +93,13 @@ func (xl XL) Init() {
 
 				// Ignore button up event for now.
 				if buttonIndex == 0 {
-					log.Debug().Interface("device", xl.device).Int("button_index", buttonIndex).Msg("Button released")
+					log.Debug().Interface("device", plus.device).Int("button_index", buttonIndex).Msg("Button released")
 					continue
 				}
 
-				log.Debug().Interface("device", xl.device).Int("button_index", buttonIndex).Msg("Button pressed")
+				log.Debug().Interface("device", plus.device).Int("button_index", buttonIndex).Msg("Button pressed")
 
-				key := "instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
+				key := "instances." + plus.instanceID + ".devices." + plus.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
 
 				log.Debug().Msg(key)
 
@@ -136,18 +136,18 @@ func (xl XL) Init() {
 
 func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 	// Update Key.
-	util.SetKeyFromBuffer(device, keyId, buffer)
+	util.SetKeyFromBufferPlus(device, keyId, buffer)
 }
 
 func BlankAllKeys(device *hid.Device) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertImageToRotatedBuffer(assetPath+"images/black.jpg", 96)
+	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/black.jpg", 250)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
 	}
 
-	for i := 1; i <= 32; i++ {
+	for i := 1; i <= 8; i++ {
 		BlankKey(device, i, buffer)
 	}
 }
@@ -179,7 +179,7 @@ func WatchForButtonChanges() {
 		}
 
 		// TODO take into account multiple states ?
-		buf, err := util.ConvertImageToRotatedBuffer(actionInstance.States[0].ImagePath, 96)
+		buf, err := util.ConvertImageToBuffer(actionInstance.States[0].ImagePath, 250)
 
 		if err != nil {
 			log.Error().Err(err).Msg("Buffer error")
@@ -247,7 +247,7 @@ func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 			}
 
 			// Update Key.
-			util.SetKeyFromBuffer(device, id, update.Value())
+			util.SetKeyFromBufferPlus(device, id, update.Value())
 		case nats.KeyValueDelete:
 			log.Info().Str("key", update.Key()).Msg("Key deleted")
 		default:
