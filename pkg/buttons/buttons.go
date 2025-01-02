@@ -180,7 +180,7 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 		Action: "",
 		States: []State{
 			{
-				Image: "./assets/images/black.jpg",
+				Image: "./assets/images/black.png",
 			},
 		},
 	}

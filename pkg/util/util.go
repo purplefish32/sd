@@ -58,15 +58,12 @@ func ParseEventBuffer(buf []byte) []int {
 }
 
 func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) {
-
 	// Calculate the total length of the image data
 	content := buffer
 
 	remainingBytes := len(content)
 	iteration := 0
 
-	// Ensure the device is opened for communication
-	// device.Open() may not be necessary since you're passing a device object already open, but you can modify it based on your code
 	if device != nil {
 		for remainingBytes > 0 {
 			// Slice the image to fit into the payload size
@@ -107,6 +104,7 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) 
 			finalPayload := append(payload, padding...)
 
 			// Write the payload to the Stream Deck
+			log.Debug().Interface("device", device).Msg("XXX")
 			_, err := device.Write(finalPayload)
 			if err != nil {
 				log.Printf("Error writing to device: %v", err)

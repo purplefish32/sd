@@ -33,7 +33,7 @@ func New(instanceID string, device *hid.Device) Plus {
 func (plus Plus) Init() {
 	log.Info().
 		Str("device_serial", plus.device.Serial).
-		Msg("Stream Deck XL Initialization")
+		Msg("Stream Deck Plus Initialization")
 
 	// Blank all keys.
 	BlankAllKeys(plus.device)
@@ -78,8 +78,8 @@ func (plus Plus) Init() {
 	// Get NATS connection an KV store.
 	nc, kv := natsconn.GetNATSConn()
 
+	go WatchForButtonChanges(plus.device)
 	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
-	go WatchForButtonChanges()
 
 	// Listen for incoming device input.
 	for {
@@ -141,7 +141,7 @@ func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 
 func BlankAllKeys(device *hid.Device) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/black.jpg", 250)
+	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/black.png", 120)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
@@ -152,11 +152,11 @@ func BlankAllKeys(device *hid.Device) {
 	}
 }
 
-func WatchForButtonChanges() {
+func WatchForButtonChanges(device *hid.Device) {
 	_, kv := natsconn.GetNATSConn()
 
 	// Start watching the KV bucket for all button changes.
-	watcher, err := kv.Watch("instances.*.devices.*.profiles.*.pages.*.buttons.*")
+	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*")
 	defer watcher.Stop()
 
 	if err != nil {
@@ -179,7 +179,7 @@ func WatchForButtonChanges() {
 		}
 
 		// TODO take into account multiple states ?
-		buf, err := util.ConvertImageToBuffer(actionInstance.States[0].ImagePath, 250)
+		buf, err := util.ConvertImageToBuffer(actionInstance.States[0].ImagePath, 120)
 
 		if err != nil {
 			log.Error().Err(err).Msg("Buffer error")

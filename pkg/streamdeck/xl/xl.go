@@ -79,7 +79,7 @@ func (xl XL) Init() {
 	nc, kv := natsconn.GetNATSConn()
 
 	go WatchKVForButtonImageBufferChanges(xl.instanceID, xl.device)
-	go WatchForButtonChanges()
+	go WatchForButtonChanges(xl.device)
 
 	// Listen for incoming device input.
 	for {
@@ -141,7 +141,7 @@ func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 
 func BlankAllKeys(device *hid.Device) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertImageToRotatedBuffer(assetPath+"images/black.jpg", 96)
+	var buffer, err = util.ConvertImageToRotatedBuffer(assetPath+"images/black.png", 96)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
@@ -152,11 +152,11 @@ func BlankAllKeys(device *hid.Device) {
 	}
 }
 
-func WatchForButtonChanges() {
+func WatchForButtonChanges(device *hid.Device) {
 	_, kv := natsconn.GetNATSConn()
 
 	// Start watching the KV bucket for all button changes.
-	watcher, err := kv.Watch("instances.*.devices.*.profiles.*.pages.*.buttons.*")
+	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*")
 	defer watcher.Stop()
 
 	if err != nil {
