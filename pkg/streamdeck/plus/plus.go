@@ -104,12 +104,12 @@ func (plus Plus) Init() {
 				log.Debug().Msg(key)
 
 				// Get the associated data from the NATS KV Store.
-				entry, err := nats.KeyValue.Get(kv, key)
+				entry, _ := nats.KeyValue.Get(kv, key)
 
-				if err != nil {
-					log.Warn().Err(err).Msg("Failed to get value from KV store")
-					continue
-				}
+				// if err != nil {
+				// 	log.Warn().Err(err).Msg("Failed to get value from KV store")
+				// 	continue
+				// }
 
 				// Unmarshal the JSON into the Payload struct
 				var payload actions.ActionInstance
@@ -136,7 +136,7 @@ func (plus Plus) Init() {
 
 func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 	// Update Key.
-	util.SetKeyFromBufferPlus(device, keyId, buffer)
+	util.SetKeyFromBuffer(device, keyId, buffer)
 }
 
 func BlankAllKeys(device *hid.Device) {
@@ -156,7 +156,7 @@ func WatchForButtonChanges(device *hid.Device) {
 	_, kv := natsconn.GetNATSConn()
 
 	// Start watching the KV bucket for all button changes.
-	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*")
+	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*") // TODO handle the instances.
 	defer watcher.Stop()
 
 	if err != nil {
@@ -247,7 +247,7 @@ func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 			}
 
 			// Update Key.
-			util.SetKeyFromBufferPlus(device, id, update.Value())
+			util.SetKeyFromBuffer(device, id, update.Value())
 		case nats.KeyValueDelete:
 			log.Info().Str("key", update.Key()).Msg("Key deleted")
 		default:

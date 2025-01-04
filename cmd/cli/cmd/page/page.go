@@ -11,7 +11,7 @@ func NewCmd() *cobra.Command {
 	// Create a new command group for 'instance' and add 'ls' as a subcommand
 	cmd := &cobra.Command{
 		Use:   "page",
-		Short: "Commands related to pages",
+		Short: "Manage pages",
 	}
 
 	cmd.AddCommand(lsCmd)

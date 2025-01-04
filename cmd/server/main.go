@@ -46,6 +46,7 @@ func main() {
 	// Start watching Stream Deck devices.
 	go watchers.WatchStreamDecks(instanceID)
 
+	log.Info().Msg("Watching Stream Decks")
 	// Keep the main program running.
 	select {}
 }

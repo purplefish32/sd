@@ -11,7 +11,7 @@ func NewCmd() *cobra.Command {
 	// Create a new command group for 'instance' and add 'ls' as a subcommand
 	cmd := &cobra.Command{
 		Use:   "button",
-		Short: "Commands related to buttons",
+		Short: "Manage buttons",
 	}
 
 	cmd.AddCommand(getCmd)

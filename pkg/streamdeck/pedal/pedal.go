@@ -78,12 +78,12 @@ func (pedal Pedal) Init() {
 				log.Debug().Msg(key)
 
 				// Get the associated data from the NATS KV Store.
-				entry, err := nats.KeyValue.Get(kv, key)
+				entry, _ := nats.KeyValue.Get(kv, key)
 
-				if err != nil {
-					log.Warn().Err(err).Msg("Failed to get value from KV store")
-					continue
-				}
+				// if err != nil {
+				// 	log.Warn().Err(err).Msg("Failed to get value from KV store")
+				// 	continue
+				// }
 
 				// Unmarshal the JSON into the Payload struct
 				var payload actions.ActionInstance

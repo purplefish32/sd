@@ -44,6 +44,7 @@ func WatchStreamDecks(instanceID string) {
 
 				// Open the device
 				openDevice, err := device.Open()
+
 				if err != nil {
 					log.Error().Err(err).Str("device", deviceKey).Msg("Failed to open device")
 					continue

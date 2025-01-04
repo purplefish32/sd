@@ -104,12 +104,12 @@ func (xl XL) Init() {
 				log.Debug().Msg(key)
 
 				// Get the associated data from the NATS KV Store.
-				entry, err := nats.KeyValue.Get(kv, key)
+				entry, _ := nats.KeyValue.Get(kv, key)
 
-				if err != nil {
-					log.Warn().Err(err).Msg("Failed to get value from KV store")
-					continue
-				}
+				// if err != nil {
+				// 	log.Warn().Err(err).Msg("Failed to get value from KV store")
+				// 	continue
+				// }
 
 				// Unmarshal the JSON into the Payload struct
 				var payload actions.ActionInstance
@@ -156,7 +156,7 @@ func WatchForButtonChanges(device *hid.Device) {
 	_, kv := natsconn.GetNATSConn()
 
 	// Start watching the KV bucket for all button changes.
-	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*")
+	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*") // TODO handle the instances.
 	defer watcher.Stop()
 
 	if err != nil {
