@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"sd/pkg/instance"
+	"sd/pkg/pages"
+	"sd/pkg/profiles"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -25,18 +27,18 @@ type model struct {
 	showInstancePicker bool
 }
 
-func Model() model {
+// initialModel initializes the state of the app
+func initialModel() model {
 	return model{
 		currentInstance:    instance.GetOrCreateInstanceUUID(),
-		deviceSelector:     NewDeviceSelector(),
-		instanceSelector:   NewInstanceSelector(),
 		currentDevice:      "None",
 		currentProfile:     "None",
 		currentPage:        "None",
 		currentButton:      "None",
-		showDevicePicker:   false, // Start with device picker hidden
-		showInstancePicker: false, // Start with instance picker hidden
-
+		showDevicePicker:   false,
+		showInstancePicker: false,
+		deviceSelector:     NewDeviceSelector(),
+		instanceSelector:   NewInstanceSelector(),
 	}
 }
 
@@ -49,44 +51,59 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
-	// Update instanceSelector and deviceSelector based on the active picker
-	if m.showInstancePicker {
-		m.instanceSelector, cmd = m.instanceSelector.Update(msg)
-	} else if m.showDevicePicker {
-		m.deviceSelector, cmd = m.deviceSelector.Update(msg)
+	// Handle the update for the device selector
+	if m.showDevicePicker {
+		// Update the device selector
+		cmd = m.deviceSelector.Update(msg)
+
+		// If a device is selected, update the model state
+		if device, ok := msg.(DeviceSelected); ok {
+			m.currentDevice = string(device)
+			// Process the profile and page updates here if needed
+			profile := profiles.GetCurrentProfile(m.currentInstance, m.currentDevice)
+			if profile != nil {
+				m.currentProfile = profile.ID
+				page := pages.GetCurrentPage(m.currentInstance, m.currentDevice, m.currentProfile)
+				if page != nil {
+					m.currentPage = page.ID
+				} else {
+					m.currentPage = "Not found"
+				}
+			} else {
+				m.currentProfile = "Not found"
+				m.currentPage = "Not found"
+			}
+			// Close the device picker after selection
+			m.showDevicePicker = false
+		}
 	}
 
-	// Handle key messages for selecting or quitting
+	// Handle the update for the instance selector
+	if m.showInstancePicker {
+		// Update the instance selector
+		cmd = m.instanceSelector.Update(msg)
+
+		// If an instance is selected, update the model state
+		if device, ok := msg.(InstanceSelected); ok {
+			m.currentInstance = string(device)
+
+			// Close the device picker after selection
+			m.showInstancePicker = false
+		}
+	}
+
+	// Handle other messages (e.g., quit, toggling pickers)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
 			return m, tea.Quit
 		case "i":
-			// Toggle the instance picker visibility
 			m.showInstancePicker = !m.showInstancePicker
-			m.showDevicePicker = false // Hide device picker when showing instance picker
+			m.showDevicePicker = false
 		case "d":
-			// Toggle the device picker visibility
 			m.showDevicePicker = !m.showDevicePicker
-			m.showInstancePicker = false // Hide instance picker when showing device picker
-		case "enter":
-			// Select instance and device, hide the overlays
-			if m.showInstancePicker {
-				i, ok := m.instanceSelector.list.SelectedItem().(Item)
-				if ok {
-					m.currentInstance = string(i)
-				}
-				m.showInstancePicker = false
-			}
-
-			if m.showDevicePicker {
-				d, ok := m.deviceSelector.list.SelectedItem().(Item)
-				if ok {
-					m.currentDevice = string(d)
-				}
-				m.showDevicePicker = false
-			}
+			m.showInstancePicker = false
 		}
 	}
 
@@ -96,7 +113,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the current view based on the state
 func (m model) View() string {
 	if m.showInstancePicker {
-		// Show the overlay for the device picker
+		// Show the overlay for the instance picker
 		return overlayStyle.Render("\n" + m.instanceSelector.View())
 	}
 
@@ -126,8 +143,7 @@ func main() {
 	log.Logger = zerolog.New(io.Discard)
 
 	// Create the initial model and run the program
-	m := Model()
-	p := tea.NewProgram(m)
+	p := tea.NewProgram(initialModel())
 
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error running program:", err)

@@ -30,7 +30,7 @@ func (pedal Pedal) Init() {
 		Str("device_serial", pedal.device.Serial).
 		Msg("Stream Deck Pedal Initialization")
 
-	currentProfile := profiles.GetCurrentProfile(pedal.instanceID, pedal.device)
+	currentProfile := profiles.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
 
 	// If no default profile exists, create one and set is as the default profile.
 	if currentProfile == nil {
@@ -45,7 +45,7 @@ func (pedal Pedal) Init() {
 		profiles.SetCurrentProfile(pedal.instanceID, pedal.device.Serial, profile.ID)
 	}
 
-	currentProfile = profiles.GetCurrentProfile(pedal.instanceID, pedal.device)
+	currentProfile = profiles.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
 
 	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
 

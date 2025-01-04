@@ -18,22 +18,22 @@ type CurrentPage struct {
 	ID string `json:"id"` // Unique identifier for the profile
 }
 
-func GetCurrentPage(instanceId string, device *hid.Device, profileId string) *Page {
+func GetCurrentPage(instanceId string, deviceId string, profileId string) *Page {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current page
-	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages.current"
+	key := "instances." + instanceId + ".devices." + deviceId + ".profiles." + profileId + ".pages.current"
 
 	// Get current page and page
 	entry, err := kv.Get(key)
 
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
-			log.Printf("No current page found for device: %s", device.Serial)
+			log.Printf("No current page found for device: %s", deviceId)
 
 			return nil
 		}
-		log.Printf("Failed to get current page for device: %s, error: %v", device.Serial, err)
+		log.Printf("Failed to get current page for device: %s, error: %v", deviceId, err)
 
 		return nil
 	}
@@ -49,7 +49,7 @@ func GetCurrentPage(instanceId string, device *hid.Device, profileId string) *Pa
 
 	log.Info().
 		Str("instance_id", instanceId).
-		Str("device_serial", device.Serial).
+		Str("device_serial", deviceId).
 		Str("profile_id", profileId).
 		Str("page_id", page.ID).
 		Msg("Current page found")

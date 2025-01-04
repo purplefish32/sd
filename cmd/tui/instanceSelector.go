@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,14 +18,15 @@ func (i Instance) FilterValue() string {
 
 // InstanceSelector represents the state of the instance picker overlay
 type InstanceSelector struct {
-	list list.Model
+	list         list.Model
+	selectedItem string
 }
 
 // Instances list (note: using Item type here)
 var instances = []list.Item{
-	Item("Instance 1"),
-	Item("Instance 2"),
-	Item("Instance 3"),
+	Instance("Instance 1"),
+	Instance("Instance 2"),
+	Instance("Instance 3"),
 }
 
 // NewInstanceSelector creates a new instance of InstanceSelector
@@ -42,20 +42,42 @@ func NewInstanceSelector() InstanceSelector {
 }
 
 // Init is required by the tea.Model interface, but not used in this case
-func (ds InstanceSelector) Init() tea.Cmd {
+func (s InstanceSelector) Init() tea.Cmd {
 	return nil
 }
 
+func (s InstanceSelector) SelectedInstance() string {
+	return s.selectedItem
+}
+
+// Define a custom message type for when a device is selected
+type InstanceSelected string
+
 // Update processes messages and updates the state of the instance selector
-func (ds InstanceSelector) Update(msg tea.Msg) (InstanceSelector, tea.Cmd) {
+func (s *InstanceSelector) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
-	ds.list, cmd = ds.list.Update(msg)
-	return ds, cmd
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			// When an instance is selected, store it
+			selected, ok := s.list.SelectedItem().(Instance)
+			if ok {
+				s.selectedItem = string(selected)
+			}
+			// Return a command that signals the parent model to handle the selected device
+			return func() tea.Msg {
+				return InstanceSelected(s.selectedItem) // Custom message to signal parent model
+			}
+		}
+	}
+	s.list, cmd = s.list.Update(msg)
+	return cmd
 }
 
 // View renders the instance selector as a string, including the list of instances
-func (ds InstanceSelector) View() string {
-	return popupStyle.Render(ds.list.View())
+func (s InstanceSelector) View() string {
+	return s.list.View()
 }
 
 // instanceDelegate handles rendering of each item in the instance selection list
@@ -66,19 +88,15 @@ func (d instanceDelegate) Spacing() int                            { return 0 }
 func (d instanceDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 
 func (d instanceDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(Item)
+	i, ok := listItem.(Instance)
 	if !ok {
 		return
 	}
 
 	str := fmt.Sprint(i)
-
-	fn := itemStyle.Render
 	if index == m.Index() {
-		fn = func(s ...string) string {
-			return selectedItemStyle.Render("> " + strings.Join(s, " "))
-		}
+		str = "> " + str // Add a ">" prefix for the selected item
 	}
 
-	fmt.Fprint(w, fn(str))
+	fmt.Fprint(w, str)
 }

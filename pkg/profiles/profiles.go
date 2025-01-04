@@ -69,21 +69,21 @@ func CreateProfile(instanceID string, device *hid.Device, name string) (profile 
 	return p, nil
 }
 
-func GetCurrentProfile(instanceId string, device *hid.Device) *Profile { // TODO move this to the device.
+func GetCurrentProfile(instanceId string, deviceId string) *Profile { // TODO move this to the device.
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles.current"
+	key := "instances." + instanceId + ".devices." + deviceId + ".profiles.current"
 
 	// Get current profile and page
 	entry, err := kv.Get(key)
 
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
-			log.Error().Err(err).Str("device_serial", device.Serial).Msg("No NATS key for current profile found")
+			log.Error().Err(err).Str("device_serial", deviceId).Msg("No NATS key for current profile found")
 			return nil
 		}
-		log.Error().Err(err).Str("device_serial", device.Serial).Msg("Failed to get current profile")
+		log.Error().Err(err).Str("device_serial", deviceId).Msg("Failed to get current profile")
 		return nil
 	}
 
@@ -97,7 +97,7 @@ func GetCurrentProfile(instanceId string, device *hid.Device) *Profile { // TODO
 
 	log.Info().
 		Str("instance_id", instanceId).
-		Str("device_serial", device.Serial).
+		Str("device_serial", deviceId).
 		Str("profile_id", profile.ID).
 		Msg("Current profile found")
 

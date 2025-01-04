@@ -38,7 +38,7 @@ func (plus Plus) Init() {
 	// Blank all keys.
 	BlankAllKeys(plus.device)
 
-	currentProfile := profiles.GetCurrentProfile(plus.instanceID, plus.device)
+	currentProfile := profiles.GetCurrentProfile(plus.instanceID, plus.device.Serial)
 
 	// If no default profile exists, create one and set is as the default profile.
 	if currentProfile == nil {
@@ -53,11 +53,11 @@ func (plus Plus) Init() {
 		profiles.SetCurrentProfile(plus.instanceID, plus.device.Serial, profile.ID)
 	}
 
-	currentProfile = profiles.GetCurrentProfile(plus.instanceID, plus.device)
+	currentProfile = profiles.GetCurrentProfile(plus.instanceID, plus.device.Serial)
 
 	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
 
-	currentPage := pages.GetCurrentPage(plus.instanceID, plus.device, currentProfile.ID)
+	currentPage := pages.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
 
 	// If no default page exists, create one and set is as the default page for the given profile.
 	if currentPage == nil {
@@ -200,8 +200,8 @@ func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 
 	_, kv := natsconn.GetNATSConn()
 
-	currentProfile := profiles.GetCurrentProfile(instanceId, device)
-	currentPage := pages.GetCurrentPage(instanceId, device, currentProfile.ID)
+	currentProfile := profiles.GetCurrentProfile(instanceId, device.Serial)
+	currentPage := pages.GetCurrentPage(instanceId, device.Serial, currentProfile.ID)
 
 	// Start watching the KV bucket for updates for a specific profile and page.
 	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
