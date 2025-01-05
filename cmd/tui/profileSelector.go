@@ -50,13 +50,13 @@ func NewProfileSelector(instanceID string, deviceID string) ProfileSelector {
 		deviceID:   deviceID,
 	}
 
-	// Fetch profiles using the new method
 	profiles := selector.FetchProfiles()
 
 	profileList := list.New(profiles, profileDelegate{}, 20, 14)
-	profileList.Title = "Select a Profile"
+	profileList.Title = TitleStyle.Render("Select a Profile")
 	profileList.SetShowStatusBar(false)
 	profileList.SetFilteringEnabled(false)
+	profileList.Styles.Title = TitleStyle
 
 	selector.list = profileList
 	return selector
@@ -80,6 +80,10 @@ func (s *ProfileSelector) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "esc":
+			return func() tea.Msg {
+				return ProfileSelected("")
+			}
 		case "enter":
 			// When a profile is selected, store it
 			selected, ok := s.list.SelectedItem().(ProfileItem)
@@ -103,7 +107,7 @@ func (s *ProfileSelector) Update(msg tea.Msg) tea.Cmd {
 
 // View renders the profile selector as a string, including the list of profiles
 func (s ProfileSelector) View() string {
-	return s.list.View()
+	return ListStyle.Render(s.list.View())
 }
 
 // profileDelegate handles rendering of each item in the profile selection list

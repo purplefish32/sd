@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"sd/pkg/natsconn"
 
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
@@ -11,7 +13,8 @@ import (
 )
 
 type Page struct {
-	ID string `json:"id"` // Unique identifier for the page
+	ID   string `json:"id"`   // Unique identifier for the page
+	Name string `json:"name"` // Display name for the page
 }
 
 type CurrentPage struct {
@@ -128,4 +131,61 @@ func CreatePage(instanceId string, device *hid.Device, profileId string) (page P
 
 	// Return the page.
 	return p
+}
+
+func GetPages(instanceId string, deviceId string, profileId string) ([]Page, error) {
+	_, kv := natsconn.GetNATSConn()
+
+	// Define the key prefix to search for pages
+	prefix := "instances." + instanceId + ".devices." + deviceId + ".profiles." + profileId + ".pages."
+
+	// List the keys in the NATS KV store under the given prefix
+	keyLister, err := kv.ListKeys()
+	if err != nil {
+		log.Error().Err(err).Msg("Could not list NATS KV keys")
+		return nil, err
+	}
+
+	// Initialize a slice to store the pages
+	var pages []Page
+
+	// Iterate over the keys from the channel
+	for key := range keyLister.Keys() {
+		// If the key doesn't start with the prefix, skip it
+		if !strings.HasPrefix(key, prefix) {
+			continue
+		}
+
+		// Skip the current page key
+		if strings.HasSuffix(key, ".current") {
+			continue
+		}
+
+		// Ensure we're not getting nested items
+		if strings.Count(key[len(prefix):], ".") > 0 {
+			continue
+		}
+
+		// Fetch the page data for each key
+		val, err := kv.Get(key)
+		if err != nil {
+			log.Error().Err(err).Str("key", key).Msg("Failed to get value for key")
+			continue
+		}
+
+		// Parse the page data
+		var page Page
+		err = json.Unmarshal(val.Value(), &page)
+		if err != nil {
+			log.Error().Err(err).Str("key", key).Msg("Failed to unmarshal page data")
+			continue
+		}
+
+		// Append the page to the list
+		pages = append(pages, page)
+	}
+
+	log.Info().Interface("pages", pages).Msg("Retrieved pages")
+
+	return pages, nil
 }

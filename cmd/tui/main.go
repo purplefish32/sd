@@ -8,7 +8,6 @@ import (
 	"sd/pkg/profiles"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -19,6 +18,7 @@ type model struct {
 	deviceSelector       DeviceSelector
 	instanceSelector     InstanceSelector
 	profileSelector      ProfileSelector
+	pageSelector         PageSelector
 	currentDevice        string
 	currentProfile       string
 	currentPage          string
@@ -26,6 +26,7 @@ type model struct {
 	showInstanceSelector bool
 	showDeviceSelector   bool
 	showProfileSelector  bool
+	showPageSelector     bool
 }
 
 // Getter for currentInstance
@@ -49,11 +50,13 @@ func initialModel() model {
 		showInstanceSelector: false,
 		showDeviceSelector:   false,
 		showProfileSelector:  false,
+		showPageSelector:     false,
 		instanceSelector:     NewInstanceSelector(),
 		deviceSelector:       NewDeviceSelector(),
 	}
 	// Initialize profileSelector after m is created
 	m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
+	m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
 	return m
 }
 
@@ -120,9 +123,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// If a profile is selected, update the model state
 		if device, ok := msg.(ProfileSelected); ok {
 			m.currentProfile = string(device)
+			// Recreate the page selector with the new profile
+			m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
 
 			// Close the profile selector after selection
 			m.showProfileSelector = false
+		}
+	}
+
+	// Handle the update for the page selector
+	if m.showPageSelector {
+		cmd = m.pageSelector.Update(msg)
+		if page, ok := msg.(PageSelected); ok {
+			m.currentPage = string(page)
+			m.showPageSelector = false
 		}
 	}
 
@@ -144,6 +158,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showProfileSelector = !m.showProfileSelector
 			m.showInstanceSelector = false
 			m.showDeviceSelector = false
+		case "g":
+			m.showPageSelector = !m.showPageSelector
+			m.showInstanceSelector = false
+			m.showDeviceSelector = false
+			m.showProfileSelector = false
 		}
 	}
 
@@ -154,17 +173,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	if m.showInstanceSelector {
 		// Show the overlay for the instance selector
-		return overlayStyle.Render("\n" + m.instanceSelector.View())
+		return m.instanceSelector.View()
 	}
 
 	if m.showDeviceSelector {
 		// Show the overlay for the device selector
-		return overlayStyle.Render("\n" + m.deviceSelector.View())
+		return m.deviceSelector.View()
 	}
 
 	if m.showProfileSelector {
 		// Show the overlay for the device selector
-		return overlayStyle.Render("\n" + m.profileSelector.View())
+		return m.profileSelector.View()
+	}
+
+	if m.showPageSelector {
+		return m.pageSelector.View()
 	}
 
 	// Main view content
@@ -178,12 +201,10 @@ Current Button: %s
 [i] to change the instance
 [d] to change the device
 [p] to change the profile
+[g] to change the page
 [q] to quit
 `, m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.currentButton)
 }
-
-// Styling for the overlay
-var overlayStyle = lipgloss.NewStyle().Padding(2).Align(lipgloss.Center).BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("63"))
 
 func main() {
 	logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

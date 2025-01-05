@@ -829,3 +829,359 @@
 {"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:51+01:00","message":"Key"}
 {"level":"debug","time":"2025-01-05T15:49:56+01:00","message":"UPDATE"}
 {"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:56+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:53:43+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:43+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:43+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:43+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:44+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:46+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:46+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:53:53+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:53+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:54+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:53:56+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:56+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:56+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:56+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:57+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:57+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:58+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:58+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:53:58+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:53:58+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:02+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:02+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:04+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:04+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:04+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:04+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:04+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:04+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:04+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:04+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:05+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:05+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:06+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:06+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:06+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:06+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:06+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:54:06+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-05T15:54:06+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-05T15:54:06+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T15:54:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:54:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:54:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:54:07+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:59:20+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:20+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:59:20+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:20+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:59:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:23+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:59:28+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:28+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:59:36+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:59:36+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:59:37+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:37+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:59:38+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:59:38+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T16:01:03+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:03+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:01:03+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:03+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:01:04+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:04+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:01:06+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:06+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T16:01:07+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:01:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:01:10+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:10+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:01:11+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:01:11+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T16:02:20+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:20+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:20+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:20+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:21+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:21+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:21+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:21+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:21+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:21+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:23+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:23+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:23+01:00","message":"Key"}
+{"level":"error","error":"nats: no responders available for request","device_serial":"","time":"2025-01-05T16:02:23+01:00","message":"Failed to get current profile"}
+{"level":"debug","time":"2025-01-05T16:02:25+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:25+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:25+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:25+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:25+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:25+01:00","message":"Key"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:25+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:26+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:26+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:27+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:27+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:27+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:27+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:27+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:27+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:27+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:27+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:29+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:29+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:29+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:29+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:29+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:29+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:29+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:29+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:30+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:30+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:30+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:30+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:30+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:02:30+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-05T16:02:30+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-05T16:02:30+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T16:02:31+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:31+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:32+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:32+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:32+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:32+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:32+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:32+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:32+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:32+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:35+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:35+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:35+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:35+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:36+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:36+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:36+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:02:36+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:02:36+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-05T16:02:36+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T16:02:37+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:02:37+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:38+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:02:38+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:38+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:02:38+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:02:38+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:06:17+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:06:17+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T16:13:20+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:20+01:00","message":"Key"}
+{"level":"info","pages":null,"time":"2025-01-05T16:13:20+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:13:20+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:20+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:25+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:25+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:26+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:26+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:26+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:26+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:27+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:27+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:28+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:28+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:30+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:30+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:30+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:30+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:31+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:31+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:31+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:31+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:31+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:13:31+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-05T16:13:31+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-05T16:13:31+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T16:13:33+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:33+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:33+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:33+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:33+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:33+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:33+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:34+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:34+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:35+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:35+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:35+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:36+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:36+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:36+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:36+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:13:37+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:13:37+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:02+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:02+01:00","message":"Key"}
+{"level":"info","pages":null,"time":"2025-01-05T16:14:02+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:14:44+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:44+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:44+01:00","message":"Key"}
+{"level":"info","pages":null,"time":"2025-01-05T16:14:44+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:14:51+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:51+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:52+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:52+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:52+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T16:14:52+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:14:52+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-05T16:14:52+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T16:14:53+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:14:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:14:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:14:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:14:54+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:14:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:04+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:04+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:05+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:05+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:05+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:06+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:06+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:06+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:06+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:06+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:06+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:08+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:08+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:08+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:10+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:10+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:10+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:14+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:14+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:14+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:14+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:14+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:19+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:19+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:23+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:23+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:23+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:23+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:23+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:25+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:25+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:15:25+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:15:25+01:00","message":"Key"}
+{"level":"info","pages":null,"time":"2025-01-05T16:15:25+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:17:01+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:01+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T16:17:03+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:03+01:00","message":"Key"}
+{"level":"debug","instanceID":"db45c7bb-af46-48aa-b2a0-d222586c7909","deviceID":"None","profileID":"None","time":"2025-01-05T16:17:03+01:00","message":"Fetching pages"}
+{"level":"info","pages":null,"time":"2025-01-05T16:17:03+01:00","message":"Retrieved pages"}
+{"level":"debug","pageCount":0,"pages":null,"time":"2025-01-05T16:17:03+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:17:03+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:03+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:05+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:05+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:05+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:05+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:05+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:05+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:07+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:08+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:08+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:09+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:09+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:09+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:09+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:10+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:10+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:10+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:10+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:11+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:11+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:11+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:11+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:11+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T16:17:11+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:17:11+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-05T16:17:11+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T16:17:13+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:13+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:13+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:13+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:13+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:13+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:13+01:00","message":"Key"}
+{"level":"debug","instanceID":"db45c7bb-af46-48aa-b2a0-d222586c7909","deviceID":"A00WA32111VSU7","profileID":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:17:13+01:00","message":"Fetching pages"}
+{"level":"info","pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:13+01:00","message":"Retrieved pages"}
+{"level":"debug","pageCount":1,"pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:13+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:17:15+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:15+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:16+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:16+01:00","message":"Key"}
+{"level":"debug","instanceID":"db45c7bb-af46-48aa-b2a0-d222586c7909","deviceID":"A00WA32111VSU7","profileID":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:17:16+01:00","message":"Fetching pages"}
+{"level":"info","pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:16+01:00","message":"Retrieved pages"}
+{"level":"debug","pageCount":1,"pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:16+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:17:17+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:17+01:00","message":"Key"}
+{"level":"debug","instanceID":"db45c7bb-af46-48aa-b2a0-d222586c7909","deviceID":"A00WA32111VSU7","profileID":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:17:17+01:00","message":"Fetching pages"}
+{"level":"info","pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:17+01:00","message":"Retrieved pages"}
+{"level":"debug","pageCount":1,"pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:17+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:17:19+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:19+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:19+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:19+01:00","message":"Key"}
+{"level":"debug","instanceID":"db45c7bb-af46-48aa-b2a0-d222586c7909","deviceID":"A00WA32111VSU7","profileID":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T16:17:19+01:00","message":"Fetching pages"}
+{"level":"info","pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:19+01:00","message":"Retrieved pages"}
+{"level":"debug","pageCount":1,"pages":[{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":""}],"time":"2025-01-05T16:17:19+01:00","message":"Retrieved pages"}
+{"level":"debug","time":"2025-01-05T16:17:32+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:32+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T16:17:34+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T16:17:34+01:00","message":"Key"}

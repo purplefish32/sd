@@ -32,9 +32,10 @@ var devices = []list.Item{
 // NewDeviceSelector creates a new instance of DeviceSelector
 func NewDeviceSelector() DeviceSelector {
 	deviceList := list.New(devices, deviceDelegate{}, 20, 14)
-	deviceList.Title = "Select a Device"
+	deviceList.Title = TitleStyle.Render("Select a Device")
 	deviceList.SetShowStatusBar(false)
 	deviceList.SetFilteringEnabled(false)
+	deviceList.Styles.Title = TitleStyle
 
 	return DeviceSelector{
 		list: deviceList,
@@ -60,6 +61,10 @@ func (s *DeviceSelector) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "esc":
+			return func() tea.Msg {
+				return DeviceSelected("")
+			}
 		case "enter":
 			// When a device is selected, store it and return
 			selected, ok := s.list.SelectedItem().(Device)
@@ -78,7 +83,7 @@ func (s *DeviceSelector) Update(msg tea.Msg) tea.Cmd {
 
 // View renders the device selector as a string, including the list of devices
 func (s DeviceSelector) View() string {
-	return s.list.View()
+	return ListStyle.Render(s.list.View())
 }
 
 // deviceDelegate handles rendering of each item in the device selection list
