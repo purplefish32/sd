@@ -6,6 +6,7 @@ import (
 	"sd/pkg/instance"
 	"sd/pkg/pages"
 	"sd/pkg/profiles"
+	"sd/pkg/store"
 
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ type model struct {
 	showButtonEditor     bool
 	width                int
 	height               int
+	currentProfileName   string
 }
 
 // Getter for currentInstance
@@ -58,6 +60,7 @@ func initialModel() model {
 		currentInstance:      instance.GetOrCreateInstanceUUID(),
 		currentDevice:        "None",
 		currentProfile:       "None",
+		currentProfileName:   "None",
 		currentPage:          "None",
 		currentButton:        "None",
 		selectedPosition:     "1", // Start at first button
@@ -114,28 +117,31 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// If a device is selected, update the model state
 		if device, ok := msg.(DeviceSelected); ok {
 			m.currentDevice = string(device)
-			m.selectedPosition = "1"   // Reset selected button to 1
-			m.showButtonEditor = false // Close button editor
+			m.selectedPosition = "1"
+			m.showButtonEditor = false
 			m.buttonEditor.showEditor = false
 
-			// Recreate the profile selector with the new device
 			m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
 
-			// Process the profile and page updates here if needed
-			profile := profiles.GetCurrentProfile(m.currentInstance, m.currentDevice)
-			if profile != nil {
-				m.currentProfile = profile.ID
-				page := pages.GetCurrentPage(m.currentInstance, m.currentDevice, m.currentProfile)
-				if page != nil {
-					m.currentPage = page.ID
-				} else {
-					m.currentPage = "Not found"
+			// First get the current profile ID
+			if currentProfile := profiles.GetCurrentProfile(m.currentInstance, m.currentDevice); currentProfile != nil {
+				// Then get the full profile details using store
+				if profile, err := store.GetProfile(m.currentInstance, m.currentDevice, currentProfile.ID); err == nil {
+					m.currentProfile = profile.ID
+					m.currentProfileName = profile.Name
+
+					page := pages.GetCurrentPage(m.currentInstance, m.currentDevice, m.currentProfile)
+					if page != nil {
+						m.currentPage = page.ID
+					} else {
+						m.currentPage = "Not found"
+					}
 				}
 			} else {
 				m.currentProfile = "Not found"
+				m.currentProfileName = "Not found"
 				m.currentPage = "Not found"
 			}
-			// Close the device selector after selection
 			m.showDeviceSelector = false
 		}
 	}
@@ -163,8 +169,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showProfileSelector = false
 			if profile != "" && m.profileSelector.hasSelected {
 				m.currentProfile = string(profile)
+
+				// Get the profile to show its name and handle pages
+				if prof, err := store.GetProfile(m.currentInstance, m.currentDevice, m.currentProfile); err == nil {
+					m.currentProfileName = prof.Name
+					if len(prof.Pages) > 0 {
+						m.currentPage = prof.Pages[0].ID
+						pages.SetCurrentPage(m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage)
+					}
+				}
+
 				m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
-				return m, nil // Return immediately after handling profile selection
+				return m, nil
 			}
 		}
 	}
@@ -201,63 +217,62 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.buttonEditor.showEditor = false
 		return m, nil
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "q":
-			return m, tea.Quit
-		case "i":
-			m.showInstanceSelector = !m.showInstanceSelector
-			m.showDeviceSelector = false
-			m.showProfileSelector = false
-		case "d":
-			m.showDeviceSelector = !m.showDeviceSelector
-			m.showInstanceSelector = false
-			m.showProfileSelector = false
-		case "p":
-			m.showProfileSelector = !m.showProfileSelector
-			if m.showProfileSelector {
-				m.profileSelector.Reset() // Reset the selector state when showing it
-			}
-			m.showInstanceSelector = false
-			m.showDeviceSelector = false
-		case "g":
-			m.showPageSelector = !m.showPageSelector
-			if m.showPageSelector {
-				m.pageSelector.Reset() // Reset the selector state when showing it
-			}
-			m.showInstanceSelector = false
-			m.showDeviceSelector = false
-			m.showProfileSelector = false
-		case "left", "h":
-			if m.currentDevice != "None" {
-				m.selectedPosition = moveButton(m.selectedPosition, "left", m.currentDevice)
-			}
-		case "right", "l":
-			if m.currentDevice != "None" {
-				m.selectedPosition = moveButton(m.selectedPosition, "right", m.currentDevice)
-			}
-		case "up", "k":
-			if m.currentDevice != "None" {
-				m.selectedPosition = moveButton(m.selectedPosition, "up", m.currentDevice)
-			}
-		case "down", "j":
-			if m.currentDevice != "None" {
-				m.selectedPosition = moveButton(m.selectedPosition, "down", m.currentDevice)
-			}
-		case "enter":
-			if m.currentDevice != "None" && !m.showProfileSelector && !m.showPageSelector {
-				m.currentButton = m.selectedPosition
-				m.showButtonEditor = true
-				m.buttonEditor = NewButtonEditor(
-					m.currentInstance,
-					m.currentDevice,
-					m.currentProfile,
-					m.currentPage,
-				)
-				m.buttonEditor.width = m.width
-				m.buttonEditor.textarea.SetWidth((m.width - 10) / 2)
-				m.buttonEditor.showEditor = true
-				m.buttonEditor.buttonNum = m.currentButton
-				m.buttonEditor.LoadButton()
+		// Only handle global commands if no popup is open
+		if !m.showInstanceSelector && !m.showDeviceSelector &&
+			!m.showProfileSelector && !m.showPageSelector && !m.showButtonEditor {
+			switch msg.String() {
+			case "q":
+				return m, tea.Quit
+			case "i":
+				m.showInstanceSelector = true
+			case "d":
+				m.showDeviceSelector = true
+			case "p":
+				if m.currentDevice != "None" {
+					m.showProfileSelector = true
+					if m.showProfileSelector {
+						m.profileSelector.Reset()
+					}
+				}
+			case "g":
+				if m.currentDevice != "None" {
+					m.showPageSelector = true
+					if m.showPageSelector {
+						m.pageSelector.Reset()
+					}
+				}
+			case "left", "h":
+				if m.currentDevice != "None" {
+					m.selectedPosition = moveButton(m.selectedPosition, "left", m.currentDevice)
+				}
+			case "right", "l":
+				if m.currentDevice != "None" {
+					m.selectedPosition = moveButton(m.selectedPosition, "right", m.currentDevice)
+				}
+			case "up", "k":
+				if m.currentDevice != "None" {
+					m.selectedPosition = moveButton(m.selectedPosition, "up", m.currentDevice)
+				}
+			case "down", "j":
+				if m.currentDevice != "None" {
+					m.selectedPosition = moveButton(m.selectedPosition, "down", m.currentDevice)
+				}
+			case "enter":
+				if m.currentDevice != "None" {
+					m.currentButton = m.selectedPosition
+					m.showButtonEditor = true
+					m.buttonEditor = NewButtonEditor(
+						m.currentInstance,
+						m.currentDevice,
+						m.currentProfile,
+						m.currentPage,
+					)
+					m.buttonEditor.width = m.width
+					m.buttonEditor.textarea.SetWidth((m.width - 10) / 2)
+					m.buttonEditor.showEditor = true
+					m.buttonEditor.buttonNum = m.currentButton
+					m.buttonEditor.LoadButton()
+				}
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -305,16 +320,33 @@ func (m model) View() string {
 	mainContent := fmt.Sprintf(`
 Current Instance: %s
 Current Device: %s
-Current Profile: %s
-Current Page: %s
-Current Button: %s
+%s
 
 [i] to change the instance
 [d] to change the device
-[p] to change the profile
-[g] to change the page
+%s
 [q] to quit
-`, m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.currentButton)
+`,
+		m.currentInstance,
+		m.currentDevice,
+		// Only show profile/page info if device is selected
+		func() string {
+			if m.currentDevice != "None" {
+				return fmt.Sprintf(
+					"Current Profile: %s (%s)\nCurrent Page: %s\nCurrent Button: %s",
+					m.currentProfileName, m.currentProfile, m.currentPage, m.currentButton,
+				)
+			}
+			return ""
+		}(),
+		// Only show profile/page controls if device is selected
+		func() string {
+			if m.currentDevice != "None" {
+				return "[p] to change the profile\n[g] to change the page"
+			}
+			return ""
+		}(),
+	)
 
 	// If we have a device selected, show the device view next to the main content
 	return lipgloss.JoinHorizontal(
