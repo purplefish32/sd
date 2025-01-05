@@ -2,12 +2,13 @@ package profiles
 
 import (
 	"encoding/json"
+	"fmt"
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
+	"sd/pkg/types"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 )
@@ -15,7 +16,7 @@ import (
 type Profile struct {
 	ID    string       `json:"id"`    // Unique identifier for the profile
 	Name  string       `json:"name"`  // Display name for the profile
-	Pages []pages.Page `json:"pages"` // List of pages in the profile
+	Pages []types.Page `json:"pages"` // List of pages in the profile
 	//Default int     `json:"default"` // Index of the default page
 }
 
@@ -94,41 +95,33 @@ func GetProfiles(instanceId string, deviceId string) ([]Profile, error) {
 	return profiles, nil
 }
 
-func CreateProfile(instanceId string, device *hid.Device, name string) (profile Profile, err error) {
-	_, kv := natsconn.GetNATSConn()
-
-	log.Printf("Creating Profile for Instance: %v, device: %v", instanceId, device.Serial)
-
-	p := Profile{
+func CreateProfile(instanceID string, deviceID string, name string) (*Profile, error) {
+	profile := Profile{
 		ID:   uuid.New().String(),
 		Name: name,
 	}
 
-	// Serialize the Profile struct to JSON
-	data, err := json.Marshal(p)
+	_, kv := natsconn.GetNATSConn()
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profile.ID)
 
+	data, err := json.Marshal(profile)
 	if err != nil {
-		log.Printf("Failed to serialize profile data: %v", err)
-		return Profile{}, err
+		return nil, fmt.Errorf("failed to marshal profile: %w", err)
 	}
 
-	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + p.ID
-
-	// Put the serialized data into the KV store
-	_, err = kv.Create(key, data)
-
+	_, err = kv.Put(key, data)
 	if err != nil {
-		if err == nats.ErrKeyExists {
-			log.Printf("Profile key already exists: %s", key)
-		} else {
-			log.Printf("Failed to create key in KV store: %s %v", key, err)
-		}
-		return Profile{}, err
+		return nil, fmt.Errorf("failed to save profile: %w", err)
 	}
 
-	// Set page as default page.
-	return p, nil
+	// Create default page
+	_, err = pages.CreatePage(instanceID, deviceID, profile.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create default page")
+		return nil, err
+	}
+
+	return &profile, nil
 }
 
 func GetCurrentProfile(instanceId string, deviceId string) *Profile { // TODO move this to the device.
@@ -199,6 +192,40 @@ func SetCurrentProfile(instanceId string, deviceId string, profileId string) err
 		Str("instance_id", instanceId).
 		Str("device_id", deviceId).
 		Msg("Current profile set successfully")
+
+	return nil
+}
+
+func GetProfile(instanceID, deviceID, profileID string) (*Profile, error) {
+	_, kv := natsconn.GetNATSConn()
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
+
+	entry, err := kv.Get(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get profile: %w", err)
+	}
+
+	var profile Profile
+	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal profile: %w", err)
+	}
+
+	return &profile, nil
+}
+
+func UpdateProfile(instanceID, deviceID, profileID string, profile *Profile) error {
+	_, kv := natsconn.GetNATSConn()
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
+
+	data, err := json.Marshal(profile)
+	if err != nil {
+		return fmt.Errorf("failed to marshal profile: %w", err)
+	}
+
+	_, err = kv.Put(key, data)
+	if err != nil {
+		return fmt.Errorf("failed to save profile: %w", err)
+	}
 
 	return nil
 }

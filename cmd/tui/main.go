@@ -11,6 +11,11 @@ import (
 	"strconv"
 	"strings"
 
+	"sd/pkg/actions"
+	"sd/pkg/plugins/browser"
+	"sd/pkg/plugins/command"
+	"sd/pkg/plugins/keyboard"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog"
@@ -155,7 +160,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if device, ok := msg.(InstanceSelected); ok {
 			m.currentInstance = string(device)
 
-			// Close the instance selector after selection
+			// Reset all device-related state
+			m.currentDevice = "None"
+			m.currentProfile = "None"
+			m.currentProfileName = "None"
+			m.currentPage = "None"
+			m.currentButton = "None"
+
+			// Reset selectors
+			m.deviceSelector = NewDeviceSelector()
+			m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
+			m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
+
 			m.showInstanceSelector = false
 		}
 	}
@@ -401,6 +417,13 @@ func moveButton(currentButton string, direction string, deviceType string) strin
 	}
 
 	return strconv.Itoa(current)
+}
+
+func init() {
+	// Register default plugins
+	actions.RegisterPlugin(&browser.BrowserPlugin{})
+	actions.RegisterPlugin(&command.CommandPlugin{})
+	actions.RegisterPlugin(&keyboard.KeyboardPlugin{})
 }
 
 func main() {

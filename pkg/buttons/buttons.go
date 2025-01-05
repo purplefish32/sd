@@ -11,7 +11,9 @@ import (
 )
 
 type Settings struct {
-	URL string `json:"url,omitempty"`
+	URL     string `json:"url,omitempty"`
+	Text    string `json:"text,omitempty"`
+	Command string `json:"command,omitempty"`
 }
 
 // type Title struct {
@@ -214,4 +216,12 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 	log.Printf("Created button: %v", buttonId)
 
 	return nil
+}
+
+func NewButton() Button {
+	return Button{
+		States: []State{},
+		State:  "0",
+		Title:  "",
+	}
 }

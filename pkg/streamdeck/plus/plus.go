@@ -2,7 +2,9 @@ package plus
 
 import (
 	"encoding/json"
+	"fmt"
 	"sd/pkg/actions"
+	"sd/pkg/buttons"
 	"sd/pkg/env"
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
@@ -17,8 +19,10 @@ import (
 )
 
 type Plus struct {
-	instanceID string
-	device     *hid.Device
+	instanceID     string
+	device         *hid.Device
+	currentProfile string
+	currentPage    string
 }
 
 var ProductID uint16 = 0x006c
@@ -39,6 +43,7 @@ func (plus Plus) Init() {
 	BlankAllKeys(plus.device)
 
 	currentProfile := profiles.GetCurrentProfile(plus.instanceID, plus.device.Serial)
+	plus.currentProfile = currentProfile.ID
 
 	// If no default profile exists, create one and set is as the default profile.
 	if currentProfile == nil {
@@ -58,6 +63,7 @@ func (plus Plus) Init() {
 	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
 
 	currentPage := pages.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
+	plus.currentPage = currentPage.ID
 
 	// If no default page exists, create one and set is as the default page for the given profile.
 	if currentPage == nil {
@@ -79,9 +85,6 @@ func (plus Plus) Init() {
 	// Buffer for outgoing events.
 	buf := make([]byte, 512)
 
-	// Get NATS connection an KV store.
-	nc, kv := natsconn.GetNATSConn()
-
 	go WatchForButtonChanges(plus.device)
 	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
 
@@ -94,45 +97,13 @@ func (plus Plus) Init() {
 
 			// TODO implement long press.
 			for _, buttonIndex := range pressedButtons {
-
 				// Ignore button up event for now.
 				if buttonIndex == 0 {
 					log.Debug().Interface("device", plus.device).Int("button_index", buttonIndex).Msg("Button released")
 					continue
 				}
 
-				log.Debug().Interface("device", plus.device).Int("button_index", buttonIndex).Msg("Button pressed")
-
-				key := "instances." + plus.instanceID + ".devices." + plus.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
-
-				log.Debug().Msg(key)
-
-				// Get the associated data from the NATS KV Store.
-				entry, _ := nats.KeyValue.Get(kv, key)
-
-				// if err != nil {
-				// 	log.Warn().Err(err).Msg("Failed to get value from KV store")
-				// 	continue
-				// }
-
-				// Unmarshal the JSON into the Payload struct
-				var payload actions.ActionInstance
-
-				if err := json.Unmarshal(entry.Value(), &payload); err != nil {
-					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
-					return
-				}
-
-				log.Debug().Interface("payload", payload).Msg("NATS KV store data")
-
-				// Use the `UUID` field as the topic
-				if payload.UUID == "" {
-					log.Error().Msg("Missing UUID field in JSON payload")
-					return
-				}
-
-				// Publish Action Instance to NATS.
-				nc.Publish(payload.UUID, entry.Value())
+				plus.handleButtonPress(buttonIndex)
 			}
 		}
 	}
@@ -258,4 +229,37 @@ func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 			log.Info().Str("key", update.Key()).Msg("Unknown operation")
 		}
 	}
+}
+
+func (d *Plus) handleButtonPress(buttonIndex int) {
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+		d.instanceID, d.device.Serial, d.currentProfile, d.currentPage, strconv.Itoa(buttonIndex))
+
+	button, err := buttons.GetButton(key)
+	if err != nil {
+		log.Error().Err(err).Str("key", key).Msg("Failed to get button configuration")
+		return
+	}
+
+	// Get NATS connection
+	nc, _ := natsconn.GetNATSConn()
+
+	// Create ActionInstance from Button
+	actionInstance := actions.ActionInstance{
+		UUID:     button.UUID,
+		Settings: button.Settings,
+		State:    button.State,
+		States:   button.States,
+		Title:    button.Title,
+	}
+
+	// Marshal the action instance
+	data, err := json.Marshal(actionInstance)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal action instance")
+		return
+	}
+
+	// Publish to NATS using the UUID as the topic
+	nc.Publish(button.UUID, data)
 }

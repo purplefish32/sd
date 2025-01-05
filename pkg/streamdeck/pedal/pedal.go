@@ -37,7 +37,7 @@ func (pedal Pedal) Init() {
 		log.Warn().Msg("Current profile not found creating one")
 
 		// Create a new profile.
-		profile, _ := profiles.CreateProfile(pedal.instanceID, pedal.device, "Default")
+		profile, _ := profiles.CreateProfile(pedal.instanceID, pedal.device.Serial, "Default")
 
 		log.Info().Str("profileId", profile.ID).Msg("Profile created")
 
