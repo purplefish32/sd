@@ -61,8 +61,13 @@ func initialModel() model {
 		showPageSelector:     false,
 		instanceSelector:     NewInstanceSelector(),
 		deviceSelector:       NewDeviceSelector(),
-		buttonEditor:         NewButtonEditor(),
-		showButtonEditor:     false,
+		buttonEditor: NewButtonEditor(
+			instance.GetOrCreateInstanceUUID(),
+			"None",
+			"None",
+			"None",
+		),
+		showButtonEditor: false,
 	}
 	// Initialize profileSelector after m is created
 	m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
@@ -92,6 +97,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// If a device is selected, update the model state
 		if device, ok := msg.(DeviceSelected); ok {
 			m.currentDevice = string(device)
+			m.selectedPosition = "1"   // Reset selected button to 1
+			m.showButtonEditor = false // Close button editor
+			m.buttonEditor.showEditor = false
 			// Process the profile and page updates here if needed
 			profile := profiles.GetCurrentProfile(m.currentInstance, m.currentDevice)
 			if profile != nil {
@@ -210,8 +218,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.currentDevice != "None" {
 				m.currentButton = m.selectedPosition
 				m.showButtonEditor = true
+				m.buttonEditor = NewButtonEditor(
+					m.currentInstance,
+					m.currentDevice,
+					m.currentProfile,
+					m.currentPage,
+				)
 				m.buttonEditor.showEditor = true
 				m.buttonEditor.buttonNum = m.currentButton
+				m.buttonEditor.LoadButton()
 			}
 		}
 	}
@@ -280,12 +295,15 @@ func moveButton(currentButton string, direction string, deviceType string) strin
 	// Get max buttons based on device type
 	maxButtons := 32 // XL default
 	cols := 8
-	if strings.HasPrefix(deviceType, "CL") { // Stream Deck Plus
+	if strings.HasPrefix(deviceType, "A0") { // Stream Deck Plus
 		maxButtons = 8
 		cols = 4
 	} else if strings.HasPrefix(deviceType, "FL") { // Stream Deck Pedal
 		maxButtons = 3
 		cols = 3
+	} else if strings.HasPrefix(deviceType, "CL") { // Stream Deck XL
+		maxButtons = 32
+		cols = 8
 	}
 
 	// Calculate new position

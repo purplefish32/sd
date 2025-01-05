@@ -11,13 +11,15 @@ import (
 )
 
 type Settings struct {
+	URL string `json:"url,omitempty"`
 }
 
-type Title struct {
-}
+// type Title struct {
+// }
 
 type State struct {
-	Image string `json:"image"`
+	Id        string `json:"id"`
+	ImagePath string `json:"imagePath"`
 }
 
 type StateId struct {
@@ -25,11 +27,11 @@ type StateId struct {
 }
 
 type Button struct {
-	Plugin   string   `json:"plugin"`
-	Action   string   `json:"action"`
+	UUID     string   `json:"uuid"`
 	Settings Settings `json:"settings"`
 	States   []State  `json:"states"`
-	Title    Title    `json:"title"`
+	State    string   `json:"state"`
+	Title    string   `json:"title"`
 }
 
 func GetButton(key string) (button Button, err error) {
@@ -136,14 +138,11 @@ func updateStateId(buttonKey string, id int) (err error) {
 	return nil
 }
 
-func updateTitle(buttonKey string, title Title) (err error) {
+func updateTitle(buttonKey string, title string) (err error) {
 	_, kv := natsconn.GetNATSConn()
 	log.Printf("Setting title to: %+v", title)
-	// TODO
-	data := Title{}
-
-	// Serialize the Profile struct to JSON
-	json, err := json.Marshal(data)
+	// Serialize the title string to JSON
+	json, err := json.Marshal(title)
 
 	if err != nil {
 		log.Printf("Failed to serialize title: %+v", err)
@@ -176,13 +175,15 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 
 	// Define a new Button.
 	button := Button{
-		Plugin: "",
-		Action: "",
+		UUID: "",
 		States: []State{
 			{
-				Image: "./assets/images/black.png",
+				Id:        "0",
+				ImagePath: "/home/donovan/.config/sd/buttons/game.png",
 			},
 		},
+		State: "0",
+		Title: "",
 	}
 
 	// Serialize the Profile struct to JSON
@@ -207,8 +208,8 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 
 	updateStateId(key, 0)
 	updateSettings(key, Settings{})
-	updateTitle(key, Title{})
-	updateImageBuffer(key, button.States[0].Image)
+	updateTitle(key, "")
+	updateImageBuffer(key, button.States[0].ImagePath)
 
 	log.Printf("Created button: %v", buttonId)
 

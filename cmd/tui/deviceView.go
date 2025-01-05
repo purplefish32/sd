@@ -33,13 +33,13 @@ func (d DeviceView) View() string {
 		Width(6).
 		Height(3)
 
-	selectedButtonStyle := buttonStyle.Copy().
+	selectedButtonStyle := buttonStyle.
 		BorderForeground(lipgloss.Color("205")) // Bright magenta for selected button
 
 	var grid []string
 
 	// Check device type based on serial number pattern
-	if strings.HasPrefix(d.deviceID, "CL") { // Stream Deck Plus
+	if strings.HasPrefix(d.deviceID, "A0") { // Stream Deck Plus
 		const (
 			numRows = 2
 			cols    = 4
@@ -65,7 +65,7 @@ func (d DeviceView) View() string {
 			row = append(row, button)
 		}
 		grid = append(grid, lipgloss.JoinHorizontal(lipgloss.Top, row...))
-	} else { // Stream Deck XL
+	} else if strings.HasPrefix(d.deviceID, "CL") { // Stream Deck XL
 		const (
 			numRows = 4
 			cols    = 8
