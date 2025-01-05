@@ -45,7 +45,7 @@ func (plus Plus) Init() {
 		log.Warn().Msg("Current profile not found creating one")
 
 		// Create a new profile.
-		profile, _ := profiles.CreateProfile(plus.instanceID, plus.device, "Default")
+		profile, _ := profiles.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
 
 		log.Info().Str("profileId", profile.ID).Msg("Profile created")
 
@@ -64,12 +64,16 @@ func (plus Plus) Init() {
 		log.Warn().Msg("Current page not found creating one")
 
 		// Create a new page.
-		page := pages.CreatePage(plus.instanceID, plus.device, currentProfile.ID)
+		page, err := pages.CreatePage(plus.instanceID, plus.device.Serial, currentProfile.ID)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to create page")
+			return
+		}
 
 		log.Info().Interface("page", page).Msg("Page created")
 
 		// Set the page as the current page.
-		pages.SetCurrentPage(plus.instanceID, plus.device, currentProfile.ID, page.ID)
+		pages.SetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID, page.ID)
 	}
 
 	// Buffer for outgoing events.

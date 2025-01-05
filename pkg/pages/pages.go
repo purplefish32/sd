@@ -2,20 +2,19 @@ package pages
 
 import (
 	"encoding/json"
+	"fmt"
 	"sd/pkg/natsconn"
-
+	"sd/pkg/store"
 	"strings"
 
+	"sd/pkg/types"
+
 	"github.com/google/uuid"
-	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 )
 
-type Page struct {
-	ID   string `json:"id"`   // Unique identifier for the page
-	Name string `json:"name"` // Display name for the page
-}
+type Page = types.Page
 
 type CurrentPage struct {
 	ID string `json:"id"` // Unique identifier for the profile
@@ -60,13 +59,14 @@ func GetCurrentPage(instanceId string, deviceId string, profileId string) *Page 
 	return &page
 }
 
-func SetCurrentPage(instanceId string, device *hid.Device, profileId string, pageId string) error {
+func SetCurrentPage(instanceId string, deviceId string, profileId string, pageId string) error {
 	_, kv := natsconn.GetNATSConn()
 
 	log.Printf("Setting current page for profile: %v", profileId)
 
 	// Define the key for the current page
-	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages.current"
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.current",
+		instanceId, deviceId, profileId)
 
 	log.Printf("KEY: %v", key)
 	currentPage := CurrentPage{
@@ -82,55 +82,62 @@ func SetCurrentPage(instanceId string, device *hid.Device, profileId string, pag
 
 	// Put the serialized data into the KV store
 	if _, err := kv.Put(key, data); err != nil {
-		log.Printf("Failed to set current page for device: %s, error: %v", device.Serial, err) // TODO enrich the log with the rest of the data.
+		log.Printf("Failed to set current page for device: %s, error: %v", deviceId, err) // TODO enrich the log with the rest of the data.
 		return err
 	}
 
-	log.Printf("Current page set successfully for device: %s", device.Serial)
+	log.Printf("Current page set successfully for device: %s", deviceId)
 
 	return nil
 }
 
-func CreatePage(instanceId string, device *hid.Device, profileId string) (page Page) {
+func CreatePage(instanceID string, deviceID string, profileID string) (Page, error) {
 	_, kv := natsconn.GetNATSConn()
-	log.Printf("Creating Page for Instance: %v, device: %v, profile: %v", instanceId, device.Serial, profileId)
+	log.Printf("Creating Page for Instance: %v, device: %v, profile: %v", instanceID, deviceID, profileID)
 
 	// Generate a new UUID
 	id := uuid.New()
 	idStr := id.String()
 
 	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + profileId + ".pages." + idStr
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s",
+		instanceID, deviceID, profileID, idStr)
 
-	// Define a new page.
+	// Define a new page
 	p := Page{
 		ID: idStr,
 	}
 
 	// Serialize the Profile struct to JSON
 	data, err := json.Marshal(p)
-
 	if err != nil {
-		log.Printf("Failed to serialize page data: %v", err)
-		return Page{}
+		return Page{}, fmt.Errorf("failed to serialize page data: %w", err)
 	}
 
 	// Put the serialized data into the KV store
-	_, err = kv.Create(key, data)
-
+	_, err = kv.Put(key, data)
 	if err != nil {
-		if err == nats.ErrKeyExists {
-			log.Printf("Page key already exists: %s", key)
-		} else {
-			log.Printf("Failed to create key in KV store: %s %v", key, err)
-		}
-		return Page{}
+		return Page{}, fmt.Errorf("failed to create page in KV store: %w", err)
 	}
 
-	log.Printf("Page created successfully: %+v", page)
+	log.Printf("Page created successfully: %+v", p)
 
-	// Return the page.
-	return p
+	// After successfully creating the page, update the profile
+	profile, err := store.GetProfile(instanceID, deviceID, profileID)
+	if err != nil {
+		return p, fmt.Errorf("failed to get profile: %w", err)
+	}
+
+	// Add the new page to the profile's pages array
+	profile.Pages = append(profile.Pages, p)
+
+	// Save the updated profile
+	err = store.UpdateProfile(instanceID, deviceID, profileID, profile)
+	if err != nil {
+		return p, fmt.Errorf("failed to update profile with new page: %w", err)
+	}
+
+	return p, nil
 }
 
 func GetPages(instanceId string, deviceId string, profileId string) ([]Page, error) {
