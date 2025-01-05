@@ -8,6 +8,7 @@ import (
 	"sd/pkg/profiles"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -172,17 +173,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the current view based on the state
 func (m model) View() string {
 	if m.showInstanceSelector {
-		// Show the overlay for the instance selector
 		return m.instanceSelector.View()
 	}
 
 	if m.showDeviceSelector {
-		// Show the overlay for the device selector
 		return m.deviceSelector.View()
 	}
 
 	if m.showProfileSelector {
-		// Show the overlay for the device selector
 		return m.profileSelector.View()
 	}
 
@@ -190,8 +188,11 @@ func (m model) View() string {
 		return m.pageSelector.View()
 	}
 
-	// Main view content
-	return fmt.Sprintf(`
+	// Create device view
+	deviceView := NewDeviceView(m.currentDevice)
+
+	// Main content with device view
+	mainContent := fmt.Sprintf(`
 Current Instance: %s
 Current Device: %s
 Current Profile: %s
@@ -204,6 +205,18 @@ Current Button: %s
 [g] to change the page
 [q] to quit
 `, m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.currentButton)
+
+	// If we have a device selected, show the device view next to the main content
+	if m.currentDevice != "None" {
+		return lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			mainContent,
+			"    ", // Add some spacing
+			deviceView.View(),
+		)
+	}
+
+	return mainContent
 }
 
 func main() {
