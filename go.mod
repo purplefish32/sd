@@ -3,6 +3,10 @@ module sd
 go 1.23.2
 
 require (
+	github.com/alecthomas/chroma v0.10.0
+	github.com/charmbracelet/bubbles v0.20.0
+	github.com/charmbracelet/bubbletea v1.2.4
+	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/go-vgo/robotgo v0.110.5
 	github.com/google/uuid v1.6.0
 	github.com/h2non/bimg v1.1.9
@@ -11,6 +15,7 @@ require (
 	github.com/nats-io/nats.go v1.37.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/rs/zerolog v1.33.0
+	golang.org/x/term v0.23.0
 )
 
 require (
@@ -25,9 +30,6 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
-	github.com/charmbracelet/bubbles v0.20.0 // indirect
-	github.com/charmbracelet/bubbletea v1.2.4 // indirect
-	github.com/charmbracelet/lipgloss v1.0.0 // indirect
 	github.com/charmbracelet/x/ansi v0.4.5 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
@@ -35,6 +37,7 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240820181039-f2b84150679e // indirect
+	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/ebitengine/purego v0.8.0 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.16.0 // indirect

@@ -6,21 +6,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-)
-
-// Add styles (same as profileSelector)
-var (
-	listStyle = lipgloss.NewStyle().
-			Padding(1, 2).
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("62")).
-			Width(40)
-
-	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("62")).
-			Bold(true).
-			Padding(0, 1)
 )
 
 // Item represents a single item in the instance list
@@ -35,6 +20,7 @@ func (i Instance) FilterValue() string {
 type InstanceSelector struct {
 	list         list.Model
 	selectedItem string
+	width        int
 }
 
 // Instances list (note: using Item type here)
@@ -45,10 +31,10 @@ var instances = []list.Item{
 // NewInstanceSelector creates a new instance of InstanceSelector
 func NewInstanceSelector() InstanceSelector {
 	instanceList := list.New(instances, instanceDelegate{}, 20, 14)
-	instanceList.Title = titleStyle.Render("Select an Instance")
+	instanceList.Title = TitleStyle.Render("Select an Instance")
 	instanceList.SetShowStatusBar(false)
 	instanceList.SetFilteringEnabled(false)
-	instanceList.Styles.Title = titleStyle
+	instanceList.Styles.Title = TitleStyle
 
 	return InstanceSelector{
 		list: instanceList,
@@ -95,7 +81,13 @@ func (s *InstanceSelector) Update(msg tea.Msg) tea.Cmd {
 
 // View renders the instance selector as a string, including the list of instances
 func (s InstanceSelector) View() string {
-	return listStyle.Render(s.list.View())
+	style := ListStyle.Copy().Width(s.width - 4)
+
+	// Update list styles
+	s.list.Styles.Title = TitleStyle
+	s.list.SetSize(s.width-8, 14)
+
+	return style.Render("Select Instance:\n\n" + s.list.View())
 }
 
 // instanceDelegate handles rendering of each item in the instance selection list

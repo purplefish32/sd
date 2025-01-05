@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Item represents a single item in the device list
@@ -19,6 +20,7 @@ func (d Device) FilterValue() string {
 // DeviceSelector represents the state of the device selector overlay
 type DeviceSelector struct {
 	list         list.Model
+	width        int
 	selectedItem string
 }
 
@@ -83,7 +85,17 @@ func (s *DeviceSelector) Update(msg tea.Msg) tea.Cmd {
 
 // View renders the device selector as a string, including the list of devices
 func (s DeviceSelector) View() string {
-	return ListStyle.Render(s.list.View())
+	style := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("62")).
+		Padding(1, 2).
+		Width(s.width - 4)
+
+	// Update list styles
+	s.list.Styles.Title = TitleStyle
+	s.list.SetSize(s.width-8, 14) // Account for borders and padding
+
+	return style.Render("Select Device:\n\n" + s.list.View())
 }
 
 // deviceDelegate handles rendering of each item in the device selection list

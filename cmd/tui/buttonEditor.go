@@ -3,27 +3,50 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"sd/pkg/buttons"
 	"sd/pkg/natsconn"
 
+	"github.com/alecthomas/chroma/formatters"
+	"github.com/alecthomas/chroma/lexers"
+	"github.com/alecthomas/chroma/styles"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 )
+
+func highlightJSON(input string) string {
+	lexer := lexers.Get("json")
+	style := styles.Get("monokai")
+	formatter := formatters.Get("terminal256")
+
+	iterator, err := lexer.Tokenise(nil, input)
+	if err != nil {
+		return input
+	}
+
+	var buf strings.Builder
+	err = formatter.Format(&buf, style, iterator)
+	if err != nil {
+		return input
+	}
+
+	return buf.String()
+}
 
 type ButtonEditor struct {
 	textarea   textarea.Model
 	buttonNum  string
 	showEditor bool
-	width      int
-	height     int
 	instanceID string
 	deviceID   string
 	profileID  string
 	pageID     string
+	jsonValid  bool
+	jsonError  string
+	width      int
 }
 
 type EditorClosing struct{}
@@ -40,6 +63,8 @@ func NewButtonEditor(instanceID, deviceID, profileID, pageID string) ButtonEdito
 		deviceID:   deviceID,
 		profileID:  profileID,
 		pageID:     pageID,
+		jsonValid:  true,
+		width:      120,
 	}
 }
 
@@ -47,10 +72,24 @@ func (e ButtonEditor) Init() tea.Cmd {
 	return textarea.Blink
 }
 
+func (e *ButtonEditor) validateJSON() {
+	var js map[string]interface{}
+	if err := json.Unmarshal([]byte(e.textarea.Value()), &js); err != nil {
+		e.jsonValid = false
+		e.jsonError = err.Error()
+	} else {
+		e.jsonValid = true
+		e.jsonError = ""
+	}
+}
+
 func (e *ButtonEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		e.width = msg.Width
+		e.textarea.SetWidth((e.width - 10) / 2)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
@@ -59,6 +98,9 @@ func (e *ButtonEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return EditorClosing{}
 			}
 		case "ctrl+s":
+			if !e.jsonValid {
+				return e, nil
+			}
 			if err := e.SaveButton(); err != nil {
 				log.Error().Err(err).Msg("Failed to save button")
 			}
@@ -71,6 +113,7 @@ func (e *ButtonEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	e.textarea, cmd = e.textarea.Update(msg)
+	e.validateJSON()
 	cmds = append(cmds, cmd)
 
 	return e, tea.Batch(cmds...)
@@ -81,20 +124,57 @@ func (e ButtonEditor) View() string {
 		return ""
 	}
 
+	statusStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("46"))
+
+	if !e.jsonValid {
+		statusStyle = statusStyle.
+			Foreground(lipgloss.Color("196"))
+	}
+
+	status := "JSON: valid"
+	if !e.jsonValid {
+		status = fmt.Sprintf("JSON Error: %s", e.jsonError)
+	}
+
 	style := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("62")).
 		Padding(1, 2).
-		Width(60).
+		Width(e.width - 4).
 		Align(lipgloss.Center)
+
+	// Create the two columns
+	leftColumn := lipgloss.JoinVertical(
+		lipgloss.Left,
+		"Editor",
+		"",
+		e.textarea.View(),
+	)
+
+	rightColumn := lipgloss.JoinVertical(
+		lipgloss.Left,
+		"Preview",
+		"",
+		highlightJSON(e.textarea.Value()),
+	)
+
+	// Join the columns side by side
+	content := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		leftColumn,
+		"  │  ", // Separator
+		rightColumn,
+	)
 
 	return style.Render(
 		lipgloss.JoinVertical(
 			lipgloss.Left,
 			fmt.Sprintf("Button %s Configuration", e.buttonNum),
 			"",
-			e.textarea.View(),
+			content,
 			"",
+			statusStyle.Render(status),
 			"Press CTRL+S to save, ESC to close",
 		),
 	)
@@ -116,18 +196,9 @@ func (e *ButtonEditor) LoadButton() {
 	button, err := buttons.GetButton(key)
 	if err != nil {
 		log.Debug().Err(err).Str("key", key).Msg("Button not found, creating default")
-		// If button doesn't exist, create a new one with defaults
-		button = buttons.Button{
-			UUID: "sd.plugin.browser.open",
-			States: []buttons.State{
-				{
-					Id:        "0",
-					ImagePath: "",
-				},
-			},
-			State: "0",
-			Title: "",
-		}
+		// If button doesn't exist, show empty JSON
+		e.textarea.SetValue("{}")
+		return
 	}
 
 	// Convert button to JSON
@@ -141,29 +212,42 @@ func (e *ButtonEditor) LoadButton() {
 		Str("jsonData", string(jsonData)).
 		Msg("Setting textarea value")
 
-	e.textarea.SetValue(string(jsonData))
+	formattedJSON := string(jsonData)
+	e.textarea.SetValue(formattedJSON)
 }
 
 func (e *ButtonEditor) SaveButton() error {
-	key := fmt.Sprintf("sd/instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
 		e.instanceID, e.deviceID, e.profileID, e.pageID, e.buttonNum)
+
+	log.Debug().
+		Str("key", key).
+		Str("value", e.textarea.Value()).
+		Msg("Attempting to save button")
 
 	var button buttons.Button
 	if err := json.Unmarshal([]byte(e.textarea.Value()), &button); err != nil {
+		log.Error().Err(err).Msg("Failed to unmarshal button JSON")
 		return fmt.Errorf("invalid JSON: %w", err)
 	}
 
 	_, kv := natsconn.GetNATSConn()
 	data, err := json.Marshal(button)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal button data")
 		return fmt.Errorf("failed to marshal button: %w", err)
 	}
 
-	// Try to create first, if it fails with KeyExists, then update
-	_, err = kv.Create(key, data)
-	if err == nats.ErrKeyExists {
-		_, err = kv.Put(key, data)
+	// Just use Put instead of trying Create first
+	revision, err := kv.Put(key, data)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to save button")
+		return err
 	}
 
-	return err
+	log.Info().
+		Str("key", key).
+		Uint64("revision", revision).
+		Msg("Successfully saved button")
+	return nil
 }

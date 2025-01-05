@@ -17,6 +17,8 @@ type PageSelector struct {
 	instanceID   string
 	deviceID     string
 	profileID    string
+	width        int
+	hasSelected  bool
 }
 
 // PageItem represents a single page in the list
@@ -89,35 +91,34 @@ func (s PageSelector) Init() tea.Cmd {
 // Update processes messages and updates the state of the page selector
 func (s *PageSelector) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
+	s.list, cmd = s.list.Update(msg)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
+			s.hasSelected = false
+			s.selectedItem = ""
 			return func() tea.Msg {
 				return PageSelected("")
 			}
 		case "enter":
-			selected, ok := s.list.SelectedItem().(PageItem)
-			if ok {
+			if selected, ok := s.list.SelectedItem().(PageItem); ok {
 				s.selectedItem = selected.id
-			}
-			return func() tea.Msg {
-				return PageSelected(s.selectedItem)
+				s.hasSelected = true
+				return func() tea.Msg {
+					return PageSelected(s.selectedItem)
+				}
 			}
 		}
 	}
-
-	// Update the page list whenever the state changes
-	pages := s.FetchPages()
-	s.list.SetItems(pages)
-
-	s.list, cmd = s.list.Update(msg)
 	return cmd
 }
 
 // View renders the page selector
 func (s PageSelector) View() string {
-	return ListStyle.Render(s.list.View())
+	style := ListStyle.Copy().Width(s.width - 4)
+	return style.Render("Select Page:\n\n" + s.list.View())
 }
 
 // pageDelegate handles rendering of each item in the page selection list
@@ -139,4 +140,9 @@ func (d pageDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	}
 
 	fmt.Fprint(w, str)
+}
+
+func (s *PageSelector) Reset() {
+	s.hasSelected = false
+	s.selectedItem = ""
 }

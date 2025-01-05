@@ -25,16 +25,13 @@ func (d DeviceView) View() string {
 	}
 
 	// Create styles for the buttons
-	buttonStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("62")).
-		Padding(1, 2).
-		Align(lipgloss.Center).
+	buttonStyle := ListStyle.Copy().
 		Width(6).
-		Height(3)
+		Height(3).
+		Align(lipgloss.Center)
 
-	selectedButtonStyle := buttonStyle.
-		BorderForeground(lipgloss.Color("205")) // Bright magenta for selected button
+	selectedButtonStyle := buttonStyle.Copy().
+		BorderForeground(lipgloss.Color("205"))
 
 	var grid []string
 

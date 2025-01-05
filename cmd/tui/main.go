@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/term"
 )
 
 // model stores the state of the entire application
@@ -34,6 +35,8 @@ type model struct {
 	showPageSelector     bool
 	buttonEditor         ButtonEditor
 	showButtonEditor     bool
+	width                int
+	height               int
 }
 
 // Getter for currentInstance
@@ -48,6 +51,9 @@ func (m *model) GetCurrentDevice() string {
 
 // initialModel initializes the state of the app
 func initialModel() model {
+	// Get initial terminal size
+	w, h, _ := term.GetSize(0)
+
 	m := model{
 		currentInstance:      instance.GetOrCreateInstanceUUID(),
 		currentDevice:        "None",
@@ -68,10 +74,24 @@ func initialModel() model {
 			"None",
 		),
 		showButtonEditor: false,
+		width:            w,
+		height:           h,
 	}
+
+	// Set initial editor width
+	m.buttonEditor.width = w
+	m.buttonEditor.textarea.SetWidth((w - 10) / 2)
+
 	// Initialize profileSelector after m is created
 	m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
 	m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
+
+	// Set initial widths
+	m.instanceSelector.width = w
+	m.deviceSelector.width = w
+	m.profileSelector.width = w
+	m.pageSelector.width = w
+
 	return m
 }
 
@@ -86,9 +106,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	log.Debug().Msg("UPDATE")
 
-	// This recreation on every Update call could be optimized
-	m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice) // TODO
-
 	// Handle the update for the device selector
 	if m.showDeviceSelector {
 		// Update the device selector
@@ -100,6 +117,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.selectedPosition = "1"   // Reset selected button to 1
 			m.showButtonEditor = false // Close button editor
 			m.buttonEditor.showEditor = false
+
+			// Recreate the profile selector with the new device
+			m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
+
 			// Process the profile and page updates here if needed
 			profile := profiles.GetCurrentProfile(m.currentInstance, m.currentDevice)
 			if profile != nil {
@@ -135,17 +156,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Handle the update for the profile selector
 	if m.showProfileSelector {
-		// Update the profile selector
 		cmd = m.profileSelector.Update(msg)
 
-		// If a profile is selected, update the model state
-		if device, ok := msg.(ProfileSelected); ok {
-			m.currentProfile = string(device)
-			// Recreate the page selector with the new profile
-			m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
-
-			// Close the profile selector after selection
+		// Only handle ProfileSelected messages
+		if profile, ok := msg.(ProfileSelected); ok {
 			m.showProfileSelector = false
+			if profile != "" && m.profileSelector.hasSelected {
+				m.currentProfile = string(profile)
+				m.pageSelector = NewPageSelector(m.currentInstance, m.currentDevice, m.currentProfile)
+				return m, nil // Return immediately after handling profile selection
+			}
 		}
 	}
 
@@ -153,8 +173,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.showPageSelector {
 		cmd = m.pageSelector.Update(msg)
 		if page, ok := msg.(PageSelected); ok {
-			m.currentPage = string(page)
 			m.showPageSelector = false
+			if page != "" && m.pageSelector.hasSelected {
+				m.currentPage = string(page)
+				return m, nil // Return immediately after handling page selection
+			}
 		}
 	}
 
@@ -191,10 +214,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showProfileSelector = false
 		case "p":
 			m.showProfileSelector = !m.showProfileSelector
+			if m.showProfileSelector {
+				m.profileSelector.Reset() // Reset the selector state when showing it
+			}
 			m.showInstanceSelector = false
 			m.showDeviceSelector = false
 		case "g":
 			m.showPageSelector = !m.showPageSelector
+			if m.showPageSelector {
+				m.pageSelector.Reset() // Reset the selector state when showing it
+			}
 			m.showInstanceSelector = false
 			m.showDeviceSelector = false
 			m.showProfileSelector = false
@@ -215,7 +244,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selectedPosition = moveButton(m.selectedPosition, "down", m.currentDevice)
 			}
 		case "enter":
-			if m.currentDevice != "None" {
+			if m.currentDevice != "None" && !m.showProfileSelector && !m.showPageSelector {
 				m.currentButton = m.selectedPosition
 				m.showButtonEditor = true
 				m.buttonEditor = NewButtonEditor(
@@ -224,11 +253,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.currentProfile,
 					m.currentPage,
 				)
+				m.buttonEditor.width = m.width
+				m.buttonEditor.textarea.SetWidth((m.width - 10) / 2)
 				m.buttonEditor.showEditor = true
 				m.buttonEditor.buttonNum = m.currentButton
 				m.buttonEditor.LoadButton()
 			}
 		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		if m.showButtonEditor {
+			m.buttonEditor.width = msg.Width
+			m.buttonEditor.textarea.SetWidth((msg.Width - 10) / 2)
+		}
+		m.instanceSelector.width = msg.Width
+		m.deviceSelector.width = msg.Width
+		m.profileSelector.width = msg.Width
+		m.pageSelector.width = msg.Width
 	}
 
 	return m, cmd
@@ -342,7 +384,10 @@ func main() {
 	log.Logger = zerolog.New(logFile).With().Timestamp().Logger()
 
 	// Create the initial model and run the program
-	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
+	p := tea.NewProgram(
+		initialModel(),
+		tea.WithAltScreen(),
+	)
 
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error running program:", err)

@@ -8,15 +8,8 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/term"
 )
-
-// Item represents a single item in the profile list
-type Profile string
-
-// FilterValue returns the value used for filtering
-func (p Profile) FilterValue() string {
-	return string(p) // Return the string value of the Item
-}
 
 // ProfileSelector represents the state of the profiles selector overlay
 type ProfileSelector struct {
@@ -24,39 +17,33 @@ type ProfileSelector struct {
 	selectedItem string
 	instanceID   string
 	deviceID     string
-}
-
-// Profiles list (note: using Item type here)
-func FetchProfiles(instanceID string, deviceID string) []list.Item {
-
-	log.Debug().Msg("FetchProfiles CALLED")
-	log.Debug().Msg(instanceID)
-	log.Debug().Msg(deviceID)
-
-	profiles.GetProfiles(instanceID, deviceID)
-
-	// Example dynamic profile fetch (replace with your actual logic)
-	return []list.Item{
-		Profile("Profile 1"),
-		Profile("Profile 2"),
-		Profile("Profile 3"),
-	}
+	width        int
+	hasSelected  bool
 }
 
 // NewProfileSelector creates a new instance of ProfileSelector
 func NewProfileSelector(instanceID string, deviceID string) ProfileSelector {
 	selector := ProfileSelector{
-		instanceID: instanceID,
-		deviceID:   deviceID,
+		instanceID:  instanceID,
+		deviceID:    deviceID,
+		hasSelected: false,
 	}
 
+	// Get terminal width for initial setup
+	w, _, _ := term.GetSize(0)
+	selector.width = w
+
+	// Get profiles using the correct method
 	profiles := selector.FetchProfiles()
 
-	profileList := list.New(profiles, profileDelegate{}, 20, 14)
+	profileList := list.New(profiles, profileDelegate{}, w-8, 14)
 	profileList.Title = TitleStyle.Render("Select a Profile")
 	profileList.SetShowStatusBar(false)
 	profileList.SetFilteringEnabled(false)
 	profileList.Styles.Title = TitleStyle
+
+	// Set initial list width
+	profileList.SetSize(w-8, 14)
 
 	selector.list = profileList
 	return selector
@@ -77,37 +64,42 @@ type ProfileSelected string
 // Update processes messages and updates the state of the profile selector
 func (s *ProfileSelector) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
+
+	// First handle list updates
+	s.list, cmd = s.list.Update(msg)
+
+	// Then handle our custom logic
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
+			s.hasSelected = false
+			s.selectedItem = ""
 			return func() tea.Msg {
 				return ProfileSelected("")
 			}
 		case "enter":
-			// When a profile is selected, store it
-			selected, ok := s.list.SelectedItem().(ProfileItem)
-			if ok {
+			if selected, ok := s.list.SelectedItem().(ProfileItem); ok {
 				s.selectedItem = selected.id
-			}
-			// Return a command that signals the parent model to handle the selected profile
-			return func() tea.Msg {
-				return ProfileSelected(s.selectedItem)
+				s.hasSelected = true
+				return func() tea.Msg {
+					return ProfileSelected(s.selectedItem)
+				}
 			}
 		}
 	}
 
-	// Update the profile list whenever the state changes
-	profiles := s.FetchProfiles()
-	s.list.SetItems(profiles)
-
-	s.list, cmd = s.list.Update(msg)
 	return cmd
 }
 
 // View renders the profile selector as a string, including the list of profiles
 func (s ProfileSelector) View() string {
-	return ListStyle.Render(s.list.View())
+	style := ListStyle.Copy().Width(s.width - 4)
+
+	s.list.Styles.Title = TitleStyle
+	s.list.SetSize(s.width-8, 14)
+
+	return style.Render("Select Profile:\n\n" + s.list.View())
 }
 
 // profileDelegate handles rendering of each item in the profile selection list
@@ -157,4 +149,10 @@ type ProfileItem struct {
 // Add the FilterValue method for the ProfileItem
 func (i ProfileItem) FilterValue() string {
 	return i.title
+}
+
+// Add this method to ProfileSelector
+func (s *ProfileSelector) Reset() {
+	s.hasSelected = false
+	s.selectedItem = ""
 }
