@@ -3,3 +3,5 @@
 tmp/
 bin/
 .codegpt
+# TUI logs
+app.log

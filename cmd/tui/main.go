@@ -7,6 +7,9 @@ import (
 	"sd/pkg/pages"
 	"sd/pkg/profiles"
 
+	"strconv"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog"
@@ -24,10 +27,13 @@ type model struct {
 	currentProfile       string
 	currentPage          string
 	currentButton        string
+	selectedPosition     string // Track position without committing
 	showInstanceSelector bool
 	showDeviceSelector   bool
 	showProfileSelector  bool
 	showPageSelector     bool
+	buttonEditor         ButtonEditor
+	showButtonEditor     bool
 }
 
 // Getter for currentInstance
@@ -48,12 +54,15 @@ func initialModel() model {
 		currentProfile:       "None",
 		currentPage:          "None",
 		currentButton:        "None",
+		selectedPosition:     "1", // Start at first button
 		showInstanceSelector: false,
 		showDeviceSelector:   false,
 		showProfileSelector:  false,
 		showPageSelector:     false,
 		instanceSelector:     NewInstanceSelector(),
 		deviceSelector:       NewDeviceSelector(),
+		buttonEditor:         NewButtonEditor(),
+		showButtonEditor:     false,
 	}
 	// Initialize profileSelector after m is created
 	m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
@@ -141,8 +150,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	// Handle button editor updates
+	if m.showButtonEditor {
+		var editorCmd tea.Cmd
+		editorModel, cmd := m.buttonEditor.Update(msg)
+		if editor, ok := editorModel.(*ButtonEditor); ok {
+			m.buttonEditor = *editor
+			editorCmd = cmd
+		}
+		if cmd != nil {
+			return m, editorCmd
+		}
+	}
+
 	// Handle other messages (e.g., quit, toggling selectors)
 	switch msg := msg.(type) {
+	case EditorClosing:
+		m.showButtonEditor = false
+		m.buttonEditor.showEditor = false
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
@@ -164,6 +190,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showInstanceSelector = false
 			m.showDeviceSelector = false
 			m.showProfileSelector = false
+		case "left", "h":
+			if m.currentDevice != "None" {
+				m.selectedPosition = moveButton(m.selectedPosition, "left", m.currentDevice)
+			}
+		case "right", "l":
+			if m.currentDevice != "None" {
+				m.selectedPosition = moveButton(m.selectedPosition, "right", m.currentDevice)
+			}
+		case "up", "k":
+			if m.currentDevice != "None" {
+				m.selectedPosition = moveButton(m.selectedPosition, "up", m.currentDevice)
+			}
+		case "down", "j":
+			if m.currentDevice != "None" {
+				m.selectedPosition = moveButton(m.selectedPosition, "down", m.currentDevice)
+			}
+		case "enter":
+			if m.currentDevice != "None" {
+				m.currentButton = m.selectedPosition
+				m.showButtonEditor = true
+				m.buttonEditor.showEditor = true
+				m.buttonEditor.buttonNum = m.currentButton
+			}
 		}
 	}
 
@@ -172,6 +221,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the current view based on the state
 func (m model) View() string {
+	if m.showButtonEditor {
+		return m.buttonEditor.View()
+	}
+
 	if m.showInstanceSelector {
 		return m.instanceSelector.View()
 	}
@@ -189,7 +242,7 @@ func (m model) View() string {
 	}
 
 	// Create device view
-	deviceView := NewDeviceView(m.currentDevice)
+	deviceView := NewDeviceView(m.currentDevice, m.selectedPosition)
 
 	// Main content with device view
 	mainContent := fmt.Sprintf(`
@@ -207,16 +260,55 @@ Current Button: %s
 `, m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.currentButton)
 
 	// If we have a device selected, show the device view next to the main content
-	if m.currentDevice != "None" {
-		return lipgloss.JoinHorizontal(
-			lipgloss.Top,
-			mainContent,
-			"    ", // Add some spacing
-			deviceView.View(),
-		)
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		mainContent,
+		"    ", // Add some spacing
+		deviceView.View(),
+	)
+}
+
+func moveButton(currentButton string, direction string, deviceType string) string {
+	// Convert current button from string to int
+	current := 1
+	if currentButton != "None" {
+		if n, err := strconv.Atoi(currentButton); err == nil {
+			current = n
+		}
 	}
 
-	return mainContent
+	// Get max buttons based on device type
+	maxButtons := 32 // XL default
+	cols := 8
+	if strings.HasPrefix(deviceType, "CL") { // Stream Deck Plus
+		maxButtons = 8
+		cols = 4
+	} else if strings.HasPrefix(deviceType, "FL") { // Stream Deck Pedal
+		maxButtons = 3
+		cols = 3
+	}
+
+	// Calculate new position
+	switch direction {
+	case "right":
+		if current < maxButtons {
+			current++
+		}
+	case "left":
+		if current > 1 {
+			current--
+		}
+	case "up":
+		if current > cols {
+			current -= cols
+		}
+	case "down":
+		if current+cols <= maxButtons {
+			current += cols
+		}
+	}
+
+	return strconv.Itoa(current)
 }
 
 func main() {
