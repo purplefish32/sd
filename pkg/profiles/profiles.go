@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/karalabe/hid"
@@ -32,10 +33,71 @@ type CurrentProfile struct {
 
 // TODO UpdatePage, DeletePage
 
-func CreateProfile(instanceID string, device *hid.Device, name string) (profile Profile, err error) {
+func GetProfiles(instanceId string, deviceId string) ([]Profile, error) {
 	_, kv := natsconn.GetNATSConn()
 
-	log.Printf("Creating Profile for Instance: %v, device: %v", instanceID, device.Serial)
+	// Define the key prefix to search for profiles
+	prefix := "instances." + instanceId + ".devices." + deviceId + ".profiles."
+
+	// Define the key pattern to search for profiles
+	//keyPrefix := "instances." + instanceId + ".devices." + deviceId + ".profiles."
+
+	// List the keys in the NATS KV store under the given prefix
+	keyLister, err := kv.ListKeys()
+	if err != nil {
+		log.Error().Err(err).Msg("Could not list NATS KV keys")
+		return nil, err
+	}
+
+	// Initialize a slice to store the profiles
+	var profiles []Profile
+
+	// Iterate over the keys from the channel
+	for key := range keyLister.Keys() {
+
+		// If the key doesn't start with the prefix, skip it
+		if !strings.HasPrefix(key, prefix) {
+			continue
+		}
+
+		// Ensure that the key ends with the profile UUID and doesn't contain additional parts like ".pages" or ".buttons"
+		if strings.Contains(key[len(prefix):], ".") {
+			continue // Ignore keys that contain further parts (like .pages or .buttons)
+		}
+
+		// If the key ends with ".current", skip it (it's just the default profile)
+		if strings.HasSuffix(key, ".current") {
+			continue
+		}
+
+		// Fetch the profile data for each key
+		val, err := kv.Get(key)
+		if err != nil {
+			log.Error().Err(err).Str("key", key).Msg("Failed to get value for key")
+			continue
+		}
+
+		// Assuming the profile data is stored as a JSON string or similar structure
+		var profile Profile
+		err = json.Unmarshal(val.Value(), &profile)
+		if err != nil {
+			log.Error().Err(err).Str("key", key).Msg("Failed to unmarshal profile data")
+			continue
+		}
+
+		// Append the profile to the list
+		profiles = append(profiles, profile)
+	}
+
+	log.Info().Interface("profiles", profiles).Msg("Key")
+
+	return profiles, nil
+}
+
+func CreateProfile(instanceId string, device *hid.Device, name string) (profile Profile, err error) {
+	_, kv := natsconn.GetNATSConn()
+
+	log.Printf("Creating Profile for Instance: %v, device: %v", instanceId, device.Serial)
 
 	p := Profile{
 		ID:   uuid.New().String(),
@@ -51,7 +113,7 @@ func CreateProfile(instanceID string, device *hid.Device, name string) (profile 
 	}
 
 	// Define the key for the current profile
-	key := "instances." + instanceID + ".devices." + device.Serial + ".profiles." + p.ID
+	key := "instances." + instanceId + ".devices." + device.Serial + ".profiles." + p.ID
 
 	// Put the serialized data into the KV store
 	_, err = kv.Create(key, data)

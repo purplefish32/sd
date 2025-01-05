@@ -12,11 +12,11 @@ import (
 type Device string
 
 // FilterValue returns the value used for filtering
-func (i Device) FilterValue() string {
-	return string(i) // Return the string value of the Item
+func (d Device) FilterValue() string {
+	return string(d) // Return the string value of the Item
 }
 
-// DeviceSelector represents the state of the device picker overlay
+// DeviceSelector represents the state of the device selector overlay
 type DeviceSelector struct {
 	list         list.Model
 	selectedItem string

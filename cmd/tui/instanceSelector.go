@@ -16,7 +16,7 @@ func (i Instance) FilterValue() string {
 	return string(i) // Return the string value of the Item
 }
 
-// InstanceSelector represents the state of the instance picker overlay
+// InstanceSelector represents the state of the instance selector overlay
 type InstanceSelector struct {
 	list         list.Model
 	selectedItem string
@@ -24,9 +24,7 @@ type InstanceSelector struct {
 
 // Instances list (note: using Item type here)
 var instances = []list.Item{
-	Instance("Instance 1"),
-	Instance("Instance 2"),
-	Instance("Instance 3"),
+	Instance("db45c7bb-af46-48aa-b2a0-d222586c7909"), // TODO get this from NATS KV Store.
 }
 
 // NewInstanceSelector creates a new instance of InstanceSelector

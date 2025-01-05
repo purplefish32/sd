@@ -1,0 +1,831 @@
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T17:49:50+01:00","message":"UUID file exists"}
+{"level":"info","keys":"marshaling error: json: unsupported type: <-chan string","time":"2025-01-04T17:49:50+01:00","message":"List of NATS KV keys"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T17:55:45+01:00","message":"UUID file exists"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.1.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.2.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.4.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.5.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.32.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.6.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.3.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.A00WA32111VSU7.profiles.49f4e2bb-ffc5-4402-99fd-95d2ba6530f9.pages.a8f29339-1056-44b3-81e7-15c19a9773e6.buttons.1.buffer","time":"2025-01-04T17:55:45+01:00","message":"Failed to unmarshal profile data"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T17:59:37+01:00","message":"UUID file exists"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.1.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.2.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.4.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.5.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.32.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.6.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.3.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.A00WA32111VSU7.profiles.49f4e2bb-ffc5-4402-99fd-95d2ba6530f9.pages.a8f29339-1056-44b3-81e7-15c19a9773e6.buttons.1.buffer","time":"2025-01-04T17:59:37+01:00","message":"Failed to unmarshal profile data"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","name":"","pages":null},{"id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"467c415c-b15a-4cc4-a6e7-3c945d47dc4c","name":"Default","pages":null},{"id":"467c415c-b15a-4cc4-a6e7-3c945d47dc4c","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"e0247e12-3c2d-4818-9c6c-c0f003b9d2cd","name":"","pages":null},{"id":"e0247e12-3c2d-4818-9c6c-c0f003b9d2cd","name":"","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null},{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null},{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"","pages":null},{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":"","pages":null},{"id":"a8f29339-1056-44b3-81e7-15c19a9773e6","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null}],"time":"2025-01-04T17:59:37+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:13:36+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-04T18:13:36+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-04T18:13:52+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-04T18:13:52+01:00","message":"Current page found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-04T18:13:58+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-04T18:13:58+01:00","message":"Current page found"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:15:56+01:00","message":"UUID file exists"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.1.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.2.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.4.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.5.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.32.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.6.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.3.buffer","time":"2025-01-04T18:15:56+01:00","message":"Failed to unmarshal profile data"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","name":"","pages":null},{"id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"e0247e12-3c2d-4818-9c6c-c0f003b9d2cd","name":"","pages":null},{"id":"e0247e12-3c2d-4818-9c6c-c0f003b9d2cd","name":"","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null},{"id":"","name":"","pages":null}],"time":"2025-01-04T18:15:56+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:16:01+01:00","message":"UUID file exists"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.1.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.2.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.4.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.5.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.32.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.6.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"error","error":"invalid character 'ÿ' looking for beginning of value","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5.pages.47c37d8c-5e51-47dd-9e0b-45748920aba6.buttons.3.buffer","time":"2025-01-04T18:16:01+01:00","message":"Failed to unmarshal profile data"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","name":"","pages":null},{"id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"","name":"","pages":null},{"id":"e0247e12-3c2d-4818-9c6c-c0f003b9d2cd","name":"","pages":null},{"id":"e0247e12-3c2d-4818-9c6c-c0f003b9d2cd","name":"","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null},{"id":"","name":"","pages":null}],"time":"2025-01-04T18:16:01+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:22:11+01:00","message":"UUID file exists"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T18:22:11+01:00","message":"Failed to unmarshal profile data"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null}],"time":"2025-01-04T18:22:11+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:24:50+01:00","message":"UUID file exists"}
+{"level":"warn","time":"2025-01-04T18:24:50+01:00","message":"X"}
+{"level":"warn","time":"2025-01-04T18:24:50+01:00","message":"X"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T18:24:50+01:00","message":"Failed to unmarshal profile data"}
+{"level":"warn","time":"2025-01-04T18:24:50+01:00","message":"X"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null}],"time":"2025-01-04T18:24:50+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:25:10+01:00","message":"UUID file exists"}
+{"level":"warn","time":"2025-01-04T18:25:10+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5"}
+{"level":"warn","time":"2025-01-04T18:25:10+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T18:25:10+01:00","message":"Failed to unmarshal profile data"}
+{"level":"warn","time":"2025-01-04T18:25:10+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.current"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null}],"time":"2025-01-04T18:25:10+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:25:16+01:00","message":"UUID file exists"}
+{"level":"warn","time":"2025-01-04T18:25:16+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5"}
+{"level":"warn","time":"2025-01-04T18:25:16+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299"}
+{"level":"error","error":"unexpected end of JSON input","key":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e6299","time":"2025-01-04T18:25:16+01:00","message":"Failed to unmarshal profile data"}
+{"level":"warn","time":"2025-01-04T18:25:16+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.current"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null}],"time":"2025-01-04T18:25:16+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:30:19+01:00","message":"UUID file exists"}
+{"level":"warn","time":"2025-01-04T18:30:19+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5"}
+{"level":"warn","time":"2025-01-04T18:30:19+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.current"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null},{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"","pages":null}],"time":"2025-01-04T18:30:19+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:33:28+01:00","message":"UUID file exists"}
+{"level":"warn","time":"2025-01-04T18:33:28+01:00","message":"instances.db45c7bb-af46-48aa-b2a0-d222586c7909.devices.CL50K2A03427.profiles.09694a2c-0c3f-440d-906b-fc48911e62b5"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-04T18:33:28+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:44:27+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-04T18:44:27+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-04T18:44:34+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-04T18:44:34+01:00","message":"Current page found"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:44:59+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-04T18:44:59+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:45:10+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-04T18:45:10+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:46:14+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T18:46:14+01:00"}
+{"level":"debug","time":"2025-01-04T18:46:14+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T18:46:14+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T18:59:35+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T18:59:35+01:00"}
+{"level":"debug","time":"2025-01-04T18:59:35+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T18:59:35+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-04T18:59:50+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-04T18:59:50+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-04T19:01:03+01:00"}
+{"level":"debug","time":"2025-01-04T19:01:03+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:01:03+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:01:08+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:01:08+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:01:08+01:00"}
+{"level":"debug","time":"2025-01-04T19:01:08+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:01:08+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-04T19:01:14+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-04T19:01:14+01:00","message":"Current page found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-04T19:01:17+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-04T19:01:17+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-04T19:01:28+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:01:28+01:00"}
+{"level":"debug","time":"2025-01-04T19:01:28+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:01:28+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:02:26+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:02:26+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:26+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:26+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:26+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:35+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:35+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:35+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:35+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:35+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:36+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:37+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:37+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:37+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:38+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:38+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:39+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:39+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:39+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:39+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:39+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:39+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:40+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:40+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:40+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:42+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:42+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:42+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:42+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:42+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:43+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:43+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:43+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:44+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:45+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:45+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:45+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:46+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:46+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:46+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:02:48+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-04T19:02:48+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:48+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:48+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:48+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:02:51+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:02:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:02:51+01:00"}
+{"level":"debug","time":"2025-01-04T19:02:51+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:02:51+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:03:30+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:03:30+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:03:30+01:00"}
+{"level":"debug","time":"2025-01-04T19:03:30+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:03:30+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:05:24+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:05:24+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","model":{},"time":"2025-01-04T19:05:24+01:00"}
+{"level":"debug","time":"2025-01-04T19:05:24+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:05:24+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:05:49+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:05:49+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","model":{},"time":"2025-01-04T19:05:49+01:00","message":"Model"}
+{"level":"debug","time":"2025-01-04T19:05:49+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:05:49+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"FL14L1A03452","profile_id":"467c415c-b15a-4cc4-a6e7-3c945d47dc4c","time":"2025-01-04T19:06:16+01:00","message":"Current profile found"}
+{"level":"debug","time":"2025-01-04T19:06:16+01:00","message":"No current page found for device: FL14L1A03452"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-04T19:06:21+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-04T19:06:21+01:00","message":"Current page found"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:12:47+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:12:47+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:12:47+01:00","message":"X"}
+{"level":"debug","time":"2025-01-04T19:12:47+01:00","message":"Y"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:12:47+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-04T19:13:01+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-04T19:13:01+01:00","message":"Current page found"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:14:03+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:14:03+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:14:03+01:00","message":"X"}
+{"level":"debug","time":"2025-01-04T19:14:03+01:00","message":"Y"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:14:03+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:14:03+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:14:06+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:14:50+01:00","message":"UPDATE"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:14:51+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"X"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"Y"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:14:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"O"}
+{"level":"debug","time":"2025-01-04T19:14:51+01:00","message":"P"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:14:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:41+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:41+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:41+01:00","message":"O"}
+{"level":"debug","time":"2025-01-04T19:15:41+01:00","message":"P"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:41+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-04T19:15:43+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"X"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"Y"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:43+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:43+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:43+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:49+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:49+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:49+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:49+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:49+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:50+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:50+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:50+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:55+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:55+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:55+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:55+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:55+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:56+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:56+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:56+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:56+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:57+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:57+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-04T19:15:57+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-04T19:15:57+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-04T19:15:57+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-04T19:15:57+01:00","message":"Current page found"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:31:36+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:36+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:44+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:44+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:46+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:46+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:46+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:46+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:46+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:47+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:47+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:47+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:47+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:47+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","time":"2025-01-05T15:31:47+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"A00WA32111VSU7","profile_id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","page_id":"a8f29339-1056-44b3-81e7-15c19a9773e6","time":"2025-01-05T15:31:47+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T15:31:49+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:49+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:49+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:49+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:49+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:50+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:50+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:50+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:50+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:50+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:51+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:52+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:53+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:53+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"A00WA32111VSU7"}
+{"level":"info","profiles":[{"id":"49f4e2bb-ffc5-4402-99fd-95d2ba6530f9","name":"Default","pages":null}],"time":"2025-01-05T15:31:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:31:54+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:31:54+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:32:07+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:07+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:07+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:08+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:08+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:08+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:08+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:08+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:09+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:09+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:09+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:09+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:09+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:11+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:11+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:11+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:11+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:11+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:13+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:13+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:13+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:13+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:14+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:14+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:14+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-05T15:32:14+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-05T15:32:14+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:15+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:15+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:15+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:15+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:16+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:16+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"CL50K2A03427"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:32:17+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"HERE"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"A"}
+{"level":"debug","time":"2025-01-05T15:32:17+01:00","message":"B"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:32:17+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:38:36+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:38:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:38:36+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:38:36+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:39:48+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:39:48+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:39:48+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:39:49+01:00","message":"UUID file exists"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:39:49+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:39:49+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:39:49+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:47+01:00","message":"UPDATE"}
+{"level":"debug","time":"2025-01-05T15:48:47+01:00","message":"FetchProfiles CALLED"}
+{"level":"debug","time":"2025-01-05T15:48:47+01:00","message":"db45c7bb-af46-48aa-b2a0-d222586c7909"}
+{"level":"debug","time":"2025-01-05T15:48:47+01:00","message":"None"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:47+01:00","message":"Key"}
+{"level":"info","uuid":"db45c7bb-af46-48aa-b2a0-d222586c7909","time":"2025-01-05T15:48:49+01:00","message":"UUID file exists"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:49+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:49+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:49+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:51+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:52+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:52+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:52+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:52+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:54+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:54+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:55+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:55+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:55+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:55+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:55+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:55+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:48:55+01:00","message":"UPDATE"}
+{"level":"info","profiles":null,"time":"2025-01-05T15:48:55+01:00","message":"Key"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","time":"2025-01-05T15:48:55+01:00","message":"Current profile found"}
+{"level":"info","instance_id":"db45c7bb-af46-48aa-b2a0-d222586c7909","device_serial":"CL50K2A03427","profile_id":"09694a2c-0c3f-440d-906b-fc48911e62b5","page_id":"47c37d8c-5e51-47dd-9e0b-45748920aba6","time":"2025-01-05T15:48:55+01:00","message":"Current page found"}
+{"level":"debug","time":"2025-01-05T15:48:59+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:48:59+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:49:00+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:00+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:00+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:49:01+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:01+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:01+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:49:01+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:01+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:49:01+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:01+01:00","message":"Key"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:01+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:49:51+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:51+01:00","message":"Key"}
+{"level":"debug","time":"2025-01-05T15:49:56+01:00","message":"UPDATE"}
+{"level":"info","profiles":[{"id":"09694a2c-0c3f-440d-906b-fc48911e62b5","name":"Default","pages":null}],"time":"2025-01-05T15:49:56+01:00","message":"Key"}
