@@ -245,6 +245,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showDeviceSelector = true
 			case "p":
 				if m.currentDevice != "None" {
+					// Create a fresh profile selector with current state
+					m.profileSelector = NewProfileSelector(m.currentInstance, m.currentDevice)
 					m.showProfileSelector = true
 					if m.showProfileSelector {
 						m.profileSelector.Reset()

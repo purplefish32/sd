@@ -207,7 +207,7 @@ func (e *ButtonEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						UUID:     "sd.plugin.keyboard.type",
 						Settings: buttons.Settings{Text: e.configInput},
 						States: []buttons.State{
-							{Id: "0", ImagePath: "/home/donovan/.config/sd/buttons/keyboard.png"},
+							{Id: "0", ImagePath: "/home/donovan/.config/sd/buttons/type.png"},
 						},
 						State: "0",
 						Title: "",

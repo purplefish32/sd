@@ -135,10 +135,8 @@ func GetCurrentProfile(instanceId string, deviceId string) *Profile { // TODO mo
 
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
-			log.Error().Err(err).Str("device_serial", deviceId).Msg("No NATS key for current profile found")
-			return nil
+			log.Warn().Str("device_serial", deviceId).Msg("No NATS key for current profile found")
 		}
-		log.Error().Err(err).Str("device_serial", deviceId).Msg("Failed to get current profile")
 		return nil
 	}
 

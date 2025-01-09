@@ -43,43 +43,50 @@ func (plus Plus) Init() {
 	BlankAllKeys(plus.device)
 
 	currentProfile := profiles.GetCurrentProfile(plus.instanceID, plus.device.Serial)
-	plus.currentProfile = currentProfile.ID
 
-	// If no default profile exists, create one and set is as the default profile.
+	// If no default profile exists, create one and set it as the default profile.
 	if currentProfile == nil {
-		log.Warn().Msg("Current profile not found creating one")
+		log.Info().Msg("Creating default profile")
 
 		// Create a new profile.
-		profile, _ := profiles.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
+		profile, err := profiles.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to create default profile")
+			return
+		}
 
-		log.Info().Str("profileId", profile.ID).Msg("Profile created")
+		log.Info().Str("profileId", profile.ID).Msg("Default profile created")
 
 		// Set the profile as the current profile.
 		profiles.SetCurrentProfile(plus.instanceID, plus.device.Serial, profile.ID)
+		currentProfile = profile
 	}
 
-	currentProfile = profiles.GetCurrentProfile(plus.instanceID, plus.device.Serial)
+	if currentProfile == nil {
+		log.Error().Msg("Failed to get or create current profile")
+		return
+	}
 
 	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
 
 	currentPage := pages.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
-	plus.currentPage = currentPage.ID
 
-	// If no default page exists, create one and set is as the default page for the given profile.
+	// If no default page exists, create one and set it as the default page for the given profile.
 	if currentPage == nil {
-		log.Warn().Msg("Current page not found creating one")
+		log.Info().Msg("Creating default page")
 
 		// Create a new page.
 		page, err := pages.CreatePage(plus.instanceID, plus.device.Serial, currentProfile.ID)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to create page")
+			log.Error().Err(err).Msg("Failed to create default page")
 			return
 		}
 
-		log.Info().Interface("page", page).Msg("Page created")
+		log.Info().Interface("page", page).Msg("Default page created")
 
 		// Set the page as the current page.
 		pages.SetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID, page.ID)
+		currentPage = &page
 	}
 
 	// Buffer for outgoing events.
