@@ -18,6 +18,8 @@ import (
 	"sd/pkg/plugins/command"
 	"sd/pkg/plugins/keyboard"
 
+	"encoding/json"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rs/zerolog"
@@ -47,6 +49,8 @@ type model struct {
 	height                 int
 	currentProfileName     string
 	showDeleteConfirmation bool
+	buttonClipboard        string // Store copied button data
+	showPasteConfirmation  bool
 }
 
 // Getter for currentInstance
@@ -88,6 +92,8 @@ func initialModel() model {
 		width:                  w,
 		height:                 h,
 		showDeleteConfirmation: false,
+		buttonClipboard:        "",
+		showPasteConfirmation:  false,
 	}
 
 	// Set initial editor width
@@ -115,8 +121,6 @@ func (m model) Init() tea.Cmd {
 // Update processes messages and updates the model state
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-
-	log.Debug().Msg("UPDATE")
 
 	// Handle the update for the device selector
 	if m.showDeviceSelector {
@@ -305,6 +309,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.showDeleteConfirmation = true
 					}
 				}
+			case "c": // Copy
+				if m.currentDevice != "None" {
+					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+
+					if button, err := buttons.GetButton(key); err == nil {
+						if data, err := json.Marshal(button); err == nil {
+							m.buttonClipboard = string(data)
+							log.Debug().Str("copied_button", m.selectedPosition).Msg("Button copied")
+						}
+					}
+				}
+			case "v": // Paste
+				if m.currentDevice != "None" && m.buttonClipboard != "" {
+					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+
+					_, kv := natsconn.GetNATSConn()
+					// Only show confirmation if button exists
+					if _, err := buttons.GetButton(key); err == nil {
+						m.showPasteConfirmation = true
+					} else {
+						// No existing button, paste directly
+						if _, err := kv.Put(key, []byte(m.buttonClipboard)); err == nil {
+							log.Debug().Str("pasted_button", m.selectedPosition).Msg("Button pasted")
+						}
+					}
+				}
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -341,85 +373,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, cmd
-}
-
-// View renders the current view based on the state
-func (m model) View() string {
-	if m.showButtonEditor {
-		return m.buttonEditor.View()
-	}
-
-	if m.showInstanceSelector {
-		return m.instanceSelector.View()
-	}
-
-	if m.showDeviceSelector {
-		return m.deviceSelector.View()
-	}
-
-	if m.showProfileSelector {
-		return m.profileSelector.View()
-	}
-
-	if m.showPageSelector {
-		return m.pageSelector.View()
-	}
-
-	if m.showDeleteConfirmation {
-		style := lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("196")). // Red border for delete
-			Padding(1, 2)
-
-		return style.Render(
-			"Are you sure you want to delete this button?\n\n" +
-				"Press 'y' to confirm, 'n' or ESC to cancel",
-		)
-	}
-
-	// Create device view
-	deviceView := NewDeviceView(m.currentDevice, m.selectedPosition)
-
-	// Main content with device view
-	mainContent := fmt.Sprintf(`
-Current Instance: %s
-Current Device: %s
-%s
-
-[i] to change the instance
-[d] to change the device
-%s
-[x] to delete the selected button
-[q] to quit
-`,
-		m.currentInstance,
-		m.currentDevice,
-		// Only show profile/page info if device is selected
-		func() string {
-			if m.currentDevice != "None" {
-				return fmt.Sprintf(
-					"Current Profile: %s (%s)\nCurrent Page: %s\nCurrent Button: %s",
-					m.currentProfileName, m.currentProfile, m.currentPage, m.currentButton,
-				)
-			}
-			return ""
-		}(),
-		// Only show profile/page controls if device is selected
-		func() string {
-			if m.currentDevice != "None" {
-				return "[p] to change the profile\n[g] to change the page"
-			}
-			return ""
-		}(),
-	)
-
-	// If we have a device selected, show the device view next to the main content
-	return lipgloss.JoinHorizontal(
-		lipgloss.Top,
-		mainContent,
-		"    ", // Add some spacing
-		deviceView.View(),
-	)
 }
 
 func moveButton(currentButton string, direction string, deviceType string) string {
@@ -497,4 +450,106 @@ func main() {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
+}
+
+// View renders the current view based on the state
+func (m model) View() string {
+	if m.showButtonEditor {
+		return m.buttonEditor.View()
+	}
+
+	if m.showInstanceSelector {
+		return m.instanceSelector.View()
+	}
+
+	if m.showDeviceSelector {
+		return m.deviceSelector.View()
+	}
+
+	if m.showProfileSelector {
+		return m.profileSelector.View()
+	}
+
+	if m.showPageSelector {
+		return m.pageSelector.View()
+	}
+
+	if m.showDeleteConfirmation {
+		style := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("196")). // Red border for delete
+			Padding(1, 2).
+			Align(lipgloss.Center).
+			Width(50).
+			MarginLeft((m.width - 54) / 2). // Account for border and padding
+			MarginTop((m.height - 6) / 2)   // Roughly center vertically
+
+		return style.Render(
+			"Are you sure you want to delete this button?\n\n" +
+				"Press 'y' to confirm, 'n' or ESC to cancel",
+		)
+	}
+
+	if m.showPasteConfirmation {
+		style := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("196")). // Red border for paste
+			Padding(1, 2).
+			Align(lipgloss.Center).
+			Width(50).
+			Align(lipgloss.Center).
+			MarginLeft((m.width - 54) / 2). // Account for border and padding
+			MarginTop((m.height - 6) / 2)   // Roughly center vertically
+
+		return style.Render(
+			"Do you want to paste the button here?\n\n" +
+				"Press 'y' to confirm, 'n' or ESC to cancel",
+		)
+	}
+
+	// Create device view
+	deviceView := NewDeviceView(m.currentDevice, m.selectedPosition)
+
+	// In the View method, before the JoinHorizontal:
+	mainContent := fmt.Sprintf(`
+Current Instance: %s
+Current Device: %s
+%s
+
+[i] to change the instance
+[d] to change the device
+%s
+[x] to delete the selected button
+[c] to copy button
+[v] to paste button
+[q] to quit
+`,
+		m.currentInstance,
+		m.currentDevice,
+		// Only show profile/page info if device is selected
+		func() string {
+			if m.currentDevice != "None" {
+				return fmt.Sprintf(
+					"Current Profile: %s (%s)\nCurrent Page: %s\nCurrent Button: %s",
+					m.currentProfileName, m.currentProfile, m.currentPage, m.currentButton,
+				)
+			}
+			return ""
+		}(),
+		// Only show profile/page controls if device is selected
+		func() string {
+			if m.currentDevice != "None" {
+				return "[p] to change the profile\n[g] to change the page"
+			}
+			return ""
+		}(),
+	)
+
+	// If we have a device selected, show the device view next to the main content
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		mainContent,
+		"    ", // Add some spacing
+		deviceView.View(),
+	)
 }
