@@ -4,4 +4,4 @@ tmp/
 bin/
 .codegpt
 # TUI logs
-app.log
+cmd/tui/app.log
