@@ -345,7 +345,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.buttonEditor.buttonNum = m.currentButton
 					m.buttonEditor.LoadButton()
 				}
-			case "x": // Delete
+			case "delete": // Delete
 				if m.currentDevice != "None" {
 					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
 						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
@@ -355,7 +355,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.showDeleteConfirmation = true
 					}
 				}
-			case "c": // Copy
+			case "ctrl+c": // Copy
 				if m.currentDevice != "None" {
 					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
 						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
@@ -373,7 +373,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 				}
-			case "v": // Paste
+			case "ctrl+v": // Paste
 				if m.currentDevice != "None" && m.buttonClipboard != "" {
 					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
 						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
@@ -403,7 +403,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 				}
-			case "s": // Start swap mode
+			case "alt+s": // Start swap mode
 				if m.currentDevice != "None" {
 					m.swapMode = true
 					m.swapSourceButton = m.selectedPosition
@@ -701,13 +701,8 @@ Current Device: %s
 
 [i] to change the instance
 [d] to change the device
-%s
-[x] to delete the selected button
-[c] to copy button
-[v] to paste button
-[s] to swap buttons
-[ctrl+x] to cut button
 [q] to quit
+%s
 %s`,
 		m.currentInstance,
 		m.currentDevice,
@@ -724,7 +719,12 @@ Current Device: %s
 		// Only show profile/page controls if device is selected
 		func() string {
 			if m.currentDevice != "None" {
-				return "[p] to change the profile\n[g] to change the page"
+				return fmt.Sprintf("[p] to change the profile\n[g] to change the page\n" +
+					"[delete] to delete the selected button\n" +
+					"[ctrl+c] to copy button\n" +
+					"[ctrl+v] to paste button\n" +
+					"[alt+s] to swap buttons\n" +
+					"[ctrl+x] to cut button")
 			}
 			return ""
 		}(),
