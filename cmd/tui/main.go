@@ -314,10 +314,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
 						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
 
-					if button, err := buttons.GetButton(key); err == nil {
-						if data, err := json.Marshal(button); err == nil {
-							m.buttonClipboard = string(data)
-							log.Debug().Str("copied_button", m.selectedPosition).Msg("Button copied")
+					// If button doesn't exist, store empty string to represent a blank button
+					if _, err := buttons.GetButton(key); err != nil {
+						m.buttonClipboard = "{}"
+						log.Debug().Str("copied_button", m.selectedPosition).Msg("Copied blank button")
+					} else {
+						if button, err := buttons.GetButton(key); err == nil {
+							if data, err := json.Marshal(button); err == nil {
+								m.buttonClipboard = string(data)
+								log.Debug().Str("copied_button", m.selectedPosition).Msg("Button copied")
+							}
 						}
 					}
 				}
@@ -326,14 +332,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
 						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
 
-					_, kv := natsconn.GetNATSConn()
-					// Only show confirmation if button exists
-					if _, err := buttons.GetButton(key); err == nil {
-						m.showPasteConfirmation = true
+					// Check if we're pasting a blank button
+					if m.buttonClipboard == "{}" {
+						// Only show confirmation if there's an existing button
+						if _, err := buttons.GetButton(key); err == nil {
+							m.showPasteConfirmation = true
+						} else {
+							// No existing button, no need to confirm
+							_, kv := natsconn.GetNATSConn()
+							if err := kv.Delete(key); err == nil {
+								kv.Delete(key + ".buffer")
+								log.Debug().Str("blanked_button", m.selectedPosition).Msg("Button blanked")
+							}
+						}
 					} else {
-						// No existing button, paste directly
-						if _, err := kv.Put(key, []byte(m.buttonClipboard)); err == nil {
-							log.Debug().Str("pasted_button", m.selectedPosition).Msg("Button pasted")
+						// Normal paste logic for non-blank buttons
+						_, kv := natsconn.GetNATSConn()
+						if _, err := buttons.GetButton(key); err == nil {
+							m.showPasteConfirmation = true
+						} else {
+							if _, err := kv.Put(key, []byte(m.buttonClipboard)); err == nil {
+								log.Debug().Str("pasted_button", m.selectedPosition).Msg("Button pasted")
+							}
 						}
 					}
 				}
@@ -369,6 +389,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			return m, nil // Ignore all other keys when delete dialog is open
+		}
+	}
+
+	if m.showPasteConfirmation {
+		if msg, ok := msg.(tea.KeyMsg); ok {
+			switch msg.String() {
+			case "y", "enter":
+				key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+					m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+				_, kv := natsconn.GetNATSConn()
+
+				// If we're pasting a blank button, delete instead of put
+				if m.buttonClipboard == "{}" {
+					if err := kv.Delete(key); err == nil {
+						kv.Delete(key + ".buffer")
+						log.Debug().Str("blanked_button", m.selectedPosition).Msg("Button blanked")
+					}
+				} else {
+					if _, err := kv.Put(key, []byte(m.buttonClipboard)); err == nil {
+						log.Debug().Str("pasted_button", m.selectedPosition).Msg("Button pasted")
+					}
+				}
+				m.showPasteConfirmation = false
+				return m, nil
+			case "n", "esc":
+				m.showPasteConfirmation = false
+				return m, nil
+			}
+			return m, nil // Ignore all other keys when paste dialog is open
 		}
 	}
 
