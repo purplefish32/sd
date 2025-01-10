@@ -19,20 +19,25 @@ import (
 )
 
 type Plus struct {
-	instanceID     string
-	device         *hid.Device
-	currentProfile string
-	currentPage    string
-	wasDialPressed [4]bool
+	instanceID       string
+	device           *hid.Device
+	currentProfile   string
+	currentPage      string
+	wasDialPressed   [4]bool
+	wasScreenPressed bool
+	lastX            int
 }
 
 var ProductID uint16 = 0x006c
 
 const (
-	DialTurningFlag = 0x01
-	DialTurnRight   = 0x01
-	DialTurnLeft    = 0xFF
-	DialPressedFlag = 0x01
+	DialTurningFlag   = 0x01
+	DialTurnRight     = 0x01
+	DialTurnLeft      = 0xFF
+	DialPressedFlag   = 0x01
+	TouchScreenFlag   = 0x01
+	TouchPressedFlag  = 0x02
+	ButtonPressedFlag = 0x02
 )
 
 type DialEvent struct {
@@ -40,6 +45,13 @@ type DialEvent struct {
 	IsTurning bool
 	IsPressed bool
 	Direction int // 1 for right, -1 for left, 0 for press/release
+}
+
+type TouchEvent struct {
+	X         int    // X coordinate
+	Y         int    // Y coordinate
+	IsPressed bool   // Whether the screen is being touched
+	Action    string // "tap", "swipe_left", or "swipe_right"
 }
 
 func New(instanceID string, device *hid.Device) Plus {
@@ -113,26 +125,8 @@ func (plus Plus) Init() {
 	// Listen for incoming device input.
 	for {
 		n, _ := plus.device.Read(buf)
-
 		if n > 0 {
-			// Check if it's a dial event
-			if buf[0] == 0x01 && buf[1] == 0x03 && buf[2] == 0x05 {
-				plus.handleDialEvent(buf)
-				continue
-			}
-
-			pressedButtons := util.ParseEventBuffer(buf)
-
-			// TODO implement long press.
-			for _, buttonIndex := range pressedButtons {
-				// Ignore button up event for now.
-				if buttonIndex == 0 {
-					log.Debug().Interface("device", plus.device).Int("button_index", buttonIndex).Msg("Button released")
-					continue
-				}
-
-				plus.handleButtonPress(buttonIndex)
-			}
+			plus.handleEvent(buf)
 		}
 	}
 }
@@ -362,7 +356,70 @@ func (plus *Plus) handleDialEvent(buf []byte) {
 	}
 }
 
-func (plus Plus) handleDialAction(event DialEvent) {
+func (plus *Plus) handleTouchEvent(buf []byte) {
+	// Touch events format:
+	// 01 02 0E 00 01 01 [X coord (2 bytes)] [Y coord (2 bytes)]
+
+	// Extract coordinates (Little Endian)
+	x := int(buf[6]) | (int(buf[7]) << 8)
+	y := int(buf[8]) | (int(buf[9]) << 8)
+
+	// Detect swipes by checking the event type in buf[4]
+	action := "tap"
+	if buf[4] == 0x03 { // Swipe event
+		if x > plus.lastX {
+			action = "swipe_left" // X increasing = finger moving left
+		} else if x < plus.lastX {
+			action = "swipe_right" // X decreasing = finger moving right
+		}
+	}
+	plus.lastX = x
+
+	event := TouchEvent{
+		X:         x,
+		Y:         y,
+		IsPressed: true,
+		Action:    action,
+	}
+
+	// Log differently based on action type
+	if action == "tap" {
+		section := (x / 200) + 1 // Calculate section (1-4)
+		if section < 1 {
+			section = 1
+		} else if section > 4 {
+			section = 4
+		}
+		log.Info().
+			Int("section", section).
+			Msg("Touch screen tapped")
+	} else {
+		log.Info().
+			Str("action", action).
+			Msg("Touch screen swiped")
+	}
+
+	plus.handleTouchAction(event)
+}
+
+func (plus *Plus) handleTouchAction(event TouchEvent) {
+	// Get NATS connection
+	nc, _ := natsconn.GetNATSConn()
+
+	// Create a payload for the touch event
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal touch event")
+		return
+	}
+
+	// Publish to NATS with a touch-specific topic
+	topic := fmt.Sprintf("instances.%s.devices.%s.touch",
+		plus.instanceID, plus.device.Serial)
+	nc.Publish(topic, data)
+}
+
+func (plus *Plus) handleDialAction(event DialEvent) {
 	// Get NATS connection
 	nc, _ := natsconn.GetNATSConn()
 
@@ -377,4 +434,36 @@ func (plus Plus) handleDialAction(event DialEvent) {
 	topic := fmt.Sprintf("instances.%s.devices.%s.dials.%d",
 		plus.instanceID, plus.device.Serial, event.DialIndex)
 	nc.Publish(topic, data)
+}
+
+func (plus *Plus) handleEvent(buf []byte) {
+	// Check for dial events first (they have a specific pattern)
+	if buf[0] == 0x01 && buf[1] == 0x03 && buf[2] == 0x05 {
+		plus.handleDialEvent(buf)
+		return
+	}
+
+	// Check for touch events
+	if buf[0] == 0x01 && buf[1] == 0x02 && buf[2] == 0x0E {
+		log.Debug().Msg("Touch event detected")
+		plus.handleTouchEvent(buf) // Remove the slice, pass full buffer
+		return
+	}
+
+	// Handle button events (they start with 0x01)
+	if buf[0] == 0x01 {
+		plus.handleButtonPress(int(buf[1]))
+		return
+	}
+}
+
+func (plus *Plus) handleButtonEvent(buf []byte) {
+	pressedButtons := util.ParseEventBuffer(buf)
+	for _, buttonIndex := range pressedButtons {
+		// Ignore button up event for now.
+		if buttonIndex == 0 {
+			continue
+		}
+		plus.handleButtonPress(buttonIndex)
+	}
 }
