@@ -415,6 +415,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.swapSourceButton = ""
 					return m, nil
 				}
+			case "ctrl+x": // Cut
+				if m.currentDevice != "None" {
+					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+
+					// First copy the button if it exists
+					if button, err := buttons.GetButton(key); err == nil {
+						if data, err := json.Marshal(button); err == nil {
+							m.buttonClipboard = string(data)
+							log.Debug().Str("cut_button", m.selectedPosition).Msg("Button cut")
+
+							// Then delete it
+							_, kv := natsconn.GetNATSConn()
+							if err := kv.Delete(key); err == nil {
+								kv.Delete(key + ".buffer")
+							}
+						}
+					} else {
+						// If button doesn't exist, store empty string
+						m.buttonClipboard = "{}"
+						log.Debug().Str("cut_button", m.selectedPosition).Msg("Cut blank button")
+					}
+				}
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -683,6 +706,7 @@ Current Device: %s
 [c] to copy button
 [v] to paste button
 [s] to swap buttons
+[ctrl+x] to cut button
 [q] to quit
 %s`,
 		m.currentInstance,
