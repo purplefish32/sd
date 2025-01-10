@@ -23,9 +23,24 @@ type Plus struct {
 	device         *hid.Device
 	currentProfile string
 	currentPage    string
+	wasDialPressed [4]bool
 }
 
 var ProductID uint16 = 0x006c
+
+const (
+	DialTurningFlag = 0x01
+	DialTurnRight   = 0x01
+	DialTurnLeft    = 0xFF
+	DialPressedFlag = 0x01
+)
+
+type DialEvent struct {
+	DialIndex int // 0-3 for dials A-D
+	IsTurning bool
+	IsPressed bool
+	Direction int // 1 for right, -1 for left, 0 for press/release
+}
 
 func New(instanceID string, device *hid.Device) Plus {
 	return Plus{
@@ -100,6 +115,12 @@ func (plus Plus) Init() {
 		n, _ := plus.device.Read(buf)
 
 		if n > 0 {
+			// Check if it's a dial event
+			if buf[0] == 0x01 && buf[1] == 0x03 && buf[2] == 0x05 {
+				plus.handleDialEvent(buf)
+				continue
+			}
+
 			pressedButtons := util.ParseEventBuffer(buf)
 
 			// TODO implement long press.
@@ -169,7 +190,6 @@ func WatchForButtonChanges(device *hid.Device) {
 			// Blank the key when button is deleted
 			buffer, _ := util.ConvertImageToBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 120)
 			BlankKey(device, id, buffer)
-			log.Debug().Int("button_id", id).Msg("Blanked deleted button on Plus")
 		case nats.KeyValuePut:
 			var button buttons.Button
 			if err := json.Unmarshal(update.Value(), &button); err != nil {
@@ -284,4 +304,77 @@ func (d *Plus) handleButtonPress(buttonIndex int) {
 
 	// Publish to NATS using the UUID as the topic
 	nc.Publish(button.UUID, data)
+}
+
+func (plus *Plus) handleDialEvent(buf []byte) {
+	isTurning := buf[4] == DialTurningFlag
+
+	// Check each dial (A through D)
+	for dialIndex := 0; dialIndex < 4; dialIndex++ {
+		dialValue := buf[5+dialIndex]
+
+		// Skip inactive dials
+		if dialValue == 0 && !plus.wasDialPressed[dialIndex] && !isTurning {
+			continue
+		}
+
+		// Create event for each dial
+		event := DialEvent{
+			DialIndex: dialIndex + 1,
+			IsTurning: isTurning,
+		}
+
+		if isTurning {
+			switch dialValue {
+			case DialTurnRight:
+				event.Direction = 1
+				log.Info().
+					Int("dial", event.DialIndex).
+					Msg("Dial turned right")
+			case DialTurnLeft:
+				event.Direction = -1
+				log.Info().
+					Int("dial", event.DialIndex).
+					Msg("Dial turned left")
+			default:
+				continue
+			}
+		} else {
+			// Not turning - handle press/release
+			if dialValue == DialPressedFlag {
+				event.IsPressed = true
+				plus.wasDialPressed[dialIndex] = true
+				log.Info().
+					Int("dial", event.DialIndex).
+					Msg("Dial pressed")
+			} else if dialValue == 0 && plus.wasDialPressed[dialIndex] {
+				event.IsPressed = false
+				plus.wasDialPressed[dialIndex] = false
+				log.Info().
+					Int("dial", event.DialIndex).
+					Msg("Dial released")
+			} else {
+				continue
+			}
+		}
+
+		plus.handleDialAction(event)
+	}
+}
+
+func (plus Plus) handleDialAction(event DialEvent) {
+	// Get NATS connection
+	nc, _ := natsconn.GetNATSConn()
+
+	// Create a payload for the dial event
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal dial event")
+		return
+	}
+
+	// Publish to NATS with a dial-specific topic
+	topic := fmt.Sprintf("instances.%s.devices.%s.dials.%d",
+		plus.instanceID, plus.device.Serial, event.DialIndex)
+	nc.Publish(topic, data)
 }

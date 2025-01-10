@@ -193,7 +193,6 @@ func WatchForButtonChanges(device *hid.Device) {
 			// Blank the key when button is deleted
 			buffer, _ := util.ConvertImageToRotatedBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 96)
 			BlankKey(device, id, buffer)
-			log.Debug().Int("button_id", id).Msg("Blanked deleted button on XL")
 		case nats.KeyValuePut:
 			var button buttons.Button
 			if err := json.Unmarshal(update.Value(), &button); err != nil {
