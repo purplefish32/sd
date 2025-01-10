@@ -2,7 +2,9 @@ package xl
 
 import (
 	"encoding/json"
+	"fmt"
 	"sd/pkg/actions"
+	"sd/pkg/buttons"
 	"sd/pkg/env"
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
@@ -159,42 +161,57 @@ func BlankAllKeys(device *hid.Device) {
 func WatchForButtonChanges(device *hid.Device) {
 	_, kv := natsconn.GetNATSConn()
 
-	// Start watching the KV bucket for all button changes.
-	watcher, err := kv.Watch("instances.*.devices." + device.Serial + ".profiles.*.pages.*.buttons.*") // TODO handle the instances.
-	defer watcher.Stop()
-
+	buttonPattern := fmt.Sprintf("instances.*.devices.%s.profiles.*.pages.*.buttons.*", device.Serial)
+	watcher, err := kv.Watch(buttonPattern)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating watcher")
+		return
 	}
+	defer watcher.Stop()
 
-	// Start the watch loop.
 	for update := range watcher.Updates() {
 		if update == nil {
 			continue
 		}
 
-		// Parse JSON from update.Value().
-		var actionInstance actions.ActionInstance
+		// Get button number from the key
+		segments := strings.Split(update.Key(), ".")
+		buttonNum := segments[len(segments)-1]
 
-		err := json.Unmarshal(update.Value(), &actionInstance)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to unmarshal JSON")
+		// Skip buffer keys
+		if strings.HasSuffix(buttonNum, ".buffer") {
 			continue
 		}
 
-		// TODO take into account multiple states ?
-		buf, err := util.ConvertImageToRotatedBuffer(actionInstance.States[0].ImagePath, 96)
-
+		id, err := strconv.Atoi(buttonNum)
 		if err != nil {
-			log.Error().Err(err).Msg("Buffer error")
+			continue
 		}
 
-		// Put the serialized data into the KV store.
-		if _, err := kv.Put(string(update.Key())+".buffer", buf); err != nil {
-			log.Error().Err(err).Msg("Error")
+		switch update.Operation() {
+		case nats.KeyValueDelete:
+			// Blank the key when button is deleted
+			buffer, _ := util.ConvertImageToRotatedBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 96)
+			BlankKey(device, id, buffer)
+			log.Debug().Int("button_id", id).Msg("Blanked deleted button on XL")
+		case nats.KeyValuePut:
+			var button buttons.Button
+			if err := json.Unmarshal(update.Value(), &button); err != nil {
+				log.Error().Err(err).Msg("Failed to unmarshal button")
+				continue
+			}
+			if len(button.States) > 0 {
+				buf, err := util.ConvertImageToRotatedBuffer(button.States[0].ImagePath, 96)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to create button buffer")
+					continue
+				}
+				BlankKey(device, id, buf)
+			}
 		}
 	}
 }
+
 func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 	// Add contextual information to the logger for this function
 	log := log.With().

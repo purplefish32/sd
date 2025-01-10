@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"sd/pkg/buttons"
 	"sd/pkg/instance"
+	"sd/pkg/natsconn"
 	"sd/pkg/pages"
 	"sd/pkg/profiles"
 	"sd/pkg/store"
@@ -25,25 +27,26 @@ import (
 
 // model stores the state of the entire application
 type model struct {
-	currentInstance      string
-	deviceSelector       DeviceSelector
-	instanceSelector     InstanceSelector
-	profileSelector      ProfileSelector
-	pageSelector         PageSelector
-	currentDevice        string
-	currentProfile       string
-	currentPage          string
-	currentButton        string
-	selectedPosition     string // Track position without committing
-	showInstanceSelector bool
-	showDeviceSelector   bool
-	showProfileSelector  bool
-	showPageSelector     bool
-	buttonEditor         ButtonEditor
-	showButtonEditor     bool
-	width                int
-	height               int
-	currentProfileName   string
+	currentInstance        string
+	deviceSelector         DeviceSelector
+	instanceSelector       InstanceSelector
+	profileSelector        ProfileSelector
+	pageSelector           PageSelector
+	currentDevice          string
+	currentProfile         string
+	currentPage            string
+	currentButton          string
+	selectedPosition       string // Track position without committing
+	showInstanceSelector   bool
+	showDeviceSelector     bool
+	showProfileSelector    bool
+	showPageSelector       bool
+	buttonEditor           ButtonEditor
+	showButtonEditor       bool
+	width                  int
+	height                 int
+	currentProfileName     string
+	showDeleteConfirmation bool
 }
 
 // Getter for currentInstance
@@ -81,9 +84,10 @@ func initialModel() model {
 			"None",
 			"None",
 		),
-		showButtonEditor: false,
-		width:            w,
-		height:           h,
+		showButtonEditor:       false,
+		width:                  w,
+		height:                 h,
+		showDeleteConfirmation: false,
 	}
 
 	// Set initial editor width
@@ -291,6 +295,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.buttonEditor.buttonNum = m.currentButton
 					m.buttonEditor.LoadButton()
 				}
+			case "x": // Delete
+				if m.currentDevice != "None" {
+					key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+
+					// Check if button exists before showing confirmation
+					if _, err := buttons.GetButton(key); err == nil {
+						m.showDeleteConfirmation = true
+					}
+				}
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -304,6 +318,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.deviceSelector.width = msg.Width
 		m.profileSelector.width = msg.Width
 		m.pageSelector.width = msg.Width
+	}
+
+	if m.showDeleteConfirmation {
+		if msg, ok := msg.(tea.KeyMsg); ok {
+			switch msg.String() {
+			case "y", "enter":
+				key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+					m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+				_, kv := natsconn.GetNATSConn()
+				if err := kv.Delete(key); err == nil {
+					log.Debug().Str("deleted_button", m.selectedPosition).Msg("Button deleted")
+				}
+				m.showDeleteConfirmation = false
+				return m, nil
+			case "n", "esc":
+				m.showDeleteConfirmation = false
+				return m, nil
+			}
+			return m, nil // Ignore all other keys when delete dialog is open
+		}
 	}
 
 	return m, cmd
@@ -331,6 +365,18 @@ func (m model) View() string {
 		return m.pageSelector.View()
 	}
 
+	if m.showDeleteConfirmation {
+		style := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("196")). // Red border for delete
+			Padding(1, 2)
+
+		return style.Render(
+			"Are you sure you want to delete this button?\n\n" +
+				"Press 'y' to confirm, 'n' or ESC to cancel",
+		)
+	}
+
 	// Create device view
 	deviceView := NewDeviceView(m.currentDevice, m.selectedPosition)
 
@@ -343,6 +389,7 @@ Current Device: %s
 [i] to change the instance
 [d] to change the device
 %s
+[x] to delete the selected button
 [q] to quit
 `,
 		m.currentInstance,
