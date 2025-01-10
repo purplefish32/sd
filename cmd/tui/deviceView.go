@@ -8,14 +8,18 @@ import (
 )
 
 type DeviceView struct {
-	deviceID       string
-	selectedButton string
+	deviceID         string
+	selectedButton   string
+	swapMode         bool
+	swapSourceButton string
 }
 
-func NewDeviceView(deviceID string, selectedButton string) DeviceView {
+func NewDeviceView(deviceID string, selectedButton string, swapMode bool, swapSourceButton string) DeviceView {
 	return DeviceView{
-		deviceID:       deviceID,
-		selectedButton: selectedButton,
+		deviceID:         deviceID,
+		selectedButton:   selectedButton,
+		swapMode:         swapMode,
+		swapSourceButton: swapSourceButton,
 	}
 }
 
@@ -33,6 +37,9 @@ func (d DeviceView) View() string {
 	selectedButtonStyle := buttonStyle.Copy().
 		BorderForeground(lipgloss.Color("205"))
 
+	swapSourceStyle := buttonStyle.Copy().
+		BorderForeground(lipgloss.Color("226")) // Yellow for swap source
+
 	var grid []string
 
 	// Check device type based on serial number pattern
@@ -45,11 +52,17 @@ func (d DeviceView) View() string {
 			var row []string
 			for c := 0; c < cols; c++ {
 				buttonNum := r*cols + c + 1
+				buttonStr := fmt.Sprintf("%d", buttonNum)
 				style := buttonStyle
-				if fmt.Sprintf("%d", buttonNum) == d.selectedButton {
+
+				if buttonStr == d.selectedButton {
 					style = selectedButtonStyle
 				}
-				button := style.Render(fmt.Sprintf("%d", buttonNum))
+				if d.swapMode && buttonStr == d.swapSourceButton {
+					style = swapSourceStyle
+				}
+
+				button := style.Render(buttonStr)
 				row = append(row, button)
 			}
 			grid = append(grid, lipgloss.JoinHorizontal(lipgloss.Top, row...))
@@ -58,7 +71,18 @@ func (d DeviceView) View() string {
 		const numButtons = 3
 		var row []string
 		for i := 0; i < numButtons; i++ {
-			button := buttonStyle.Render(fmt.Sprintf("%d", i+1))
+			buttonNum := i + 1
+			buttonStr := fmt.Sprintf("%d", buttonNum)
+			style := buttonStyle
+
+			if buttonStr == d.selectedButton {
+				style = selectedButtonStyle
+			}
+			if d.swapMode && buttonStr == d.swapSourceButton {
+				style = swapSourceStyle
+			}
+
+			button := style.Render(buttonStr)
 			row = append(row, button)
 		}
 		grid = append(grid, lipgloss.JoinHorizontal(lipgloss.Top, row...))
@@ -71,11 +95,17 @@ func (d DeviceView) View() string {
 			var row []string
 			for c := 0; c < cols; c++ {
 				buttonNum := r*cols + c + 1
+				buttonStr := fmt.Sprintf("%d", buttonNum)
 				style := buttonStyle
-				if fmt.Sprintf("%d", buttonNum) == d.selectedButton {
+
+				if buttonStr == d.selectedButton {
 					style = selectedButtonStyle
 				}
-				button := style.Render(fmt.Sprintf("%d", buttonNum))
+				if d.swapMode && buttonStr == d.swapSourceButton {
+					style = swapSourceStyle
+				}
+
+				button := style.Render(buttonStr)
 				row = append(row, button)
 			}
 			grid = append(grid, lipgloss.JoinHorizontal(lipgloss.Top, row...))

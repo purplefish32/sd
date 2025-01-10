@@ -51,6 +51,8 @@ type model struct {
 	showDeleteConfirmation bool
 	buttonClipboard        string // Store copied button data
 	showPasteConfirmation  bool
+	swapMode               bool   // True when in swap mode
+	swapSourceButton       string // Store the first button position for swap
 }
 
 // Getter for currentInstance
@@ -94,6 +96,8 @@ func initialModel() model {
 		showDeleteConfirmation: false,
 		buttonClipboard:        "",
 		showPasteConfirmation:  false,
+		swapMode:               false,
+		swapSourceButton:       "",
 	}
 
 	// Set initial editor width
@@ -284,7 +288,49 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.selectedPosition = moveButton(m.selectedPosition, "down", m.currentDevice)
 				}
 			case "enter":
-				if m.currentDevice != "None" {
+				if m.swapMode {
+					if m.swapSourceButton != m.selectedPosition {
+						sourceKey := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+							m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.swapSourceButton)
+						targetKey := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+							m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+
+						_, kv := natsconn.GetNATSConn()
+						sourceButton, err := buttons.GetButton(sourceKey)
+						targetButton, err2 := buttons.GetButton(targetKey)
+
+						// Swap the buttons
+						if err == nil {
+							if data, err := json.Marshal(sourceButton); err == nil {
+								kv.Put(targetKey, data)
+								// Delete the old buffer to force an update
+								kv.Delete(targetKey + ".buffer")
+							}
+						} else {
+							kv.Delete(targetKey)
+							kv.Delete(targetKey + ".buffer")
+						}
+
+						if err2 == nil {
+							if data, err := json.Marshal(targetButton); err == nil {
+								kv.Put(sourceKey, data)
+								// Delete the old buffer to force an update
+								kv.Delete(sourceKey + ".buffer")
+							}
+						} else {
+							kv.Delete(sourceKey)
+							kv.Delete(sourceKey + ".buffer")
+						}
+
+						log.Debug().
+							Str("source", m.swapSourceButton).
+							Str("target", m.selectedPosition).
+							Msg("Swapped buttons")
+					}
+					m.swapMode = false
+					m.swapSourceButton = ""
+					return m, nil
+				} else if m.currentDevice != "None" {
 					m.currentButton = m.selectedPosition
 					m.showButtonEditor = true
 					m.buttonEditor = NewButtonEditor(
@@ -357,6 +403,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 				}
+			case "s": // Start swap mode
+				if m.currentDevice != "None" {
+					m.swapMode = true
+					m.swapSourceButton = m.selectedPosition
+					log.Debug().Str("source_button", m.swapSourceButton).Msg("Started button swap")
+				}
+			case "esc":
+				if m.swapMode {
+					m.swapMode = false
+					m.swapSourceButton = ""
+					return m, nil
+				}
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -418,6 +476,59 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			return m, nil // Ignore all other keys when paste dialog is open
+		}
+	}
+
+	if m.swapMode {
+		if msg, ok := msg.(tea.KeyMsg); ok {
+			switch msg.String() {
+			case "enter":
+				if m.swapSourceButton != m.selectedPosition {
+					sourceKey := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.swapSourceButton)
+					targetKey := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+						m.currentInstance, m.currentDevice, m.currentProfile, m.currentPage, m.selectedPosition)
+
+					_, kv := natsconn.GetNATSConn()
+					sourceButton, err := buttons.GetButton(sourceKey)
+					targetButton, err2 := buttons.GetButton(targetKey)
+
+					// Swap the buttons
+					if err == nil {
+						if data, err := json.Marshal(sourceButton); err == nil {
+							kv.Put(targetKey, data)
+							// Delete the old buffer to force an update
+							kv.Delete(targetKey + ".buffer")
+						}
+					} else {
+						kv.Delete(targetKey)
+						kv.Delete(targetKey + ".buffer")
+					}
+
+					if err2 == nil {
+						if data, err := json.Marshal(targetButton); err == nil {
+							kv.Put(sourceKey, data)
+							// Delete the old buffer to force an update
+							kv.Delete(sourceKey + ".buffer")
+						}
+					} else {
+						kv.Delete(sourceKey)
+						kv.Delete(sourceKey + ".buffer")
+					}
+
+					log.Debug().
+						Str("source", m.swapSourceButton).
+						Str("target", m.selectedPosition).
+						Msg("Swapped buttons")
+				}
+				m.swapMode = false
+				m.swapSourceButton = ""
+				return m, nil
+			case "esc":
+				m.swapMode = false
+				m.swapSourceButton = ""
+				return m, nil
+			}
 		}
 	}
 
@@ -557,7 +668,7 @@ func (m model) View() string {
 	}
 
 	// Create device view
-	deviceView := NewDeviceView(m.currentDevice, m.selectedPosition)
+	deviceView := NewDeviceView(m.currentDevice, m.selectedPosition, m.swapMode, m.swapSourceButton)
 
 	// In the View method, before the JoinHorizontal:
 	mainContent := fmt.Sprintf(`
@@ -571,8 +682,9 @@ Current Device: %s
 [x] to delete the selected button
 [c] to copy button
 [v] to paste button
+[s] to swap buttons
 [q] to quit
-`,
+%s`,
 		m.currentInstance,
 		m.currentDevice,
 		// Only show profile/page info if device is selected
@@ -589,6 +701,13 @@ Current Device: %s
 		func() string {
 			if m.currentDevice != "None" {
 				return "[p] to change the profile\n[g] to change the page"
+			}
+			return ""
+		}(),
+		func() string {
+			if m.swapMode {
+				return fmt.Sprintf("\n\nSwap Mode: Button %s selected\nUse arrow keys and press ENTER to swap with another button, ESC to cancel",
+					m.swapSourceButton)
 			}
 			return ""
 		}(),
