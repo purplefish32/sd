@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -16,14 +17,14 @@ func main() {
 
 	log.Info().Msg("Starting application")
 
-	// // Retrieve or create the instance UUID.
-	// instanceID := instance.GetOrCreateInstanceUUID()
+	// Retrieve or create the instance UUID.
+	//instanceID := instance.GetOrCreateInstanceUUID()
 
-	// // Load the .env file.
-	// err := godotenv.Load()
+	// Load the .env file.
+	err := godotenv.Load()
 
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Error loading .env file")
-	// 	os.Exit(1) // Explicitly terminate the program.
-	// }
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error loading .env file")
+		os.Exit(1) // Explicitly terminate the program.
+	}
 }

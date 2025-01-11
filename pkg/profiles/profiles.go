@@ -3,8 +3,9 @@ package profiles
 import (
 	"encoding/json"
 	"fmt"
+	"sd/pkg/env"
 	"sd/pkg/natsconn"
-	"sd/pkg/pages"
+	"sd/pkg/store"
 	"sd/pkg/types"
 	"strings"
 
@@ -17,31 +18,17 @@ type Profile struct {
 	ID    string       `json:"id"`    // Unique identifier for the profile
 	Name  string       `json:"name"`  // Display name for the profile
 	Pages []types.Page `json:"pages"` // List of pages in the profile
-	//Default int     `json:"default"` // Index of the default page
 }
 
 type CurrentProfile struct {
 	ID string `json:"id"` // Unique identifier for the profile
 }
 
-// type Button struct {
-// 	ID          int      `json:"id"`          // Button ID (matches physical button on the stream deck)
-// 	ActionType  string   `json:"action_type"` // Type of action (e.g., "update_image", "change_profile")
-// 	ActionValue string   `json:"action_value"`// Value associated with the action (e.g., image ID, profile ID)
-// 	Labels      []string `json:"labels"`      // Optional labels for multi-state buttons
-// 	Image       string   `json:"image"`       // Key to the image in NATS KV
-// }
-
-// TODO UpdatePage, DeletePage
-
 func GetProfiles(instanceId string, deviceId string) ([]Profile, error) {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key prefix to search for profiles
 	prefix := "instances." + instanceId + ".devices." + deviceId + ".profiles."
-
-	// Define the key pattern to search for profiles
-	//keyPrefix := "instances." + instanceId + ".devices." + deviceId + ".profiles."
 
 	// List the keys in the NATS KV store under the given prefix
 	keyLister, err := kv.ListKeys()
@@ -95,62 +82,51 @@ func GetProfiles(instanceId string, deviceId string) ([]Profile, error) {
 	return profiles, nil
 }
 
-func CreateProfile(instanceID string, deviceID string, name string) (*Profile, error) {
-	profile := Profile{
+func CreateProfile(instanceID, deviceID, name string) (*types.Profile, error) {
+	profile := &types.Profile{
 		ID:   uuid.New().String(),
 		Name: name,
+		TouchScreen: types.TouchScreenLayout{
+			Mode:      "full",
+			FullImage: env.Get("ASSET_PATH", "") + "images/black.png",
+			Segments:  [4]string{},
+		},
 	}
 
-	_, kv := natsconn.GetNATSConn()
-	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profile.ID)
-
-	data, err := json.Marshal(profile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal profile: %w", err)
-	}
-
-	_, err = kv.Put(key, data)
-	if err != nil {
+	// Save the profile
+	if err := store.UpdateProfile(instanceID, deviceID, profile.ID, profile); err != nil {
 		return nil, fmt.Errorf("failed to save profile: %w", err)
 	}
 
-	// Create default page
-	_, err = pages.CreatePage(instanceID, deviceID, profile.ID)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create default page")
-		return nil, err
-	}
-
-	return &profile, nil
+	return profile, nil
 }
 
-func GetCurrentProfile(instanceId string, deviceId string) *Profile { // TODO move this to the device.
+func GetCurrentProfile(instanceID string, deviceID string) *types.Profile {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + deviceId + ".profiles.current"
+	key := "instances." + instanceID + ".devices." + deviceID + ".profiles.current"
 
 	// Get current profile and page
 	entry, err := kv.Get(key)
 
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
-			log.Warn().Str("device_serial", deviceId).Msg("No NATS key for current profile found")
+			log.Warn().Str("device_serial", deviceID).Msg("No NATS key for current profile found")
 		}
 		return nil
 	}
 
 	// Parse the value into a Profile struct
-	var profile Profile
+	var profile types.Profile
 
 	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
-		log.Error().Err(err).Msg("Failed to parse JSON")
 		return nil
 	}
 
 	log.Info().
-		Str("instance_id", instanceId).
-		Str("device_serial", deviceId).
+		Str("instance_id", instanceID).
+		Str("device_serial", deviceID).
 		Str("profile_id", profile.ID).
 		Msg("Current profile found")
 

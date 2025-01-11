@@ -118,11 +118,9 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) 
 	return nil
 }
 
-func ConvertImageToBuffer(imagePath string, size int) (buffer []byte, err error) {
-
+func ConvertImageToBuffer(imagePath string, width int) ([]byte, error) {
 	// Read the image file into a buffer using bimg
-	buffer, err = bimg.Read(imagePath)
-
+	buffer, err := bimg.Read(imagePath)
 	if err != nil {
 		return nil, err
 	}
@@ -130,21 +128,27 @@ func ConvertImageToBuffer(imagePath string, size int) (buffer []byte, err error)
 	// Create an image object
 	image := bimg.NewImage(buffer)
 
-	// Resize the image
-	resizedImage, err := image.Resize(size, size)
-
+	// Force RGB color space
+	converted, err := image.Convert(bimg.JPEG)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert to JPEG.
-	finalImage, err := bimg.NewImage(resizedImage).Convert(bimg.JPEG)
+	// Create options for resizing
+	options := bimg.Options{
+		Width:   width,
+		Height:  100,
+		Type:    bimg.JPEG,
+		Quality: 95,
+	}
 
+	// Process the image
+	processed, err := bimg.NewImage(converted).Process(options)
 	if err != nil {
 		return nil, err
 	}
 
-	return finalImage, nil
+	return processed, nil
 }
 
 func ConvertImageToRotatedBuffer(imagePath string, size int) (buffer []byte, err error) {
@@ -180,4 +184,57 @@ func ConvertImageToRotatedBuffer(imagePath string, size int) (buffer []byte, err
 	}
 
 	return finalImage, nil
+}
+
+// ConvertButtonImageToBuffer converts an image for button display (120x120)
+func ConvertButtonImageToBuffer(imagePath string) ([]byte, error) {
+	buffer, err := bimg.Read(imagePath)
+	if err != nil {
+		return nil, err
+	}
+
+	image := bimg.NewImage(buffer)
+
+	// Square buttons need different options
+	options := bimg.Options{
+		Width:   120,
+		Height:  120,
+		Type:    bimg.JPEG,
+		Quality: 95,
+		Gravity: bimg.GravityCentre,
+		Crop:    true,
+	}
+
+	processed, err := image.Process(options)
+	if err != nil {
+		return nil, err
+	}
+
+	return processed, nil
+}
+
+// ConvertTouchScreenImageToBuffer converts an image for the touch screen (800x100 or 200x100)
+func ConvertTouchScreenImageToBuffer(imagePath string, width int) ([]byte, error) {
+	buffer, err := bimg.Read(imagePath)
+	if err != nil {
+		return nil, err
+	}
+
+	image := bimg.NewImage(buffer)
+
+	options := bimg.Options{
+		Width:   width,
+		Height:  100,
+		Type:    bimg.JPEG,
+		Quality: 95,
+		Gravity: bimg.GravityCentre,
+		Crop:    true,
+	}
+
+	processed, err := image.Process(options)
+	if err != nil {
+		return nil, err
+	}
+
+	return processed, nil
 }

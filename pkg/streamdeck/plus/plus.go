@@ -12,6 +12,7 @@ import (
 	"sd/pkg/util"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
@@ -26,18 +27,26 @@ type Plus struct {
 	wasDialPressed   [4]bool
 	wasScreenPressed bool
 	lastX            int
+	touchScreen      *TouchScreenManager
 }
 
 var ProductID uint16 = 0x006c
 
 const (
-	DialTurningFlag   = 0x01
-	DialTurnRight     = 0x01
-	DialTurnLeft      = 0xFF
-	DialPressedFlag   = 0x01
-	TouchScreenFlag   = 0x01
-	TouchPressedFlag  = 0x02
-	ButtonPressedFlag = 0x02
+	DialTurningFlag          = 0x01
+	DialTurnRight            = 0x01
+	DialTurnLeft             = 0xFF
+	DialPressedFlag          = 0x01
+	TouchScreenFlag          = 0x01
+	TouchPressedFlag         = 0x02
+	ButtonPressedFlag        = 0x02
+	ScreenWidth              = 800
+	ScreenHeight             = 100
+	SegmentWidth             = 200 // Each segment is 200px wide (800/4)
+	TouchScreenReportLength  = 1024
+	TouchScreenPayloadLength = 1008 // 1024 - 16 (header)
+	TouchScreenHeaderLength  = 16
+	ChunkDelay               = 20 * time.Millisecond
 )
 
 type DialEvent struct {
@@ -55,13 +64,29 @@ type TouchEvent struct {
 }
 
 func New(instanceID string, device *hid.Device) Plus {
-	return Plus{
+	plus := Plus{
 		instanceID: instanceID,
 		device:     device,
 	}
+	plus.touchScreen = NewTouchScreenManager(&plus)
+	return plus
 }
 
 func (plus Plus) Init() {
+	// Add reconnection attempt
+	if plus.device == nil {
+		// Try to reopen the device
+		devices := hid.Enumerate(0x0fd9, 0x0084) // StreamDeck Plus VID/PID
+		if len(devices) > 0 {
+			device, err := devices[0].Open()
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to reopen Stream Deck Plus")
+				return
+			}
+			plus.device = device
+		}
+	}
+
 	log.Info().
 		Str("device_serial", plus.device.Serial).
 		Msg("Stream Deck Plus Initialization")
@@ -122,6 +147,14 @@ func (plus Plus) Init() {
 	go WatchForButtonChanges(plus.device)
 	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
 
+	// Initialize touch screen with current profile
+	if err := plus.touchScreen.UpdateFromProfile(currentProfile); err != nil {
+		log.Error().Err(err).Msg("Failed to initialize touch screen")
+	}
+
+	// Watch for profile changes
+	go plus.touchScreen.WatchProfileChanges(plus.instanceID)
+
 	// Listen for incoming device input.
 	for {
 		n, _ := plus.device.Read(buf)
@@ -138,7 +171,7 @@ func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 
 func BlankAllKeys(device *hid.Device) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/black.png", 120)
+	var buffer, err = util.ConvertButtonImageToBuffer(assetPath + "images/black.png")
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
@@ -182,7 +215,7 @@ func WatchForButtonChanges(device *hid.Device) {
 		switch update.Operation() {
 		case nats.KeyValueDelete:
 			// Blank the key when button is deleted
-			buffer, _ := util.ConvertImageToBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 120)
+			buffer, _ := util.ConvertButtonImageToBuffer(env.Get("ASSET_PATH", "") + "images/black.png")
 			BlankKey(device, id, buffer)
 		case nats.KeyValuePut:
 			var button buttons.Button
@@ -191,7 +224,7 @@ func WatchForButtonChanges(device *hid.Device) {
 				continue
 			}
 			if len(button.States) > 0 {
-				buf, err := util.ConvertImageToBuffer(button.States[0].ImagePath, 120)
+				buf, err := util.ConvertButtonImageToBuffer(button.States[0].ImagePath)
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to create button buffer")
 					continue
@@ -357,46 +390,22 @@ func (plus *Plus) handleDialEvent(buf []byte) {
 }
 
 func (plus *Plus) handleTouchEvent(buf []byte) {
-	// Touch events format:
-	// 01 02 0E 00 01 01 [X coord (2 bytes)] [Y coord (2 bytes)]
-
-	// Extract coordinates (Little Endian)
-	x := int(buf[6]) | (int(buf[7]) << 8)
-	y := int(buf[8]) | (int(buf[9]) << 8)
-
-	// Detect swipes by checking the event type in buf[4]
-	action := "tap"
-	if buf[4] == 0x03 { // Swipe event
-		if x > plus.lastX {
-			action = "swipe_left" // X increasing = finger moving left
-		} else if x < plus.lastX {
-			action = "swipe_right" // X decreasing = finger moving right
-		}
-	}
-	plus.lastX = x
+	isPressed := buf[4] == TouchPressedFlag
+	x := int(buf[5]) | int(buf[6])<<8
 
 	event := TouchEvent{
 		X:         x,
-		Y:         y,
-		IsPressed: true,
-		Action:    action,
+		Y:         int(buf[7]),
+		IsPressed: isPressed,
 	}
 
-	// Log differently based on action type
-	if action == "tap" {
-		section := (x / 200) + 1 // Calculate section (1-4)
-		if section < 1 {
-			section = 1
-		} else if section > 4 {
-			section = 4
-		}
-		log.Info().
-			Int("section", section).
-			Msg("Touch screen tapped")
-	} else {
-		log.Info().
-			Str("action", action).
-			Msg("Touch screen swiped")
+	// Track press state for swipe detection
+	if isPressed && !plus.wasScreenPressed {
+		plus.wasScreenPressed = true
+		plus.lastX = x
+	} else if !isPressed && plus.wasScreenPressed {
+		plus.wasScreenPressed = false
+		// Add swipe detection logic here if needed
 	}
 
 	plus.handleTouchAction(event)
@@ -466,4 +475,118 @@ func (plus *Plus) handleButtonEvent(buf []byte) {
 		}
 		plus.handleButtonPress(buttonIndex)
 	}
+}
+
+// SetScreenImage sets a full image (800x100) on the touch screen
+func (plus *Plus) SetScreenImage(buffer []byte) error {
+	remainingBytes := len(buffer)
+	iteration := 0
+
+	for remainingBytes > 0 {
+		chunkSize := min(remainingBytes, TouchScreenPayloadLength)
+		bytesSent := iteration * TouchScreenPayloadLength
+
+		header := []byte{
+			0x02, 0x0C, // Fixed header
+			0x00, 0x00, // X offset (0 for full screen)
+			0x00, 0x00, // Reserved
+			0x20, 0x03, // Width (800 in little endian)
+			0x64, 0x00, // Height (100 in little endian)
+			boolToByte(remainingBytes == chunkSize),      // Final packet flag
+			byte(iteration),                              // Page number
+			0x00,                                         // Reserved
+			byte(chunkSize & 0xFF), byte(chunkSize >> 8), // Payload length (little endian)
+			0x00, // Reserved
+		}
+
+		chunk := buffer[bytesSent : bytesSent+chunkSize]
+		payload := append(header, chunk...)
+
+		err := writeChunkWithDelay(plus.device, payload)
+		if err != nil {
+			return fmt.Errorf("failed to write chunk %d: %w", iteration, err)
+		}
+
+		remainingBytes -= chunkSize
+		iteration++
+	}
+
+	return nil
+}
+
+// SetScreenSegment sets an image on one of the four screen segments (200x100 each)
+func (plus *Plus) SetScreenSegment(segment int, buffer []byte) error {
+	if segment < 1 || segment > 4 {
+		return fmt.Errorf("invalid segment number: %d (must be 1-4)", segment)
+	}
+
+	offset := (segment - 1) * SegmentWidth
+	offsetBytes := []byte{byte(offset & 0xFF), byte(offset >> 8)}
+
+	remainingBytes := len(buffer)
+	iteration := 0
+
+	for remainingBytes > 0 {
+		chunkSize := min(remainingBytes, TouchScreenPayloadLength)
+		bytesSent := iteration * TouchScreenPayloadLength
+
+		header := []byte{
+			0x02, 0x0C, // Fixed header
+			offsetBytes[0], offsetBytes[1], // X offset in little endian
+			0x00, 0x00, // Reserved
+			0xC8, 0x00, // Width (200 in little endian)
+			0x64, 0x00, // Height (100 in little endian)
+			boolToByte(remainingBytes == chunkSize),      // Final packet flag
+			byte(iteration),                              // Page number
+			0x00,                                         // Reserved
+			byte(chunkSize & 0xFF), byte(chunkSize >> 8), // Payload length (little endian)
+			0x00, // Reserved
+		}
+
+		chunk := buffer[bytesSent : bytesSent+chunkSize]
+		payload := append(header, chunk...)
+
+		err := writeChunkWithDelay(plus.device, payload)
+		if err != nil {
+			return fmt.Errorf("failed to write chunk %d: %w", iteration, err)
+		}
+
+		remainingBytes -= chunkSize
+		iteration++
+	}
+
+	return nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func boolToByte(b bool) byte {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+func writeChunkWithDelay(device *hid.Device, payload []byte) error {
+	if device == nil {
+		return fmt.Errorf("device is nil")
+	}
+
+	// Add padding to match report length
+	if len(payload) < TouchScreenReportLength {
+		padding := make([]byte, TouchScreenReportLength-len(payload))
+		payload = append(payload, padding...)
+	}
+
+	_, err := device.Write(payload)
+	if err != nil {
+		return err
+	}
+	time.Sleep(ChunkDelay)
+	return nil
 }
