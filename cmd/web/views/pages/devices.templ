@@ -1,0 +1,40 @@
+//go:generate templ generate
+package pages
+
+import (
+	"sd/cmd/web/views/layouts"
+)
+
+templ Devices() {
+	@layouts.Base("Devices") {
+		<div class="flex h-full">
+			<!-- Left Panel - Device List -->
+			<div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
+				<h2 class="text-xl font-semibold mb-4">Devices</h2>
+				<div 
+					id="device-list"
+					hx-get="/devices/list" 
+					hx-trigger="load"
+					hx-indicator=".htmx-indicator"
+				>
+					<div class="htmx-indicator">Loading devices...</div>
+				</div>
+			</div>
+
+			<!-- Right Panel - Device Config -->
+			<div class="flex-1" id="device-config">
+				<div class="p-6 text-center text-gray-400">
+					Select a device to configure
+				</div>
+			</div>
+		</div>
+		<script>
+			document.body.addEventListener('htmx:afterRequest', function(evt) {
+				console.log('HTMX Request completed:', evt.detail);
+			});
+			document.body.addEventListener('htmx:beforeRequest', function(evt) {
+				console.log('HTMX Request starting:', evt.detail);
+			});
+		</script>
+	}
+}

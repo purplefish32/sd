@@ -1,0 +1,51 @@
+//go:generate templ generate
+package layouts
+
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<title>{ title } - Stream Deck</title>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script>
+				tailwind.config = {
+					theme: {
+						extend: {
+							colors: {
+								'sd-dark': '#1a1a1a',
+								'sd-darker': '#0f0f0f',
+								'sd-light': '#2d2d2d',
+								'sd-accent': '#00ff00',
+							},
+						},
+					},
+				}
+			</script>
+		</head>
+		<body class="bg-sd-darker text-white">
+			<div class="flex h-screen">
+				<!-- Sidebar -->
+				<aside class="w-16 bg-sd-dark border-r border-sd-darker flex flex-col items-center py-4">
+					<a href="/" class="p-2 rounded hover:bg-sd-darker mb-4">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+						</svg>
+					</a>
+					<a href="/devices" class="p-2 rounded hover:bg-sd-darker">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+						</svg>
+					</a>
+				</aside>
+
+				<!-- Main Content -->
+				<main class="flex-1">
+					{ children... }
+				</main>
+			</div>
+		</body>
+	</html>
+}

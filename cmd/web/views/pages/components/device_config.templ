@@ -1,0 +1,17 @@
+package components
+
+templ DeviceConfig(deviceID string) {
+    <div class="p-6">
+        <h2 class="text-xl font-semibold mb-4">Stream Deck {deviceID}</h2>
+        <div class="space-y-4">
+            <div class="bg-sd-dark rounded-lg p-4">
+                <h3 class="text-lg font-medium mb-2">Device Information</h3>
+                <div class="text-sm text-gray-400">
+                    <div>ID: {deviceID}</div>
+                    <div>Type: Stream Deck XL</div>
+                    <div>Status: Connected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+} 

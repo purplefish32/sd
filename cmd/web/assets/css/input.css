@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-sd-darker text-white;
+    }
+
+    select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
+        @apply bg-sd-dark border border-sd-darker rounded px-3 py-2 focus:outline-none focus:border-sd-accent;
+    }
+}
+
+@layer components {
+    .btn {
+        @apply px-4 py-2 bg-sd-accent text-white rounded hover:bg-sd-accent/90 transition-colors;
+    }
+
+    .nav-link {
+        @apply text-gray-300 hover:text-white transition-colors;
+    }
+
+    .stream-deck-button {
+        @apply aspect-square bg-sd-dark rounded-lg border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer;
+    }
+
+    .stream-deck-button-empty {
+        @apply flex items-center justify-center text-gray-600;
+    }
+
+    .stream-deck-button-configured {
+        @apply relative overflow-hidden;
+    }
+
+    .stream-deck-button-configured img {
+        @apply absolute inset-0 w-full h-full object-cover;
+    }
+
+    .stream-deck-button-configured .title {
+        @apply absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center truncate;
+    }
+}

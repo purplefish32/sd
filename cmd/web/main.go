@@ -9,22 +9,22 @@ import (
 )
 
 func main() {
-	// Set global time format for logger.
+	// Set global time format for logger
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-
-	// Configure the global logger.
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
 	log.Info().Msg("Starting application")
 
-	// Retrieve or create the instance UUID.
-	//instanceID := instance.GetOrCreateInstanceUUID()
+	// Load the .env file if it exists
+	if err := godotenv.Load(); err != nil {
+		log.Info().Msg("No .env file found, using default configuration")
+	}
 
-	// Load the .env file.
-	err := godotenv.Load()
+	// Create and start the server
+	server := NewServer()
+	defer server.Close()
 
-	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading .env file")
-		os.Exit(1) // Explicitly terminate the program.
+	if err := server.Start(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to start server")
 	}
 }
