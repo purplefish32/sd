@@ -1,0 +1,20 @@
+package components
+
+templ StreamDeckXL(deviceID string) {
+    <div class="p-6">
+        <h2 class="text-xl font-semibold mb-4">Stream Deck XL Configuration</h2>
+        <div class="grid grid-cols-8 gap-4 max-w-4xl mx-auto">
+            for i := 0; i < 32; i++ {
+                <div 
+                    class="stream-deck-button aspect-square bg-sd-dark rounded-lg border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer"
+                    data-button={ string(rune(i)) }
+                    data-device={ deviceID }
+                >
+                    <div class="stream-deck-button-empty flex items-center justify-center text-gray-600">
+                        <span>{ string(rune(i + 1)) }</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+} 

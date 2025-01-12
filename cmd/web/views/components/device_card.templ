@@ -1,0 +1,29 @@
+//go:generate templ generate
+package components
+
+import "golang.org/x/text/cases"
+import "golang.org/x/text/language"
+
+templ DeviceCard(device Device) {
+    <div 
+        class="p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
+        id={"device-" + device.ID}
+        sse-swap={"device-update-" + device.ID}
+        hx-get={"/devices/" + device.ID + "/config"}
+        hx-target="#device-config"
+        hx-push-url={"/devices/" + device.ID}
+    >
+        <div class="font-medium">Stream Deck {cases.Title(language.English).String(device.Type)}</div>
+        <div class="text-sm text-gray-400">{device.ID}</div>
+        <div class="status-indicator">
+
+            if device.Status == "connected" {
+                <span class="text-green-500">Status: Connected</span>
+            } else if device.Status == "disconnected" {
+                <span class="text-red-500">Status: Disconnected</span>
+            } else {
+                <span class="text-yellow-500">Status: Unknown</span>
+            }
+        </div>
+    </div>
+}

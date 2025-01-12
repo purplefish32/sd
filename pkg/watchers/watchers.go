@@ -11,9 +11,6 @@ const (
 	VendorIDElgato = 0x0fd9
 )
 
-type ConnectHandler func(deviceID string, productID uint16) error
-type DisconnectHandler func(deviceID string) error
-
 func WatchStreamDecks(instanceID string, onConnect ConnectHandler, onDisconnect DisconnectHandler) error {
 	// Track currently connected devices
 	connectedDevices := make(map[string]bool)
@@ -32,7 +29,7 @@ func WatchStreamDecks(instanceID string, onConnect ConnectHandler, onDisconnect 
 
 			// If device wasn't previously connected, trigger connect handler
 			if !connectedDevices[deviceID] {
-				if err := onConnect(deviceID, uint16(device.ProductID)); err != nil {
+				if err := onConnect(instanceID, deviceID, uint16(device.ProductID)); err != nil {
 					log.Error().Err(err).
 						Str("deviceID", deviceID).
 						Msg("Failed to handle device connection")
@@ -43,7 +40,7 @@ func WatchStreamDecks(instanceID string, onConnect ConnectHandler, onDisconnect 
 		// Check for disconnected devices
 		for deviceID := range connectedDevices {
 			if !currentDevices[deviceID] {
-				if err := onDisconnect(deviceID); err != nil {
+				if err := onDisconnect(instanceID, deviceID); err != nil {
 					log.Error().Err(err).
 						Str("deviceID", deviceID).
 						Msg("Failed to handle device disconnection")

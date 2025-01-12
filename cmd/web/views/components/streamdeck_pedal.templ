@@ -1,0 +1,20 @@
+package components
+
+templ StreamDeckPedal(deviceID string) {
+    <div class="p-6">
+        <h2 class="text-xl font-semibold mb-4">Stream Deck Pedal Configuration</h2>
+        <div class="flex gap-8 max-w-4xl mx-auto justify-center">
+            for i := 0; i < 3; i++ {
+                <div 
+                    class="stream-deck-button w-64 h-48 bg-sd-dark rounded-lg border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer"
+                    data-button={ string(rune(i)) }
+                    data-device={ deviceID }
+                >
+                    <div class="stream-deck-button-empty flex items-center justify-center text-gray-600">
+                        <span>Pedal { string(rune(i + 1)) }</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+} 

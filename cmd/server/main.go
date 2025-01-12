@@ -213,11 +213,11 @@ func main() {
 		err := watchers.WatchStreamDecks(
 			instanceID,
 			// Connected handler
-			func(deviceID string, productID uint16) error {
+			func(instanceID string, deviceID string, productID uint16) error {
 				return storeDeviceInfo(instanceID, deviceID, productID)
 			},
 			// Disconnected handler
-			func(deviceID string) error {
+			func(instanceID string, deviceID string) error {
 				return updateDeviceStatus(instanceID, deviceID, "disconnected")
 			},
 		)

@@ -15,8 +15,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"sd/cmd/web/views/components"
 	"sd/cmd/web/views/pages"
-	"sd/cmd/web/views/pages/components"
 	"sd/pkg/natsconn"
 )
 
@@ -97,10 +97,6 @@ func NewServer() *Server {
 }
 
 func (s *Server) setupRoutes() {
-	// Serve static files
-	fileServer := http.FileServer(http.Dir("cmd/web/static"))
-	s.router.Handle("/static/*", http.StripPrefix("/static/", fileServer))
-
 	// Routes
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		pages.Home().Render(r.Context(), w)
@@ -203,6 +199,47 @@ func (s *Server) setupRoutes() {
 			case <-r.Context().Done():
 				return
 			}
+		}
+	})
+
+	s.router.Get("/devices/{id}/config", func(w http.ResponseWriter, r *http.Request) {
+		deviceID := chi.URLParam(r, "id")
+
+		// Find instance ID for this device
+		devices, err := s.getDevices()
+		if err != nil {
+			http.Error(w, "Failed to get devices", http.StatusInternalServerError)
+			return
+		}
+
+		var instanceID string
+		for _, d := range devices {
+			if d.ID == deviceID {
+				instanceID = d.Instance
+				break
+			}
+		}
+
+		if instanceID == "" {
+			http.Error(w, "Device not found", http.StatusNotFound)
+			return
+		}
+
+		deviceInfo, err := s.getDeviceInfo(instanceID, deviceID)
+		if err != nil {
+			http.Error(w, "Device not found", http.StatusNotFound)
+			return
+		}
+
+		switch deviceInfo.Type {
+		case "xl":
+			components.StreamDeckXL(deviceID).Render(r.Context(), w)
+		case "plus":
+			components.StreamDeckPlus(deviceID).Render(r.Context(), w)
+		case "pedal":
+			components.StreamDeckPedal(deviceID).Render(r.Context(), w)
+		default:
+			http.Error(w, "Unsupported device type", http.StatusBadRequest)
 		}
 	})
 }

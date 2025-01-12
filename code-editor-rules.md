@@ -13,7 +13,7 @@ Please use emojis to make the rules more readable.
 - [The primary window manager will be i3wm]
 - [The primary terminal will be Ghostty]
 - [The server will communicate via USB with the Stream Decks]
-- [The First Stream Decks to be supported will be the Elgato Stream Deck XL, Elgate the Stream Deck Plus and the Elgato Stream Deck Pedal. Other models will be supported later.]
+- [The First Stream Decks to be supported will be the Elgato Stream Deck XL, Elgato the Stream Deck Plus and the Elgato Stream Deck Pedal. Other models will be supported later.]
 
 ## Code Style and Structure
 
