@@ -8,10 +8,11 @@ import (
 )
 
 // LoadEnv loads environment variables from a .env file if it exists
-func LoadEnv() {
-	err := godotenv.Load("../../.env")
+func LoadEnv(path string) {
+	err := godotenv.Load(path)
+
 	if err != nil {
-		log.Error().Err(err).Msg("No .env file found, falling back to environment variables")
+		log.Error().Err(err).Str("path", path).Msg("No .env file found, falling back to environment variables")
 	}
 }
 

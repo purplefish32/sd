@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"os/exec"
 	"sd/pkg/actions"
+	"sd/pkg/env"
 	"sd/pkg/natsconn"
+	"sd/pkg/util"
 	"syscall"
 
 	"github.com/nats-io/nats.go"
@@ -17,11 +19,18 @@ type Settings struct {
 
 // Subscribe sets up the NATS subscription for this plugin.
 func OpenSubscriber() {
+	root, err := util.GetProjectRoot()
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get project root")
+		return
+	}
+
+	env.LoadEnv(root + "/pkg/plugins/.env")
+
 	nc, _ := natsconn.GetNATSConn()
 
 	if _, err := nc.Subscribe("sd.plugin.command.exec", func(m *nats.Msg) {
-		log.Debug().Msg("Received message for command plugin")
-
 		var actionInstance actions.ActionInstance
 
 		// Parse the incoming message
@@ -57,8 +66,6 @@ func OpenSubscriber() {
 			log.Error().Msg("Command is empty")
 			return
 		}
-
-		log.Debug().Msg(settings.Command)
 
 		cmd := exec.Command("sh", "-c", settings.Command)
 

@@ -1,7 +1,11 @@
 package util
 
 import (
+	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
@@ -237,4 +241,28 @@ func ConvertTouchScreenImageToBuffer(imagePath string, width int) ([]byte, error
 	}
 
 	return processed, nil
+}
+
+// GetProjectRoot returns the absolute path to the project root directory
+func GetProjectRoot() (string, error) {
+	// Start from the current file's directory
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("failed to get current file path")
+	}
+
+	dir := filepath.Dir(filename)
+
+	// Walk up until we find go.mod
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("go.mod not found in parent directories")
+		}
+		dir = parent
+	}
 }

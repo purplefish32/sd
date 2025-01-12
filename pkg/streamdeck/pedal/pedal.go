@@ -67,15 +67,10 @@ func (pedal Pedal) Init() {
 
 				// Ignore button up event for now.
 				if buttonIndex == 0 {
-					log.Debug().Interface("device", pedal.device).Int("button_index", buttonIndex).Msg("Button released")
 					continue
 				}
 
-				log.Debug().Interface("device", pedal.device).Int("button_index", buttonIndex).Msg("Button pressed")
-
 				key := "instances." + pedal.instanceID + ".devices." + pedal.device.Serial + ".profiles." + currentProfile.ID + ".switches." + strconv.Itoa(buttonIndex)
-
-				log.Debug().Msg(key)
 
 				// Get the associated data from the NATS KV Store.
 				entry, _ := nats.KeyValue.Get(kv, key)
@@ -92,8 +87,6 @@ func (pedal Pedal) Init() {
 					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
 					return
 				}
-
-				log.Debug().Interface("payload", payload).Msg("NATS KV store data")
 
 				// Use the `UUID` field as the topic
 				if payload.UUID == "" {

@@ -3,6 +3,14 @@
 # Default target
 all: generate build
 
+run-server:
+	@echo "Running server..."
+	@go run ./cmd/server/main.go
+
+run-web:
+	@echo "Running web..."
+	@go run ./cmd/web/main.go
+
 # Generate templ files
 generate:
 	@echo "Generating templ files..."

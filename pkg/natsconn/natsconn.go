@@ -4,6 +4,7 @@ import (
 	"os"
 	"sd/pkg/env"
 	"sync"
+	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
@@ -18,28 +19,42 @@ var (
 // GetNATSConn returns a singleton NATS connection.
 func GetNATSConn() (*nats.Conn, nats.KeyValue) {
 	once.Do(func() {
-		env.LoadEnv()
-
 		// Get NATS server address from the .env file.
-		natsServer := env.Get("NATS_SERVER", "nats://127.0.0.1:4222")
+		natsUrl := env.Get("NATS_URL", "nats://127.0.0.1:4222")
 
-		if natsServer == "" {
-			log.Fatal().Msg("NATS_SERVER is not set in the .env file")
+		log.Info().Str("NATS_URL", natsUrl).Msg("Connecting to NATS server")
+
+		if natsUrl == "" {
+			log.Fatal().Msg("NATS_URL is not set in the .env file")
 		}
 
 		natsKVBucket := env.Get("NATS_KV_BUCKET", "sd")
 
-		if natsServer == "" {
+		log.Info().Str("NATS_KV_BUCKET", natsKVBucket).Msg("NATS_KV_BUCKET")
+
+		if natsUrl == "" {
 			log.Fatal().Msg("NATS_KV_BUCKET is not set in the .env file")
 		}
 
+		// Add connection options
+		opts := []nats.Option{
+			nats.RetryOnFailedConnect(true),
+			nats.MaxReconnects(-1),
+			nats.ReconnectWait(2 * time.Second),
+			nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
+				log.Warn().Err(err).Msg("NATS disconnected")
+			}),
+			nats.ReconnectHandler(func(nc *nats.Conn) {
+				log.Info().Msg("NATS reconnected")
+			}),
+		}
+
+		// Connect to NATS server with retry options
 		var err error
-
-		// Connect to NATS server.
-		nc, err = nats.Connect(natsServer)
-
+		nc, err = nats.Connect(natsUrl, opts...)
 		if err != nil {
-			log.Fatal().Str("nats_server", natsServer).Msg("Failed connecting to NATS server")
+			log.Fatal().Err(err).Str("NATS_URL", natsUrl).Msg("Failed connecting to NATS server")
+			os.Exit(1)
 		}
 
 		// Enable JetStream Context

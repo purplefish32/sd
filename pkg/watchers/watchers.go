@@ -1,85 +1,60 @@
 package watchers
 
 import (
-	"encoding/json"
-	"sd/pkg/natsconn"
-	"sd/pkg/streamdeck"
 	"time"
 
 	"github.com/karalabe/hid"
 	"github.com/rs/zerolog/log"
 )
 
-// knownDevices should store hid.DeviceInfo instead of bool
-var knownDevices = make(map[string]hid.DeviceInfo)
+const (
+	VendorIDElgato = 0x0fd9
+)
 
-func WatchStreamDecks(instanceID string) {
-	// Connect to NATS.
-	nc, _ := natsconn.GetNATSConn()
+type ConnectHandler func(deviceID string, productID uint16) error
+type DisconnectHandler func(deviceID string) error
+
+func WatchStreamDecks(instanceID string, onConnect ConnectHandler, onDisconnect DisconnectHandler) error {
+	// Track currently connected devices
+	connectedDevices := make(map[string]bool)
 
 	for {
-		devices := hid.Enumerate(streamdeck.ElgatoVendorID, 0)
+		// Find all Stream Deck devices
+		devices := hid.Enumerate(VendorIDElgato, 0)
 
-		currentDevices := make(map[string]hid.DeviceInfo) // Store the entire device object
+		// Track current devices for this iteration
+		currentDevices := make(map[string]bool)
 
-		// Check for new devices.
 		for _, device := range devices {
-			deviceKey := device.Serial
+			deviceID := device.Serial
 
-			// Store the device in currentDevices map
-			currentDevices[deviceKey] = device
+			currentDevices[deviceID] = true
 
-			if _, exists := knownDevices[deviceKey]; !exists {
-				log.Info().Interface("device", device).Msg("Stream Deck connected")
-
-				// Serialize the entire device object to JSON for connection event
-				payload, err := json.Marshal(device)
-				if err != nil {
-					log.Error().Err(err).Interface("device", device).Msg("Error serializing device")
-					continue // Skip this device if serialization fails
+			// If device wasn't previously connected, trigger connect handler
+			if !connectedDevices[deviceID] {
+				if err := onConnect(deviceID, uint16(device.ProductID)); err != nil {
+					log.Error().Err(err).
+						Str("deviceID", deviceID).
+						Msg("Failed to handle device connection")
 				}
-
-				// Publish the device connection message
-				nc.Publish("sd.device.connected", payload)
-
-				// Open the device
-				openDevice, err := device.Open()
-
-				if err != nil {
-					log.Error().Err(err).Str("device", deviceKey).Msg("Failed to open device")
-					continue
-				}
-
-				sd := streamdeck.New(instanceID, openDevice)
-				go sd.Init()
-
-				// Mark device as known by storing full device info
-				knownDevices[deviceKey] = device
 			}
 		}
 
-		// Check for removed devices.
-		for deviceKey, device := range knownDevices {
-			if _, exists := currentDevices[deviceKey]; !exists {
-				log.Info().Str("device", deviceKey).Msg("Stream Deck disconnected")
-				delete(knownDevices, deviceKey)
-
-				// Serialize the full device object to JSON for disconnection event
-				payload, err := json.Marshal(device)
-				if err != nil {
-					log.Error().Err(err).Interface("device", device).Msg("Error serializing device")
-					continue // Skip this device if serialization fails
+		// Check for disconnected devices
+		for deviceID := range connectedDevices {
+			if !currentDevices[deviceID] {
+				if err := onDisconnect(deviceID); err != nil {
+					log.Error().Err(err).
+						Str("deviceID", deviceID).
+						Msg("Failed to handle device disconnection")
 				}
-
-				// Publish the device disconnection message
-				nc.Publish("sd.device.disconnected", payload)
-
-				// Perform cleanup for removed devices.
-				streamdeck.RemoveDevice(deviceKey)
+				delete(connectedDevices, deviceID)
 			}
 		}
 
-		// Sleep for a short interval before checking again.
-		time.Sleep(time.Second)
+		// Update connected devices map
+		connectedDevices = currentDevices
+
+		time.Sleep(time.Second) // Poll interval
 	}
 }

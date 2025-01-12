@@ -1,25 +1,24 @@
+//go:generate templ generate
 package components
 
 type Device struct {
     ID       string
     Instance string
     Type     string
+    Status   string
 }
 
 templ DeviceList(devices []Device) {
     if len(devices) == 0 {
         <div class="text-gray-400">No devices connected</div>
     } else {
-        <div class="space-y-2">
+        <div 
+            class="space-y-2" 
+            hx-ext="sse"
+            sse-connect="/stream"
+        >
             for _, device := range devices {
-                <div 
-                    class="p-3 bg-sd-dark rounded cursor-pointer hover:border-sd-accent hover:border transition-colors"
-                    hx-get={"/devices/" + device.ID}
-                    hx-target="#device-config"
-                >
-                    <div class="font-medium">Stream Deck {device.ID}</div>
-                    <div class="text-sm text-gray-400">Type: {device.Type}</div>
-                </div>
+                @DeviceCard(device)
             }
         </div>
     }

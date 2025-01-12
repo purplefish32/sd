@@ -99,15 +99,10 @@ func (xl XL) Init() {
 
 				// Ignore button up event for now.
 				if buttonIndex == 0 {
-					log.Debug().Interface("device", xl.device).Int("button_index", buttonIndex).Msg("Button released")
 					continue
 				}
 
-				log.Debug().Interface("device", xl.device).Int("button_index", buttonIndex).Msg("Button pressed")
-
 				key := "instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
-
-				log.Debug().Msg(key)
 
 				// Get the associated data from the NATS KV Store.
 				entry, _ := nats.KeyValue.Get(kv, key)
@@ -124,8 +119,6 @@ func (xl XL) Init() {
 					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
 					return
 				}
-
-				log.Debug().Interface("payload", payload).Msg("NATS KV store data")
 
 				// Use the `UUID` field as the topic
 				if payload.UUID == "" {

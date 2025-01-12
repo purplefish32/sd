@@ -454,7 +454,6 @@ func (plus *Plus) handleEvent(buf []byte) {
 
 	// Check for touch events
 	if buf[0] == 0x01 && buf[1] == 0x02 && buf[2] == 0x0E {
-		log.Debug().Msg("Touch event detected")
 		plus.handleTouchEvent(buf) // Remove the slice, pass full buffer
 		return
 	}
