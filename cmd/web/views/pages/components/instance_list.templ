@@ -1,0 +1,21 @@
+package components
+
+type Instance struct {
+    ID     string
+    Status string
+}
+
+templ InstanceList(instances []Instance) {
+    <div class="space-y-2">
+        for _, instance := range instances {
+            <div 
+                class="p-3 bg-sd-darker rounded cursor-pointer hover:bg-sd-light transition-colors"
+                hx-get={"/instances/" + instance.ID + "/devices"}
+                hx-target="#device-list"
+            >
+                <div class="font-medium">Instance {instance.ID}</div>
+                <div class="text-sm text-gray-400">Status: {instance.Status}</div>
+            </div>
+        }
+    </div>
+} 

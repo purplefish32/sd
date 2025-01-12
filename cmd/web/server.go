@@ -79,6 +79,8 @@ func (s *Server) setupRoutes() {
 	// HTMX Routes
 	s.router.Get("/devices/list", s.handleDeviceList)
 	s.router.Get("/devices/{id}", s.handleDeviceConfig)
+	s.router.Get("/instances/list", s.handleInstanceList)
+	s.router.Get("/instances/{id}/devices", s.handleInstanceDevices)
 
 	// API Routes
 	s.router.Route("/api", func(r chi.Router) {
@@ -147,6 +149,113 @@ func (s *Server) handleDeviceConfig(w http.ResponseWriter, r *http.Request) {
 	deviceID := chi.URLParam(r, "id")
 	// TODO: Load device config from NATS
 	components.DeviceConfig(deviceID).Render(r.Context(), w)
+}
+
+func (s *Server) getInstances() ([]components.Instance, error) {
+	keys, err := s.kv.Keys()
+	if err != nil {
+		return nil, err
+	}
+
+	instances := make([]components.Instance, 0)
+	seen := make(map[string]bool)
+
+	for _, key := range keys {
+		if strings.HasPrefix(key, "instances.") {
+			parts := strings.Split(key, ".")
+			if len(parts) < 2 {
+				continue
+			}
+
+			instanceID := parts[1]
+			if seen[instanceID] {
+				continue // Skip duplicates
+			}
+
+			instances = append(instances, components.Instance{
+				ID:     instanceID,
+				Status: "Connected", // TODO: Get actual status
+			})
+			seen[instanceID] = true
+		}
+	}
+
+	return instances, nil
+}
+
+func (s *Server) handleInstanceList(w http.ResponseWriter, r *http.Request) {
+	s.log.Info().Msg("Handling instance list request")
+
+	instances, err := s.getInstances()
+	if err != nil {
+		s.log.Error().Err(err).Msg("Failed to get instances")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	s.log.Info().Interface("instances", instances).Msg("Found instances")
+	components.InstanceList(instances).Render(r.Context(), w)
+}
+
+func (s *Server) handleInstanceDevices(w http.ResponseWriter, r *http.Request) {
+	instanceID := chi.URLParam(r, "id")
+	s.log.Info().Str("instance", instanceID).Msg("Loading instance devices")
+
+	devices, err := s.getDevicesForInstance(instanceID)
+	if err != nil {
+		s.log.Error().Err(err).Msg("Failed to get devices")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	components.DeviceList(devices).Render(r.Context(), w)
+}
+
+func (s *Server) getDevicesForInstance(instanceID string) ([]components.Device, error) {
+	keys, err := s.kv.Keys()
+	if err != nil {
+		return nil, err
+	}
+
+	devices := make([]components.Device, 0)
+	seen := make(map[string]bool)
+
+	prefix := "instances." + instanceID + ".devices."
+	for _, key := range keys {
+		if strings.HasPrefix(key, prefix) {
+			parts := strings.Split(key, ".")
+			if len(parts) < 4 {
+				continue
+			}
+
+			deviceID := parts[3]
+			if seen[deviceID] {
+				continue
+			}
+
+			// Get device details from KV store
+			entry, err := s.kv.Get(key)
+			if err != nil {
+				continue
+			}
+
+			var deviceInfo struct {
+				Type string `json:"type"`
+			}
+			if err := json.Unmarshal(entry.Value(), &deviceInfo); err != nil {
+				continue
+			}
+
+			devices = append(devices, components.Device{
+				ID:       deviceID,
+				Instance: instanceID,
+				Type:     deviceInfo.Type,
+			})
+			seen[deviceID] = true
+		}
+	}
+
+	return devices, nil
 }
 
 func (s *Server) Start() error {

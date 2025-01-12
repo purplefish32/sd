@@ -45,7 +45,7 @@ func Home() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-8\"><h2 class=\"text-2xl font-bold\">Welcome to Stream Deck Controller</h2><div class=\"grid md:grid-cols-2 gap-8\"><div class=\"bg-sd-light rounded-lg p-6\"><h3 class=\"text-xl font-semibold mb-4\">Device Status</h3><div class=\"space-y-4\"><p class=\"text-gray-400\">No devices connected</p><button class=\"btn\">Scan for Devices</button></div></div><div class=\"bg-sd-light rounded-lg p-6\"><h3 class=\"text-xl font-semibold mb-4\">Quick Actions</h3><div class=\"space-y-4\"><a href=\"/devices\" class=\"btn block text-center\">Connect Device</a> <a href=\"/profiles\" class=\"btn block text-center\">Manage Profiles</a></div></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-full\"><!-- Left Panel - Instance List --><div class=\"w-64 bg-sd-dark border-r border-sd-darker p-4\"><h2 class=\"text-xl font-semibold mb-4\">Instances</h2><div id=\"instance-list\" hx-get=\"/instances/list\" hx-trigger=\"load\" hx-indicator=\".htmx-indicator\"><div class=\"htmx-indicator\">Loading instances...</div></div></div><!-- Middle Panel - Device List --><div class=\"w-64 bg-sd-darker border-r border-sd-darker p-4\"><h2 class=\"text-xl font-semibold mb-4\">Devices</h2><div id=\"device-list\" class=\"text-gray-400\">Select an instance to view devices</div></div><!-- Right Panel - Device Config --><div class=\"flex-1\" id=\"device-config\"><div class=\"p-6 text-center text-gray-400\">Select a device to configure</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

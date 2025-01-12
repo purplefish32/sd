@@ -3,19 +3,24 @@ package components
 type Device struct {
     ID       string
     Instance string
+    Type     string
 }
 
 templ DeviceList(devices []Device) {
-    <div class="space-y-2">
-        for _, device := range devices {
-            <div 
-                class="p-3 bg-sd-darker rounded cursor-pointer hover:bg-sd-light transition-colors"
-                hx-get={"/devices/" + device.ID}
-                hx-target="#device-config"
-            >
-                <div class="font-medium">Stream Deck {device.ID}</div>
-                <div class="text-sm text-gray-400">Instance: {device.Instance}</div>
-            </div>
-        }
-    </div>
+    if len(devices) == 0 {
+        <div class="text-gray-400">No devices connected</div>
+    } else {
+        <div class="space-y-2">
+            for _, device := range devices {
+                <div 
+                    class="p-3 bg-sd-dark rounded cursor-pointer hover:border-sd-accent hover:border transition-colors"
+                    hx-get={"/devices/" + device.ID}
+                    hx-target="#device-config"
+                >
+                    <div class="font-medium">Stream Deck {device.ID}</div>
+                    <div class="text-sm text-gray-400">Type: {device.Type}</div>
+                </div>
+            }
+        </div>
+    }
 } 
