@@ -1,0 +1,12 @@
+//go:generate templ generate
+package partials
+import "sd/pkg/types"
+
+templ InstanceCard(instance types.Instance) {
+    <a 
+        class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
+        href={templ.SafeURL("/instance/" + instance.ID)}
+    >
+        <div class="font-medium">{instance.ID}</div>
+    </a>
+}

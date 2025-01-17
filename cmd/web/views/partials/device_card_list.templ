@@ -1,0 +1,18 @@
+//go:generate templ generate
+package partials
+import "sd/pkg/types"
+
+templ DeviceCardList(devices []types.Device) {
+    <div 
+        id="device-card-list"
+        class="space-y-2"
+    >
+        if len(devices) == 0 {
+            <div class="text-gray-400">No devices connected</div>
+        } else {
+            for _, device := range devices {
+                @DeviceCard(device)
+            }
+        }
+    </div>
+} 

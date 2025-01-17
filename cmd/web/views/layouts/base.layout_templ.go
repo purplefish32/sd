@@ -31,20 +31,20 @@ func Base(title string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Stream Deck - ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layouts/base.templ`, Line: 10, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layouts/base.layout.templ`, Line: 10, Col: 31}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - Stream Deck</title><script src=\"https://unpkg.com/htmx.org@1.9.10\"></script><script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js\"></script><script>\n\t\t\t\ttailwind.config = {\n\t\t\t\t\ttheme: {\n\t\t\t\t\t\textend: {\n\t\t\t\t\t\t\tcolors: {\n\t\t\t\t\t\t\t\t'sd-dark': '#1a1a1a',\n\t\t\t\t\t\t\t\t'sd-darker': '#0f0f0f',\n\t\t\t\t\t\t\t\t'sd-light': '#2d2d2d',\n\t\t\t\t\t\t\t\t'sd-accent': '#00ff00',\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t},\n\t\t\t\t\t},\n\t\t\t\t}\n\t\t\t</script></head><body class=\"bg-sd-darker text-white\"><div class=\"flex h-screen\"><!-- Sidebar --><aside class=\"w-16 bg-sd-dark border-r border-sd-darker flex flex-col items-center py-4\"><a href=\"/\" class=\"p-2 rounded hover:bg-sd-darker mb-4\"><svg class=\"w-6 h-6\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6\"></path></svg></a></aside><!-- Main Content --><main class=\"flex-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><script src=\"https://unpkg.com/htmx.org@1.9.10\"></script><script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js\"></script><script src=\"https://unpkg.com/htmx.org/dist/ext/debug.js\"></script><script>\n\t\t\t\ttailwind.config = {\n\t\t\t\t\ttheme: {\n\t\t\t\t\t\textend: {\n\t\t\t\t\t\t\tcolors: {\n\t\t\t\t\t\t\t\t'sd-dark': '#1a1a1a',\n\t\t\t\t\t\t\t\t'sd-darker': '#0f0f0f',\n\t\t\t\t\t\t\t\t'sd-light': '#2d2d2d',\n\t\t\t\t\t\t\t\t'sd-accent': '#00ff00',\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t},\n\t\t\t\t\t},\n\t\t\t\t}\n\t\t\t</script></head><body class=\"bg-sd-darker text-white\" hx-boost=\"true\" hx-ext=\"debug\"><div class=\"flex h-screen\"><!-- Sidebar --><aside class=\"w-16 bg-sd-dark border-r border-sd-darker flex flex-col items-center py-4\"><a href=\"/\" class=\"p-2 rounded hover:bg-sd-darker mb-4\"><svg class=\"w-6 h-6\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6\"></path></svg></a></aside><!-- Main Content --><main class=\"flex-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

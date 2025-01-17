@@ -5,9 +5,9 @@ type Page struct {
 }
 
 type TouchScreenLayout struct {
-	Mode      string    `json:"mode"`      // "full" or "segments"
-	FullImage string    `json:"fullImage"` // Path for full screen image
-	Segments  [4]string `json:"segments"`  // Paths for segment images
+	Mode      string    `json:"mode"`
+	FullImage string    `json:"fullImage"`
+	Segments  [4]string `json:"segments"`
 }
 
 type Profile struct {
@@ -15,4 +15,16 @@ type Profile struct {
 	Name        string            `json:"name"`
 	Pages       []Page            `json:"pages"`
 	TouchScreen TouchScreenLayout `json:"touchScreen"`
+}
+
+type Instance struct {
+	ID     string
+	Status string
+}
+
+type Device struct {
+	ID       string
+	Instance string
+	Type     string
+	Status   string
 }

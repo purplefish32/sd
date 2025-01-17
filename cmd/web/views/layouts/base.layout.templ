@@ -7,10 +7,11 @@ templ Base(title string) {
 		<head>
 			<meta charset="UTF-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-			<title>{ title } - Stream Deck</title>
+			<title>Stream Deck - { title }</title>
 			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 			<script src="https://cdn.tailwindcss.com"></script>
 			<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+			<script src="https://unpkg.com/htmx.org/dist/ext/debug.js"></script>
 			<script>
 				tailwind.config = {
 					theme: {
@@ -26,7 +27,11 @@ templ Base(title string) {
 				}
 			</script>
 		</head>
-		<body class="bg-sd-darker text-white">
+		<body 
+			class="bg-sd-darker text-white" 
+			hx-boost="true" 
+			hx-ext="debug"
+		>
 			<div class="flex h-screen">
 				<!-- Sidebar -->
 				<aside class="w-16 bg-sd-dark border-r border-sd-darker flex flex-col items-center py-4">

@@ -1,0 +1,19 @@
+//go:generate templ generate
+package partials
+import "sd/cmd/web/views/layouts"
+import "sd/pkg/types"
+
+templ InstancePage(instances []types.Instance, devices []types.Device) {
+	@layouts.Base("Home") {
+		<div class="flex h-full">
+			@InstancePanel(instances)
+			@DevicePanel(devices)
+			<!-- Right Panel - Device Config -->
+			<div class="flex-1 bg-sd-darker" id="device-config">
+				<div class="p-6 text-center text-gray-400">
+					Select a device to configure
+				</div>
+			</div>
+		</div>
+	}
+}

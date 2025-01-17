@@ -1,0 +1,16 @@
+//go:generate templ generate
+package partials
+
+import "sd/pkg/types"
+
+templ InstanceCardList(instances []types.Instance) {
+    if len(instances) == 0 {
+        <div class="text-gray-400">No instances</div>
+    } else {
+        <div class="space-y-2">
+            for _, instance := range instances {
+                @InstanceCard(instance)
+            }
+        </div>
+    }
+} 

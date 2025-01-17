@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,9 +16,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"sd/cmd/web/views/components"
-	"sd/cmd/web/views/pages"
+	"sd/cmd/web/views/partials"
 	"sd/pkg/natsconn"
+	"sd/pkg/types"
 )
 
 type Server struct {
@@ -99,158 +100,158 @@ func NewServer() *Server {
 func (s *Server) setupRoutes() {
 	// Routes
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		pages.Home().Render(r.Context(), w)
-	})
-
-	// HTMX Routes
-	s.router.Get("/devices/list", s.handleDeviceList)
-	s.router.Get("/instances/list", s.handleInstanceList)
-	s.router.Get("/instances/{id}/devices", func(w http.ResponseWriter, r *http.Request) {
-		instanceID := chi.URLParam(r, "id")
-		s.log.Info().Str("instance", instanceID).Msg("Loading instance devices")
-
-		devices, err := s.getDevicesForInstance(instanceID)
+		instances, err := s.getInstances()
 		if err != nil {
-			s.log.Error().Err(err).Msg("Failed to get devices")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		// Render the device list with SSE support
-		components.DeviceList(devices).Render(r.Context(), w)
+		partials.HomePage(instances).Render(r.Context(), w)
 	})
+
+	s.router.Get("/instance/{instanceID}", func(w http.ResponseWriter, r *http.Request) {
+		instances, err := s.getInstances()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		devices, err := s.getDevices()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		partials.InstancePage(instances, devices).Render(r.Context(), w)
+	})
+
+	s.router.Get("/instance/{instanceId}/device/{deviceId}", func(w http.ResponseWriter, r *http.Request) {
+		instances, err := s.getInstances()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		devices, err := s.getDevices()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		partials.DevicePage(instances, devices).Render(r.Context(), w)
+	})
+
+	// HTMX Routes
+	s.router.Get("/partials/instance-card-list", s.handleInstanceCardList)
+	s.router.Get("/partials/device-card-list", s.handleDeviceCardList)
+
+	// s.router.Get("/instances/{id}/devices", func(w http.ResponseWriter, r *http.Request) {
+	// 	instanceID := chi.URLParam(r, "id")
+	// 	s.log.Info().Str("instance", instanceID).Msg("Loading instance devices")
+
+	// 	devices, err := s.getDevicesForInstance(instanceID)
+	// 	if err != nil {
+	// 		s.log.Error().E<!-- Left Panel - Instance List -->
+	// 	}
+
+	// 	// Render the device list with SSE support
+	// 	components.DeviceList(devices).Render(r.Context(), w)
+	// })
 
 	// Add SSE endpoint for device updates
 	s.router.Get("/stream", func(w http.ResponseWriter, r *http.Request) {
+		s.log.Info().
+			Str("remote_addr", r.RemoteAddr).
+			Str("user_agent", r.UserAgent()).
+			Msg("New SSE connection")
+
+		// 1. Set proper headers
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Add CORS if needed
 
-		s.log.Info().
-			Str("remote_addr", r.RemoteAddr).
-			Msg("New SSE connection established")
+		// 2. Create done channel with buffer to prevent goroutine leak
+		done := make(chan bool, 1)
+		defer close(done)
 
-		s.log.Info().Msg("Client connected to SSE stream")
-
+		// 3. Create watcher with proper error handling
 		watcher, err := s.kv.Watch("instances.*.devices.*")
 		if err != nil {
 			s.log.Error().Err(err).Msg("Failed to create KV watcher")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 		defer watcher.Stop()
 
-		lastEvents := make(map[string]string)
+		// 4. Send initial device list
+		devices, err := s.getDevices()
+		if err != nil {
+			s.log.Error().Err(err).Msg("Failed to get initial devices")
+		} else {
+			if err := s.sendDeviceList(w, r.Context(), devices); err != nil {
+				s.log.Error().Err(err).Msg("Failed to send initial device list")
+				return
+			}
+		}
 
+		// 5. Handle client disconnection
+		go func() {
+			<-r.Context().Done()
+			done <- true
+		}()
+
+		// 6. Main event loop
 		for {
 			select {
+			case <-done:
+				return
 			case entry := <-watcher.Updates():
 				if entry == nil {
 					continue
 				}
 
-				var deviceInfo DeviceInfo
+				select {
+				case <-done:
+					return
+				default:
+					devices, err := s.getDevices()
+					if err != nil {
+						s.log.Error().Err(err).Msg("Failed to get devices")
+						continue
+					}
 
-				s.log.Info().Interface("entry_key", entry.Key()).Msg("Received entry")
-
-				if err := json.Unmarshal(entry.Value(), &deviceInfo); err != nil {
-					s.log.Error().Err(err).Msg("Failed to parse device info")
-					continue
+					if err := s.sendDeviceList(w, r.Context(), devices); err != nil {
+						if err != context.Canceled {
+							s.log.Error().Err(err).Msg("Failed to send device list")
+						}
+						return
+					}
 				}
-
-				parts := strings.Split(entry.Key(), ".")
-
-				if len(parts) < 4 {
-					continue
-				}
-
-				deviceID := parts[3]
-				eventKey := fmt.Sprintf("%s:%s", deviceID, deviceInfo.Status)
-
-				if lastEvent, ok := lastEvents[deviceID]; ok && lastEvent == eventKey {
-					continue
-				}
-
-				lastEvents[deviceID] = eventKey
-
-				// Create device component
-				device := components.Device{
-					ID:       deviceID,
-					Type:     deviceInfo.Type,
-					Status:   deviceInfo.Status,
-					Instance: parts[1],
-				}
-
-				// Render the device status component
-				var buf bytes.Buffer
-				if err := components.DeviceCard(device).Render(r.Context(), &buf); err != nil {
-					s.log.Error().Err(err).Msg("Failed to render device status")
-					continue
-				}
-
-				// Send event with device-specific ID
-				fmt.Fprintf(w, "event: device-update-%s\n", deviceID)
-				fmt.Fprintf(w, "data: %s\n", buf.String())
-				fmt.Fprintf(w, "\n")
-
-				if f, ok := w.(http.Flusher); ok {
-					f.Flush()
-				}
-
-			case <-r.Context().Done():
-				return
 			}
-		}
-	})
-
-	s.router.Get("/devices/{id}/config", func(w http.ResponseWriter, r *http.Request) {
-		deviceID := chi.URLParam(r, "id")
-
-		// Find instance ID for this device
-		devices, err := s.getDevices()
-		if err != nil {
-			http.Error(w, "Failed to get devices", http.StatusInternalServerError)
-			return
-		}
-
-		var instanceID string
-		for _, d := range devices {
-			if d.ID == deviceID {
-				instanceID = d.Instance
-				break
-			}
-		}
-
-		if instanceID == "" {
-			http.Error(w, "Device not found", http.StatusNotFound)
-			return
-		}
-
-		deviceInfo, err := s.getDeviceInfo(instanceID, deviceID)
-		if err != nil {
-			http.Error(w, "Device not found", http.StatusNotFound)
-			return
-		}
-
-		switch deviceInfo.Type {
-		case "xl":
-			components.StreamDeckXL(deviceID).Render(r.Context(), w)
-		case "plus":
-			components.StreamDeckPlus(deviceID).Render(r.Context(), w)
-		case "pedal":
-			components.StreamDeckPedal(deviceID).Render(r.Context(), w)
-		default:
-			http.Error(w, "Unsupported device type", http.StatusBadRequest)
 		}
 	})
 }
 
-func (s *Server) getDevices() ([]components.Device, error) {
+// Move sendDeviceList outside setupRoutes
+func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, devices []types.Device) error {
+	var buf bytes.Buffer
+	if err := partials.DeviceCardList(devices).Render(ctx, &buf); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(w, "event: DeviceCardListUpdate\n")
+	fmt.Fprintf(w, "data: %s\n\n", buf.String())
+
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	return nil
+}
+
+func (s *Server) getDevices() ([]types.Device, error) {
 	keyList, err := s.kv.ListKeys()
 	if err != nil {
 		return nil, err
 	}
 
-	devices := make([]components.Device, 0)
+	devices := make([]types.Device, 0)
 	seen := make(map[string]bool)
 
 	for key := range keyList.Keys() {
@@ -277,7 +278,7 @@ func (s *Server) getDevices() ([]components.Device, error) {
 				continue
 			}
 
-			devices = append(devices, components.Device{
+			devices = append(devices, types.Device{
 				ID:       deviceID,
 				Instance: parts[1],
 				Type:     deviceInfo.Type,
@@ -290,21 +291,11 @@ func (s *Server) getDevices() ([]components.Device, error) {
 	return devices, nil
 }
 
-func (s *Server) handleGetDevices(w http.ResponseWriter, r *http.Request) {
-	devices, err := s.getDevices()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(devices)
-}
-
-func (s *Server) handleDeviceList(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleDeviceCardList(w http.ResponseWriter, r *http.Request) {
 	s.log.Info().Msg("Handling device list request")
 
 	devices, err := s.getDevices()
+
 	if err != nil {
 		s.log.Error().Err(err).Msg("Failed to get devices")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -312,16 +303,17 @@ func (s *Server) handleDeviceList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.log.Info().Interface("devices", devices).Msg("Found devices")
-	components.DeviceList(devices).Render(r.Context(), w)
+	partials.DeviceCardList(devices).Render(r.Context(), w)
 }
 
-func (s *Server) getInstances() ([]components.Instance, error) {
+// TODO move this to the instance package.
+func (s *Server) getInstances() ([]types.Instance, error) {
 	keys, err := s.kv.Keys()
 	if err != nil {
 		return nil, err
 	}
 
-	instances := make([]components.Instance, 0)
+	instances := make([]types.Instance, 0)
 	seen := make(map[string]bool)
 
 	for _, key := range keys {
@@ -336,7 +328,7 @@ func (s *Server) getInstances() ([]components.Instance, error) {
 				continue // Skip duplicates
 			}
 
-			instances = append(instances, components.Instance{
+			instances = append(instances, types.Instance{
 				ID:     instanceID,
 				Status: "Connected", // TODO: Get actual status
 			})
@@ -347,7 +339,7 @@ func (s *Server) getInstances() ([]components.Instance, error) {
 	return instances, nil
 }
 
-func (s *Server) handleInstanceList(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleInstanceCardList(w http.ResponseWriter, r *http.Request) {
 	s.log.Info().Msg("Handling instance list request")
 
 	instances, err := s.getInstances()
@@ -358,30 +350,16 @@ func (s *Server) handleInstanceList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.log.Info().Interface("instances", instances).Msg("Found instances")
-	components.InstanceList(instances).Render(r.Context(), w)
+	partials.InstanceCardList(instances).Render(r.Context(), w)
 }
 
-func (s *Server) handleInstanceDevices(w http.ResponseWriter, r *http.Request) {
-	instanceID := chi.URLParam(r, "id")
-	s.log.Info().Str("instance", instanceID).Msg("Loading instance devices")
-
-	devices, err := s.getDevicesForInstance(instanceID)
-	if err != nil {
-		s.log.Error().Err(err).Msg("Failed to get devices")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	components.DeviceList(devices).Render(r.Context(), w)
-}
-
-func (s *Server) getDevicesForInstance(instanceID string) ([]components.Device, error) {
+func (s *Server) getDevicesForInstance(instanceID string) ([]types.Device, error) {
 	keyList, err := s.kv.ListKeys()
 	if err != nil {
 		return nil, err
 	}
 
-	devices := make([]components.Device, 0)
+	devices := make([]types.Device, 0)
 	seen := make(map[string]bool)
 
 	for key := range keyList.Keys() {
@@ -411,7 +389,7 @@ func (s *Server) getDevicesForInstance(instanceID string) ([]components.Device, 
 			continue
 		}
 
-		devices = append(devices, components.Device{
+		devices = append(devices, types.Device{
 			ID:       deviceID,
 			Instance: instanceID,
 			Type:     deviceInfo.Type,
@@ -423,57 +401,22 @@ func (s *Server) getDevicesForInstance(instanceID string) ([]components.Device, 
 	return devices, nil
 }
 
-// Store a new device with auto-detection
-func (s *Server) storeDevice(instanceID string, deviceID string, productID uint16) error {
-	deviceType := DetermineDeviceType(productID)
-	if deviceType == "unknown" {
-		return fmt.Errorf("unknown device type for product ID: %x", productID)
-	}
+// // Get device info
+// func (s *Server) getDeviceInfo(instanceID, deviceID string) (*DeviceInfo, error) {
+// 	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
 
-	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
+// 	entry, err := s.kv.Get(key)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to get device info: %w", err)
+// 	}
 
-	info := DeviceInfo{
-		Type:      deviceType,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Status:    "connected",
-	}
+// 	var info DeviceInfo
+// 	if err := json.Unmarshal(entry.Value(), &info); err != nil {
+// 		return nil, fmt.Errorf("failed to unmarshal device info: %w", err)
+// 	}
 
-	data, err := json.Marshal(info)
-	if err != nil {
-		return fmt.Errorf("failed to marshal device info: %w", err)
-	}
-
-	_, err = s.kv.Put(key, data)
-	if err != nil {
-		return fmt.Errorf("failed to store device info: %w", err)
-	}
-
-	s.log.Info().
-		Str("instance", instanceID).
-		Str("device", deviceID).
-		Str("type", deviceType).
-		Msg("Stored new device")
-
-	return nil
-}
-
-// Get device info
-func (s *Server) getDeviceInfo(instanceID, deviceID string) (*DeviceInfo, error) {
-	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
-
-	entry, err := s.kv.Get(key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get device info: %w", err)
-	}
-
-	var info DeviceInfo
-	if err := json.Unmarshal(entry.Value(), &info); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal device info: %w", err)
-	}
-
-	return &info, nil
-}
+// 	return &info, nil
+// }
 
 func (s *Server) Start() error {
 	port := os.Getenv("PORT")

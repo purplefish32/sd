@@ -1,0 +1,11 @@
+//go:generate templ generate
+package partials
+import "sd/pkg/types"
+
+
+templ InstancePanel(instances []types.Instance) {
+    <div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
+        <h2 class="text-xl font-semibold mb-4">Instances</h2>
+        @InstanceCardList(instances)
+    </div>
+}

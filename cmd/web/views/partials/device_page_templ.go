@@ -3,7 +3,7 @@
 // templ: version: v0.3.819
 //go:generate templ generate
 
-package pages
+package partials
 
 //lint:file-ignore SA4006 This context is only used if a nested component is present.
 
@@ -11,8 +11,9 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "sd/cmd/web/views/layouts"
+import "sd/pkg/types"
 
-func Home() templ.Component {
+func DevicePage(instances []types.Instance, devices []types.Device) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -45,7 +46,19 @@ func Home() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-full\"><!-- Left Panel - Instance List --><div class=\"w-64 bg-sd-dark border-r border-sd-darker p-4\"><h2 class=\"text-xl font-semibold mb-4\">Instances</h2><div id=\"instance-list\" hx-get=\"/instances/list\" hx-trigger=\"load\" hx-indicator=\".htmx-indicator\"><div class=\"htmx-indicator\">Loading instances...</div></div></div><!-- Middle Panel - Device List --><div class=\"w-64 bg-sd-darker border-r border-sd-darker p-4\"><h2 class=\"text-xl font-semibold mb-4\">Devices</h2><div id=\"device-list\" class=\"text-gray-400\">Select an instance to view devices</div></div><!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"device-config\"><div class=\"p-6 text-center text-gray-400\">Select a device to configure</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-full\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = InstancePanel(instances).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = DevicePanel(devices).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"device-config\"><div class=\"p-6 text-center text-gray-400\">STREAM DECK\tCONFIGURATION</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
