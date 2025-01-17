@@ -58,7 +58,7 @@ func InstancePage(instances []types.Instance, devices []types.Device) templ.Comp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"device-config\"><div class=\"p-6 text-center text-gray-400\">Select a device to configure</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"main-content\"><div class=\"p-6 text-center text-gray-400\">Select a device to configure</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

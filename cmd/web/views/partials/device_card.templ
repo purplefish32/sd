@@ -10,8 +10,12 @@ templ DeviceCard(device types.Device) {
         class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
         id={"device-card-" + device.ID}
         href={templ.SafeURL("/instance/" + device.Instance + "/device/" + device.ID)}
+        hx-get={"/instance/" + device.Instance + "/device/" + device.ID}
+        hx-select="#main-content"
+        hx-target="#main-content"
+        hx-swap="outerHTML"
+        hx-push-url="true"
     >
-
         <div class="font-medium">Stream Deck {cases.Title(language.English).String(device.Type)}</div>
         <div class="text-sm text-gray-400">{device.ID}</div>
         <div class="status-indicator">
