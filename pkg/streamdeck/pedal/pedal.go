@@ -2,6 +2,7 @@ package pedal
 
 import (
 	"encoding/json"
+	"fmt"
 	"sd/pkg/actions"
 	"sd/pkg/natsconn"
 	"sd/pkg/profiles"
@@ -12,6 +13,10 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 )
+
+var ProductID uint16 = 0x0086
+
+const VendorID uint16 = 0x0fd9
 
 type Pedal struct {
 	instanceID string
@@ -25,7 +30,21 @@ func New(instanceID string, device *hid.Device) Pedal {
 	}
 }
 
-func (pedal Pedal) Init() {
+func (pedal *Pedal) Init() error {
+	// Add reconnection attempt if device is nil
+	if pedal.device == nil {
+		devices := hid.Enumerate(VendorID, ProductID)
+		if len(devices) == 0 {
+			return fmt.Errorf("no Stream Deck Pedal devices found")
+		}
+
+		device, err := devices[0].Open()
+		if err != nil {
+			return fmt.Errorf("failed to open Stream Deck Pedal: %w", err)
+		}
+		pedal.device = device
+	}
+
 	log.Info().
 		Str("device_serial", pedal.device.Serial).
 		Msg("Stream Deck Pedal Initialization")
@@ -99,4 +118,5 @@ func (pedal Pedal) Init() {
 			}
 		}
 	}
+	return nil
 }

@@ -25,6 +25,8 @@ type XL struct {
 
 var ProductID uint16 = 0x006c
 
+const VendorID uint16 = 0x0fd9
+
 func New(instanceID string, device *hid.Device) XL {
 	return XL{
 		instanceID: instanceID,
@@ -32,7 +34,21 @@ func New(instanceID string, device *hid.Device) XL {
 	}
 }
 
-func (xl XL) Init() {
+func (xl *XL) Init() error {
+	// Add reconnection attempt if device is nil
+	if xl.device == nil {
+		devices := hid.Enumerate(VendorID, ProductID)
+		if len(devices) == 0 {
+			return fmt.Errorf("no Stream Deck XL devices found")
+		}
+
+		device, err := devices[0].Open()
+		if err != nil {
+			return fmt.Errorf("failed to open Stream Deck XL: %w", err)
+		}
+		xl.device = device
+	}
+
 	log.Info().
 		Str("device_serial", xl.device.Serial).
 		Msg("Stream Deck XL Initialization")
@@ -69,7 +85,7 @@ func (xl XL) Init() {
 		page, err := pages.CreatePage(xl.instanceID, xl.device.Serial, currentProfile.ID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to create page")
-			return
+			return nil
 		}
 
 		log.Info().Interface("page", page).Msg("Page created")
@@ -84,7 +100,6 @@ func (xl XL) Init() {
 	// Get NATS connection an KV store.
 	nc, kv := natsconn.GetNATSConn()
 
-	go WatchKVForButtonImageBufferChanges(xl.instanceID, xl.device)
 	go WatchForButtonChanges(xl.device)
 
 	// Listen for incoming device input.
@@ -117,13 +132,13 @@ func (xl XL) Init() {
 
 				if err := json.Unmarshal(entry.Value(), &payload); err != nil {
 					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
-					return
+					return nil
 				}
 
 				// Use the `UUID` field as the topic
 				if payload.UUID == "" {
 					log.Error().Msg("Missing UUID field in JSON payload")
-					return
+					return nil
 				}
 
 				// Publish Action Instance to NATS.
@@ -171,11 +186,6 @@ func WatchForButtonChanges(device *hid.Device) {
 		segments := strings.Split(update.Key(), ".")
 		buttonNum := segments[len(segments)-1]
 
-		// Skip buffer keys
-		if strings.HasSuffix(buttonNum, ".buffer") {
-			continue
-		}
-
 		id, err := strconv.Atoi(buttonNum)
 		if err != nil {
 			continue
@@ -200,71 +210,6 @@ func WatchForButtonChanges(device *hid.Device) {
 				}
 				BlankKey(device, id, buf)
 			}
-		}
-	}
-}
-
-func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
-	// Add contextual information to the logger for this function
-	log := log.With().
-		Str("instanceId", instanceId).
-		Str("deviceSerial", device.Serial).
-		Logger()
-
-	_, kv := natsconn.GetNATSConn()
-
-	currentProfile := profiles.GetCurrentProfile(instanceId, device.Serial)
-	currentPage := pages.GetCurrentPage(instanceId, device.Serial, currentProfile.ID)
-
-	// Start watching the KV bucket for updates for a specific profile and page.
-	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
-	defer watcher.Stop()
-
-	if err != nil {
-		log.Error().Err(err).Msg("Error creating watcher")
-	}
-
-	// Flag to track when all initial values have been processed.
-	initialValuesProcessed := false
-
-	// Start the watch loop.
-	for update := range watcher.Updates() {
-		// If the update is nil, it means all initial values have been received.
-		if update == nil {
-			if !initialValuesProcessed {
-				log.Info().Msg("All initial values have been processed. Waiting for updates")
-				initialValuesProcessed = true
-			}
-			// Continue listening for future updates, so don't break here.
-			continue
-		}
-
-		// Process the update.
-		switch update.Operation() {
-		case nats.KeyValuePut:
-			log.Info().Str("key", update.Key()).Msg("Key added/updated")
-			// Get Stream Deck key id from the kv key.
-
-			// Split the string by the delimiter ".".
-			segments := strings.Split(update.Key(), ".")
-
-			// Get the last segment.
-			sdKeyId := segments[len(segments)-2]
-
-			// Convert to an int.
-			id, err := strconv.Atoi(sdKeyId)
-
-			if err != nil {
-				// ... handle error.
-				panic(err)
-			}
-
-			// Update Key.
-			util.SetKeyFromBuffer(device, id, update.Value())
-		case nats.KeyValueDelete:
-			log.Info().Str("key", update.Key()).Msg("Key deleted")
-		default:
-			log.Info().Str("key", update.Key()).Msg("Unknown operation")
 		}
 	}
 }

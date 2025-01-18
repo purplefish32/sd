@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"sd/pkg/natsconn"
 
-	"github.com/h2non/bimg"
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
@@ -53,30 +52,6 @@ func GetButton(key string) (button Button, err error) {
 	}
 
 	return button, nil
-}
-
-func updateImageBuffer(key string, imagePath string) (err error) {
-	_, kv := natsconn.GetNATSConn()
-
-	log.Info().Str("image_path", imagePath).Str("key", key).Msg("Updating image buffer")
-
-	buf, _ := bimg.Read(imagePath)
-
-	_, err = kv.Put(key+".buffer", buf)
-
-	if err != nil {
-		if err == nats.ErrKeyExists {
-			log.Printf("Button buffer key already exists: %s", key)
-		} else {
-			log.Printf("Failed to create key in KV store: %s %v", key, err)
-		}
-		return err
-	}
-
-	log.Info().Str("key", key).Msg("Updated button buffer")
-
-	return nil
-
 }
 
 func updateSettings(buttonKey string, settings Settings) (err error) {
@@ -181,7 +156,7 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 		States: []State{
 			{
 				Id:        "0",
-				ImagePath: "/home/donovan/.config/sd/buttons/game.png",
+				ImagePath: "/home/donovan/.config/sd/buttons/black.png",
 			},
 		},
 		State: "0",
@@ -211,7 +186,6 @@ func CreateButton(instanceId string, device *hid.Device, profileId string, pageI
 	updateStateId(key, 0)
 	updateSettings(key, Settings{})
 	updateTitle(key, "")
-	updateImageBuffer(key, button.States[0].ImagePath)
 
 	log.Printf("Created button: %v", buttonId)
 

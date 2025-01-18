@@ -140,6 +140,8 @@ func (s *Server) setupRoutes() {
 	s.router.Get("/partials/instance-card-list", s.handleInstanceCardList)
 	s.router.Get("/partials/device-card-list", s.handleDeviceCardList)
 
+	s.router.Get("/partials/button", s.handleButton)
+
 	// s.router.Get("/instances/{id}/devices", func(w http.ResponseWriter, r *http.Request) {
 	// 	instanceID := chi.URLParam(r, "id")
 	// 	s.log.Info().Str("instance", instanceID).Msg("Loading instance devices")
@@ -291,6 +293,10 @@ func (s *Server) getDevices() ([]types.Device, error) {
 	return devices, nil
 }
 
+func (s *Server) handleButton(w http.ResponseWriter, r *http.Request) {
+	s.log.Info().Msg("TODO handle button") // TODO: Implement this
+}
+
 func (s *Server) handleDeviceCardList(w http.ResponseWriter, r *http.Request) {
 	s.log.Info().Msg("Handling device list request")
 
@@ -400,23 +406,6 @@ func (s *Server) getDevicesForInstance(instanceID string) ([]types.Device, error
 
 	return devices, nil
 }
-
-// // Get device info
-// func (s *Server) getDeviceInfo(instanceID, deviceID string) (*DeviceInfo, error) {
-// 	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
-
-// 	entry, err := s.kv.Get(key)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to get device info: %w", err)
-// 	}
-
-// 	var info DeviceInfo
-// 	if err := json.Unmarshal(entry.Value(), &info); err != nil {
-// 		return nil, fmt.Errorf("failed to unmarshal device info: %w", err)
-// 	}
-
-// 	return &info, nil
-// }
 
 func (s *Server) Start() error {
 	port := os.Getenv("PORT")

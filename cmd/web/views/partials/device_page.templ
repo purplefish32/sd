@@ -1,7 +1,10 @@
 //go:generate templ generate
 package partials
-import "sd/cmd/web/views/layouts"
-import "sd/pkg/types"
+
+import (
+	"sd/cmd/web/views/layouts"
+	"sd/pkg/types"
+)
 
 templ DevicePage(instances []types.Instance, devices []types.Device) {
 	@layouts.Base("Home") {
@@ -11,22 +14,64 @@ templ DevicePage(instances []types.Instance, devices []types.Device) {
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				<div class="p-6 text-center text-gray-400">
-					STREAM DECK CONFIGURATION 2
-
-					@StreamDeckXL(devices[0].ID)
-
+					STREAM DECK CONFIGURATION
+					@StreamDeckXL(instances[0].ID, devices[0].ID)
 				</div>
 			</div>
-			// <div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
-			// 	<h2 class="text-xl font-semibold mb-4">Devices</h2>
-			// 	<div
-			// 		hx-ext="sse"
-			// 		sse-connect="/stream"
-			// 		sse-swap="DeviceCardListUpdate"
-			// 	>
-			// 		@DeviceCardList(devices)
-			// 	</div>
-			// </div>
+			<div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
+				<h2 class="text-xl font-semibold mb-4"></h2>
+				<div>
+					<ul>
+						<li class="mb-2">
+							<div class="flex items-center p-2 bg-sd-light rounded cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-90')">
+								<svg class="w-4 h-4 mr-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+								</svg>
+								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18"></path>
+								</svg>
+								<span>Navigation</span>
+							</div>
+							<ul class="ml-4 mt-1 hidden">
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Profile</li>
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Page</li>
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Single Action</li>
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Toggle Action</li>
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Multi Action</li>
+							</ul>
+						</li>
+						<li class="mb-2">
+							<div class="flex items-center p-2 bg-sd-light rounded cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-90')">
+								<svg class="w-4 h-4 mr-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+								</svg>
+								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18"></path>
+								</svg>
+								<span>Keyboard</span>
+							</div>
+							<ul class="ml-4 mt-1 hidden">
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Shortcut</li>
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Text</li>
+							</ul>
+						</li>
+						<li class="mb-2">
+							<div class="flex items-center p-2 bg-sd-light rounded cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-90')">
+								<svg class="w-4 h-4 mr-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+								</svg>
+								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18"></path>
+								</svg>
+								<span>Command</span>
+							</div>
+							<ul class="ml-4 mt-1 hidden">
+								<li class="p-2 hover:bg-sd-light rounded cursor-pointer">Execute</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
 		</div>
 	}
 }

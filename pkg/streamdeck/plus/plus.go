@@ -30,7 +30,9 @@ type Plus struct {
 	touchScreen      *TouchScreenManager
 }
 
-var ProductID uint16 = 0x006c
+var ProductID uint16 = 0x0084
+
+const VendorID uint16 = 0x0fd9
 
 const (
 	DialTurningFlag          = 0x01
@@ -72,19 +74,19 @@ func New(instanceID string, device *hid.Device) Plus {
 	return plus
 }
 
-func (plus Plus) Init() {
-	// Add reconnection attempt
+func (plus *Plus) Init() error {
+	// Add reconnection attempt if device is nil
 	if plus.device == nil {
-		// Try to reopen the device
-		devices := hid.Enumerate(0x0fd9, 0x0084) // StreamDeck Plus VID/PID
-		if len(devices) > 0 {
-			device, err := devices[0].Open()
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to reopen Stream Deck Plus")
-				return
-			}
-			plus.device = device
+		devices := hid.Enumerate(VendorID, ProductID)
+		if len(devices) == 0 {
+			return fmt.Errorf("no Stream Deck Plus devices found")
 		}
+
+		device, err := devices[0].Open()
+		if err != nil {
+			return fmt.Errorf("failed to open Stream Deck Plus: %w", err)
+		}
+		plus.device = device
 	}
 
 	log.Info().
@@ -104,7 +106,7 @@ func (plus Plus) Init() {
 		profile, err := profiles.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to create default profile")
-			return
+			return err
 		}
 
 		log.Info().Str("profileId", profile.ID).Msg("Default profile created")
@@ -116,7 +118,7 @@ func (plus Plus) Init() {
 
 	if currentProfile == nil {
 		log.Error().Msg("Failed to get or create current profile")
-		return
+		return fmt.Errorf("failed to get or create current profile")
 	}
 
 	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
@@ -131,7 +133,7 @@ func (plus Plus) Init() {
 		page, err := pages.CreatePage(plus.instanceID, plus.device.Serial, currentProfile.ID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to create default page")
-			return
+			return err
 		}
 
 		log.Info().Interface("page", page).Msg("Default page created")
@@ -145,11 +147,11 @@ func (plus Plus) Init() {
 	buf := make([]byte, 512)
 
 	go WatchForButtonChanges(plus.device)
-	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
 
 	// Initialize touch screen with current profile
 	if err := plus.touchScreen.UpdateFromProfile(currentProfile); err != nil {
 		log.Error().Err(err).Msg("Failed to initialize touch screen")
+		return err
 	}
 
 	// Watch for profile changes
@@ -202,11 +204,6 @@ func WatchForButtonChanges(device *hid.Device) {
 		segments := strings.Split(update.Key(), ".")
 		buttonNum := segments[len(segments)-1]
 
-		// Skip buffer keys
-		if strings.HasSuffix(buttonNum, ".buffer") {
-			continue
-		}
-
 		id, err := strconv.Atoi(buttonNum)
 		if err != nil {
 			continue
@@ -231,71 +228,6 @@ func WatchForButtonChanges(device *hid.Device) {
 				}
 				BlankKey(device, id, buf)
 			}
-		}
-	}
-}
-
-func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
-	// Add contextual information to the logger for this function
-	log := log.With().
-		Str("instanceId", instanceId).
-		Str("deviceSerial", device.Serial).
-		Logger()
-
-	_, kv := natsconn.GetNATSConn()
-
-	currentProfile := profiles.GetCurrentProfile(instanceId, device.Serial)
-	currentPage := pages.GetCurrentPage(instanceId, device.Serial, currentProfile.ID)
-
-	// Start watching the KV bucket for updates for a specific profile and page.
-	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
-	defer watcher.Stop()
-
-	if err != nil {
-		log.Error().Err(err).Msg("Error creating watcher")
-	}
-
-	// Flag to track when all initial values have been processed.
-	initialValuesProcessed := false
-
-	// Start the watch loop.
-	for update := range watcher.Updates() {
-		// If the update is nil, it means all initial values have been received.
-		if update == nil {
-			if !initialValuesProcessed {
-				log.Info().Msg("All initial values have been processed. Waiting for updates")
-				initialValuesProcessed = true
-			}
-			// Continue listening for future updates, so don't break here.
-			continue
-		}
-
-		// Process the update.
-		switch update.Operation() {
-		case nats.KeyValuePut:
-			log.Info().Str("key", update.Key()).Msg("Key added/updated")
-			// Get Stream Deck key id from the kv key.
-
-			// Split the string by the delimiter ".".
-			segments := strings.Split(update.Key(), ".")
-
-			// Get the last segment.
-			sdKeyId := segments[len(segments)-2]
-
-			// Convert to an int.
-			id, err := strconv.Atoi(sdKeyId)
-
-			if err != nil {
-				// ... handle error.
-				panic(err)
-			}
-
-			// Update Key.
-			util.SetKeyFromBuffer(device, id, update.Value())
-		case nats.KeyValueDelete:
-			log.Info().Str("key", update.Key()).Msg("Key deleted")
-		default:
-			log.Info().Str("key", update.Key()).Msg("Unknown operation")
 		}
 	}
 }

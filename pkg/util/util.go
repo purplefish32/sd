@@ -122,6 +122,7 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) 
 	return nil
 }
 
+// TODO IS THIS USED ANYWHERE?
 func ConvertImageToBuffer(imagePath string, width int) ([]byte, error) {
 	// Read the image file into a buffer using bimg
 	buffer, err := bimg.Read(imagePath)

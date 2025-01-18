@@ -10,8 +10,10 @@ package partials
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "sd/cmd/web/views/layouts"
-import "sd/pkg/types"
+import (
+	"sd/cmd/web/views/layouts"
+	"sd/pkg/types"
+)
 
 func DevicePage(instances []types.Instance, devices []types.Device) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -58,15 +60,15 @@ func DevicePage(instances []types.Instance, devices []types.Device) templ.Compon
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"main-content\"><div class=\"p-6 text-center text-gray-400\">STREAM DECK CONFIGURATION 2")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"main-content\"><div class=\"p-6 text-center text-gray-400\">STREAM DECK CONFIGURATION")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StreamDeckXL(devices[0].ID).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StreamDeckXL(instances[0].ID, devices[0].ID).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div><div class=\"w-64 bg-sd-dark border-r border-sd-darker p-4\"><h2 class=\"text-xl font-semibold mb-4\"></h2><div><ul><li class=\"mb-2\"><div class=\"flex items-center p-2 bg-sd-light rounded cursor-pointer\" onclick=\"this.nextElementSibling.classList.toggle(&#39;hidden&#39;); this.querySelector(&#39;svg&#39;).classList.toggle(&#39;rotate-90&#39;)\"><svg class=\"w-4 h-4 mr-2 transform transition-transform duration-200\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg> <svg class=\"w-4 h-4 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 12h18M3 6h18M3 18h18\"></path></svg> <span>Navigation</span></div><ul class=\"ml-4 mt-1 hidden\"><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Profile</li><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Page</li><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Single Action</li><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Toggle Action</li><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Multi Action</li></ul></li><li class=\"mb-2\"><div class=\"flex items-center p-2 bg-sd-light rounded cursor-pointer\" onclick=\"this.nextElementSibling.classList.toggle(&#39;hidden&#39;); this.querySelector(&#39;svg&#39;).classList.toggle(&#39;rotate-90&#39;)\"><svg class=\"w-4 h-4 mr-2 transform transition-transform duration-200\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg> <svg class=\"w-4 h-4 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 12h18M3 6h18M3 18h18\"></path></svg> <span>Keyboard</span></div><ul class=\"ml-4 mt-1 hidden\"><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Shortcut</li><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Text</li></ul></li><li class=\"mb-2\"><div class=\"flex items-center p-2 bg-sd-light rounded cursor-pointer\" onclick=\"this.nextElementSibling.classList.toggle(&#39;hidden&#39;); this.querySelector(&#39;svg&#39;).classList.toggle(&#39;rotate-90&#39;)\"><svg class=\"w-4 h-4 mr-2 transform transition-transform duration-200\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg> <svg class=\"w-4 h-4 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 12h18M3 6h18M3 18h18\"></path></svg> <span>Command</span></div><ul class=\"ml-4 mt-1 hidden\"><li class=\"p-2 hover:bg-sd-light rounded cursor-pointer\">Execute</li></ul></li></ul></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
-	"syscall"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -18,8 +16,11 @@ import (
 	"sd/pkg/plugins/browser"
 	"sd/pkg/plugins/command"
 	"sd/pkg/plugins/keyboard"
+	"sd/pkg/streamdeck/xl"
 	"sd/pkg/util"
 	"sd/pkg/watchers"
+
+	"github.com/karalabe/hid"
 )
 
 const (
@@ -55,7 +56,7 @@ func DetermineDeviceType(productID uint16) string {
 	}
 }
 
-func updateDeviceStatus(instanceID string, deviceID string, status string) error {
+func disconnectDevice(instanceID string, deviceID string, status string) error {
 	_, kv := natsconn.GetNATSConn()
 	if kv == nil {
 		return fmt.Errorf("failed to get NATS KV store")
@@ -97,19 +98,50 @@ func updateDeviceStatus(instanceID string, deviceID string, status string) error
 	return nil
 }
 
-func storeDeviceInfo(instanceID string, deviceID string, productID uint16) error {
+func connectDevice(instanceID string, deviceID string, productID uint16) error {
 	_, kv := natsconn.GetNATSConn()
 	if kv == nil {
 		return fmt.Errorf("failed to get NATS KV store")
 	}
 
 	deviceType := DetermineDeviceType(productID)
+
 	if deviceType == "unknown" {
 		return fmt.Errorf("unknown device type for product ID: %x", productID)
 	}
 
-	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
+	// Replace the direct Open call with enumeration and open
+	devices := hid.Enumerate(VendorIDElgato, productID)
+	if len(devices) == 0 {
+		return fmt.Errorf("no devices found with product ID: %x", productID)
+	}
 
+	device, err := devices[0].Open()
+	if err != nil {
+		return fmt.Errorf("failed to open device: %w", err)
+	}
+
+	// Initialize the appropriate device type
+	var initErr error
+	switch deviceType {
+	case DeviceTypeXL:
+		xlDevice := xl.New(instanceID, device)
+		initErr = xlDevice.Init()
+		// case DeviceTypePlus:
+		// 	plusDevice := plus.New(instanceID, device)
+		// 	initErr = plusDevice.Init()
+		// case DeviceTypePedal:
+		// 	pedalDevice := pedal.New(instanceID, device)
+		// 	initErr = pedalDevice.Init()
+	}
+
+	if initErr != nil {
+		device.Close()
+		return fmt.Errorf("failed to initialize %s device: %w", deviceType, initErr)
+	}
+
+	// Store device info in NATS KV
+	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
 	info := DeviceInfo{
 		Type:      deviceType,
 		CreatedAt: time.Now(),
@@ -131,49 +163,12 @@ func storeDeviceInfo(instanceID string, deviceID string, productID uint16) error
 		Str("instance", instanceID).
 		Str("device", deviceID).
 		Str("type", deviceType).
-		Msg("Stored new device")
+		Msg("Device connected and initialized")
 
-	return nil
-}
-
-func createLockFile() error {
-	// Get user's home directory
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get home directory: %w", err)
-	}
-
-	// Create .streamdeck directory if it doesn't exist
-	sdDir := filepath.Join(home, ".streamdeck")
-	if err := os.MkdirAll(sdDir, 0755); err != nil {
-		return fmt.Errorf("failed to create directory: %w", err)
-	}
-
-	// Try to create and lock the file
-	lockFile := filepath.Join(sdDir, "server.lock")
-	file, err := os.OpenFile(lockFile, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open lock file: %w", err)
-	}
-
-	// Try to get an exclusive lock
-	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
-	if err != nil {
-		file.Close()
-		return fmt.Errorf("another instance is already running")
-	}
-
-	// Keep file open - lock will be released when process exits
 	return nil
 }
 
 func main() {
-	// Check for existing instance first
-	if err := createLockFile(); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-
 	// Set global time format for logger.
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
@@ -214,11 +209,11 @@ func main() {
 			instanceID,
 			// Connected handler
 			func(instanceID string, deviceID string, productID uint16) error {
-				return storeDeviceInfo(instanceID, deviceID, productID)
+				return connectDevice(instanceID, deviceID, productID)
 			},
 			// Disconnected handler
 			func(instanceID string, deviceID string) error {
-				return updateDeviceStatus(instanceID, deviceID, "disconnected")
+				return disconnectDevice(instanceID, deviceID, "disconnected")
 			},
 		)
 		if err != nil {
