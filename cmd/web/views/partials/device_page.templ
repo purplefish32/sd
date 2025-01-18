@@ -8,13 +8,25 @@ templ DevicePage(instances []types.Instance, devices []types.Device) {
 		<div class="flex h-full">
 			@InstancePanel(instances)
 			@DevicePanel(devices)
-			
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				<div class="p-6 text-center text-gray-400">
-					STREAM DECK	CONFIGURATION
+					STREAM DECK CONFIGURATION 2
+
+					@StreamDeckXL(devices[0].ID)
+
 				</div>
 			</div>
+			// <div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
+			// 	<h2 class="text-xl font-semibold mb-4">Devices</h2>
+			// 	<div
+			// 		hx-ext="sse"
+			// 		sse-connect="/stream"
+			// 		sse-swap="DeviceCardListUpdate"
+			// 	>
+			// 		@DeviceCardList(devices)
+			// 	</div>
+			// </div>
 		</div>
 	}
 }

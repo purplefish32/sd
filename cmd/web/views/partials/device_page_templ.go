@@ -58,7 +58,15 @@ func DevicePage(instances []types.Instance, devices []types.Device) templ.Compon
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"main-content\"><div class=\"p-6 text-center text-gray-400\">STREAM DECK\tCONFIGURATION</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Right Panel - Device Config --><div class=\"flex-1 bg-sd-darker\" id=\"main-content\"><div class=\"p-6 text-center text-gray-400\">STREAM DECK CONFIGURATION 2")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = StreamDeckXL(devices[0].ID).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -15,6 +15,7 @@ templ DeviceCard(device types.Device) {
         hx-target="#main-content"
         hx-swap="outerHTML"
         hx-push-url="true"
+        preload
     >
         <div class="font-medium">Stream Deck {cases.Title(language.English).String(device.Type)}</div>
         <div class="text-sm text-gray-400">{device.ID}</div>
