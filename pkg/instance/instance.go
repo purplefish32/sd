@@ -3,10 +3,51 @@ package instance
 import (
 	"os"
 	"path/filepath"
+	"sd/pkg/natsconn"
+	"sd/pkg/types"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
+
+func GetInstances() ([]types.Instance, error) {
+	_, kv := natsconn.GetNATSConn()
+
+	keys, err := kv.Keys()
+	if err != nil {
+		return nil, err
+	}
+
+	instances := make([]types.Instance, 0)
+
+	for _, key := range keys {
+
+		// If the key doesn't start with the prefix, skip it
+		if !strings.Contains(key, "instances.") {
+			continue
+		}
+
+		parts := strings.Split(key, ".")
+
+		if len(parts) != 2 {
+			continue
+		}
+
+		instanceID := parts[1]
+
+		instances = append(instances, types.Instance{
+			ID: instanceID,
+		})
+
+	}
+
+	// Add a dummy instance for testing
+	// TODO: Remove this once we have a real instance
+	instances = append(instances, types.Instance{ID: "db45c7bb-af46-48aa-b2a0-d222586c7909"})
+
+	return instances, nil
+}
 
 func GetInstanceId() string {
 	// Use a directory in the user's home folder

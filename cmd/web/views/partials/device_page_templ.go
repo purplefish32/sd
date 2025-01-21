@@ -15,7 +15,14 @@ import (
 	"sd/pkg/types"
 )
 
-func DevicePage(instances []types.Instance, devices []types.Device, profiles []types.Profile, pages []types.Page) templ.Component {
+func DevicePage(
+	instances []types.Instance,
+	devices []types.Device,
+	profiles []types.Profile,
+	pages []types.Page,
+	instanceID string,
+	deviceID string,
+) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -64,7 +71,7 @@ func DevicePage(instances []types.Instance, devices []types.Device, profiles []t
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StreamDeckXL(instances[0].ID, devices[0].ID, profiles[0].ID, pages[0].ID).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StreamDeckXL(instanceID, deviceID, "ef1e00a1-1df5-4e2f-8bd6-d912895dd638", "7ee9f6dc-c2c8-4edb-95a1-1616c233a00c").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

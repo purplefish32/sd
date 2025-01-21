@@ -3,7 +3,6 @@ package profiles
 import (
 	"encoding/json"
 	"fmt"
-	"sd/pkg/env"
 	"sd/pkg/natsconn"
 	"sd/pkg/store"
 	"sd/pkg/types"
@@ -14,70 +13,62 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Profile struct {
-	ID    string       `json:"id"`    // Unique identifier for the profile
-	Name  string       `json:"name"`  // Display name for the profile
-	Pages []types.Page `json:"pages"` // List of pages in the profile
-}
-
 type CurrentProfile struct {
 	ID string `json:"id"` // Unique identifier for the profile
 }
 
-func GetProfiles(instanceId string, deviceId string) ([]Profile, error) {
+func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
 	_, kv := natsconn.GetNATSConn()
 
-	// Define the key prefix to search for profiles
-	prefix := "instances." + instanceId + ".devices." + deviceId + ".profiles."
-
 	// List the keys in the NATS KV store under the given prefix
-	keyLister, err := kv.ListKeys()
+	keyList, err := kv.ListKeys()
+
 	if err != nil {
 		log.Error().Err(err).Msg("Could not list NATS KV keys")
 		return nil, err
 	}
 
 	// Initialize a slice to store the profiles
-	var profiles []Profile
+	var profiles []types.Profile
 
 	// Iterate over the keys from the channel
-	for key := range keyLister.Keys() {
+	for key := range keyList.Keys() {
 
 		// If the key doesn't start with the prefix, skip it
-		if !strings.HasPrefix(key, prefix) {
+		if !strings.Contains(key, fmt.Sprintf("instances.%s.devices.%s.profiles.", instanceID, deviceID)) {
 			continue
 		}
 
-		// Ensure that the key ends with the profile UUID and doesn't contain additional parts like ".pages" or ".buttons"
-		if strings.Contains(key[len(prefix):], ".") {
-			continue // Ignore keys that contain further parts (like .pages or .buttons)
-		}
+		parts := strings.Split(key, ".")
 
-		// If the key ends with ".current", skip it (it's just the default profile)
-		if strings.HasSuffix(key, ".current") {
+		if len(parts) != 6 {
 			continue
 		}
 
 		// Fetch the profile data for each key
-		val, err := kv.Get(key)
+		entry, err := kv.Get(key)
+
 		if err != nil {
-			log.Error().Err(err).Str("key", key).Msg("Failed to get value for key")
+			log.Warn().Err(err).Str("key", key).Msg("Skipping invalid device entry")
 			continue
 		}
 
 		// Assuming the profile data is stored as a JSON string or similar structure
-		var profile Profile
-		err = json.Unmarshal(val.Value(), &profile)
+		var profile types.Profile
+
+		err = json.Unmarshal(entry.Value(), &profile)
 		if err != nil {
-			log.Error().Err(err).Str("key", key).Msg("Failed to unmarshal profile data")
+			log.Warn().Err(err).Str("key", key).Msg("Skipping malformed device data")
 			continue
 		}
 
 		// Append the profile to the list
-		profiles = append(profiles, profile)
+		profiles = append(profiles, types.Profile{
+			ID:    profile.ID,
+			Name:  profile.Name,
+			Pages: profile.Pages,
+		})
 	}
-
-	log.Info().Interface("profiles", profiles).Msg("Key")
 
 	return profiles, nil
 }
@@ -86,11 +77,6 @@ func CreateProfile(instanceID, deviceID, name string) (*types.Profile, error) {
 	profile := &types.Profile{
 		ID:   uuid.New().String(),
 		Name: name,
-		TouchScreen: types.TouchScreenLayout{
-			Mode:      "full",
-			FullImage: env.Get("ASSET_PATH", "") + "images/black.png",
-			Segments:  [4]string{},
-		},
 	}
 
 	// Save the profile
@@ -170,7 +156,7 @@ func SetCurrentProfile(instanceId string, deviceId string, profileId string) err
 	return nil
 }
 
-func GetProfile(instanceID, deviceID, profileID string) (*Profile, error) {
+func GetProfile(instanceID, deviceID, profileID string) (*types.Profile, error) {
 	_, kv := natsconn.GetNATSConn()
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
 
@@ -179,7 +165,7 @@ func GetProfile(instanceID, deviceID, profileID string) (*Profile, error) {
 		return nil, fmt.Errorf("failed to get profile: %w", err)
 	}
 
-	var profile Profile
+	var profile types.Profile
 	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal profile: %w", err)
 	}
@@ -187,7 +173,7 @@ func GetProfile(instanceID, deviceID, profileID string) (*Profile, error) {
 	return &profile, nil
 }
 
-func UpdateProfile(instanceID, deviceID, profileID string, profile *Profile) error {
+func UpdateProfile(instanceID, deviceID, profileID string, profile *types.Profile) error {
 	_, kv := natsconn.GetNATSConn()
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
 

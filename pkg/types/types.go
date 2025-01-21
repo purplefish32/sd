@@ -11,20 +11,19 @@ type TouchScreenLayout struct {
 }
 
 type Profile struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Pages       []Page            `json:"pages"`
-	TouchScreen TouchScreenLayout `json:"touchScreen"`
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Pages []Page `json:"pages"`
 }
 
 type Instance struct {
-	ID     string
-	Status string
+	ID     string `json:"id"`
+	Status string `json:"status"`
 }
 
 type Device struct {
-	ID       string
-	Instance string
-	Type     string
-	Status   string
+	ID       string `json:"id"`
+	Instance string `json:"instance"`
+	Type     string `json:"type"`
+	Status   string `json:"status"`
 }

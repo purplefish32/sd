@@ -18,6 +18,7 @@ import (
 	"sd/pkg/plugins/command"
 	"sd/pkg/plugins/keyboard"
 	"sd/pkg/streamdeck"
+	"sd/pkg/types"
 	"sd/pkg/util"
 	"sd/pkg/watchers"
 )
@@ -34,11 +35,6 @@ const (
 	ProductIDPlus  = 0x0084 // Stream Deck +
 	ProductIDPedal = 0x0086 // Stream Deck Pedal
 )
-
-type DeviceInfo struct {
-	Type   string `json:"type"`   // xl, plus, pedal
-	Status string `json:"status"` // connected, disconnected
-}
 
 func DetermineDeviceType(productID uint16) string {
 	switch productID {
@@ -66,23 +62,24 @@ func disconnectDevice(instanceID string, deviceID string, status string) error {
 		return fmt.Errorf("failed to get device info: %w", err)
 	}
 
-	var info DeviceInfo
+	var device types.Device
+
 	if entry != nil {
-		if err := json.Unmarshal(entry.Value(), &info); err != nil {
+		if err := json.Unmarshal(entry.Value(), &device); err != nil {
 			return fmt.Errorf("failed to unmarshal device info: %w", err)
 		}
 	}
 
-	info.Status = status
+	device.Status = status
 
-	data, err := json.Marshal(info)
+	data, err := json.Marshal(device)
 	if err != nil {
-		return fmt.Errorf("failed to marshal device info: %w", err)
+		return fmt.Errorf("failed to marshal device: %w", err)
 	}
 
 	_, err = kv.Put(key, data)
 	if err != nil {
-		return fmt.Errorf("failed to store device info: %w", err)
+		return fmt.Errorf("failed to store device: %w", err)
 	}
 
 	streamdeck.RemoveDevice(deviceID)
@@ -103,12 +100,14 @@ func connectDevice(instanceID string, deviceID string, productID uint16) error {
 
 	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
 
-	info := DeviceInfo{
-		Type:   deviceType,
-		Status: "connected",
+	device := types.Device{
+		ID:       deviceID,
+		Instance: instanceID,
+		Type:     deviceType,
+		Status:   "connected",
 	}
 
-	data, err := json.Marshal(info)
+	data, err := json.Marshal(device)
 	if err != nil {
 		return fmt.Errorf("failed to marshal device info: %w", err)
 	}

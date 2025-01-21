@@ -12,13 +12,12 @@ templ StreamDeckXL(instanceID string, deviceID string, profileID string, pageID 
 					data-button={ string(rune(i)) }
 					data-device={ deviceID }
 				>
-					<div class="stream-deck-button-empty flex items-center justify-center text-gray-600">
-						<span>{ string(rune(i + 1)) }</span>
-					</div>
 					<img
-						class="w-full h-full object-cover rounded-lg"
-						src={ fmt.Sprintf("/partials/button?instanceId=%s&deviceId=%s&profileId=%s&pageId=%s&buttonId=%d", instanceID, deviceID, profileID, pageID, i+1) }
+						class="w-full h-full object-cover rounded-lg rotate-180"
+						src={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instanceID, deviceID, profileID, pageID, i+1) }
 						alt="Button Image"
+						hx-post={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instanceID, deviceID, profileID, pageID, i+1) }
+						hx-trigger="click"
 					/>
 				</div>
 			}

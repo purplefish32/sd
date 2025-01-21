@@ -7,22 +7,23 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/nats-io/nats.go"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"sd/cmd/web/views/partials"
+	"sd/pkg/buttons"
+	"sd/pkg/devices"
+	"sd/pkg/instance"
 	"sd/pkg/natsconn"
+	"sd/pkg/profiles"
 	"sd/pkg/types"
 )
 
 type Server struct {
 	router *chi.Mux
-	log    zerolog.Logger
 	nc     *nats.Conn
 	kv     nats.KeyValue
 }
@@ -41,11 +42,6 @@ const (
 )
 
 // DeviceInfo represents the device data stored in NATS KV
-// TODO refactor
-type DeviceInfo struct {
-	Type   string `json:"type"`   // xl, plus, pedal
-	Status string `json:"status"` // connected, disconnected
-}
 
 // DetermineDeviceType returns the device type based on USB product ID
 func DetermineDeviceType(productID uint16) string {
@@ -84,7 +80,6 @@ func NewServer() *Server {
 
 	s := &Server{
 		router: r,
-		log:    log.With().Str("component", "web").Logger(),
 		nc:     nc,
 		kv:     kv,
 	}
@@ -98,7 +93,7 @@ func NewServer() *Server {
 func (s *Server) setupRoutes() {
 	// Routes
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := s.getInstances()
+		instances, err := instance.GetInstances()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -107,13 +102,13 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.router.Get("/instance/{instanceID}", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := s.getInstances()
+		instances, err := instance.GetInstances()
 		instanceID := chi.URLParam(r, "instanceID")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		devices, err := s.getDevices(instanceID)
+		devices, err := devices.GetDevices(instanceID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -121,19 +116,20 @@ func (s *Server) setupRoutes() {
 		partials.InstancePage(instances, devices).Render(r.Context(), w)
 	})
 
-	s.router.Get("/instance/{instanceId}/device/{deviceId}", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := s.getInstances()
+	s.router.Get("/instance/{instanceID}/device/{deviceID}", func(w http.ResponseWriter, r *http.Request) {
+		instances, err := instance.GetInstances()
 		instanceID := chi.URLParam(r, "instanceID")
+		deviceID := chi.URLParam(r, "deviceID")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		devices, err := s.getDevices(instanceID)
+		devices, err := devices.GetDevices(instanceID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		profiles, err := s.getProfiles()
+		profiles, err := profiles.GetProfiles(instanceID, deviceID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -143,18 +139,19 @@ func (s *Server) setupRoutes() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		partials.DevicePage(instances, devices, profiles, pages).Render(r.Context(), w)
+		partials.DevicePage(instances, devices, profiles, pages, instanceID, deviceID).Render(r.Context(), w)
 	})
 
 	// HTMX Routes
 	s.router.Get("/partials/instance-card-list", s.handleInstanceCardList)
 	s.router.Get("/partials/{instanceId}/device-card-list", s.handleDeviceCardList)
-	s.router.Get("/partials/button", s.handleButton)
+	s.router.Get("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", s.handleButton)
+	s.router.Post("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", s.handleButtonPress)
 
 	// Add SSE endpoint for device updates
 	s.router.Get("/stream/{instanceId}", func(w http.ResponseWriter, r *http.Request) {
 		instanceID := chi.URLParam(r, "instanceId")
-		s.log.Info().
+		log.Info().
 			Str("remote_addr", r.RemoteAddr).
 			Str("user_agent", r.UserAgent()).
 			Msg("New SSE connection")
@@ -173,7 +170,7 @@ func (s *Server) setupRoutes() {
 		watcher, err := s.kv.Watch("instances." + instanceID + ".devices.*")
 
 		if err != nil {
-			s.log.Error().Err(err).Msg("Failed to create KV watcher")
+			log.Error().Err(err).Msg("Failed to create KV watcher")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -181,13 +178,15 @@ func (s *Server) setupRoutes() {
 		defer watcher.Stop()
 
 		// 4. Send initial device list
-		devices, err := s.getDevices(instanceID)
+		d, err := devices.GetDevices(instanceID)
+
+		log.Info().Interface("devices", d).Msg("Initial devices")
 
 		if err != nil {
-			s.log.Error().Err(err).Msg("Failed to get initial devices")
+			log.Error().Err(err).Msg("Failed to get initial devices")
 		} else {
-			if err := s.sendDeviceList(w, r.Context(), devices); err != nil {
-				s.log.Error().Err(err).Msg("Failed to send initial device list")
+			if err := s.sendDeviceList(w, r.Context(), d); err != nil {
+				log.Error().Err(err).Msg("Failed to send initial device list")
 				return
 			}
 		}
@@ -212,15 +211,15 @@ func (s *Server) setupRoutes() {
 				case <-done:
 					return
 				default:
-					devices, err := s.getDevices(instanceID)
+					d, err := devices.GetDevices(instanceID)
 					if err != nil {
-						s.log.Error().Err(err).Msg("Failed to get devices")
+						log.Error().Err(err).Msg("Failed to get devices")
 						continue
 					}
 
-					if err := s.sendDeviceList(w, r.Context(), devices); err != nil {
+					if err := s.sendDeviceList(w, r.Context(), d); err != nil {
 						if err != context.Canceled {
-							s.log.Error().Err(err).Msg("Failed to send device list")
+							log.Error().Err(err).Msg("Failed to send device list")
 						}
 						return
 					}
@@ -247,56 +246,6 @@ func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, devi
 	return nil
 }
 
-func (s *Server) getDevices(instanceID string) ([]types.Device, error) {
-	keyList, err := s.kv.ListKeys()
-	if err != nil {
-		return nil, err
-	}
-
-	devices := make([]types.Device, 0)
-	seen := make(map[string]bool)
-
-	for key := range keyList.Keys() {
-		if strings.Contains(key, fmt.Sprintf("instances.%s.devices", instanceID)) {
-			parts := strings.Split(key, ".")
-			if len(parts) < 4 {
-				continue
-			}
-
-			deviceID := parts[3]
-			if seen[deviceID] {
-				continue
-			}
-
-			entry, err := s.kv.Get(key)
-			if err != nil {
-				s.log.Warn().Err(err).Str("key", key).Msg("Skipping invalid device entry")
-				continue
-			}
-
-			var deviceInfo DeviceInfo
-			if err := json.Unmarshal(entry.Value(), &deviceInfo); err != nil {
-				s.log.Warn().Err(err).Str("key", key).Msg("Skipping malformed device data")
-				continue
-			}
-
-			devices = append(devices, types.Device{
-				ID:       deviceID,
-				Instance: parts[1],
-				Type:     deviceInfo.Type,
-				Status:   deviceInfo.Status,
-			})
-			seen[deviceID] = true
-		}
-	}
-
-	return devices, nil
-}
-
-func (s *Server) getProfiles() ([]types.Profile, error) {
-	return nil, nil
-}
-
 func (s *Server) getPages() ([]types.Page, error) {
 	return nil, nil
 }
@@ -309,88 +258,74 @@ func (s *Server) handleButton(w http.ResponseWriter, r *http.Request) {
 	pageID := chi.URLParam(r, "pageId")
 	buttonID := chi.URLParam(r, "buttonId")
 
-	if instanceID == "" || deviceID == "" || profileID == "" || pageID == "" || buttonID == "" {
-		s.log.Error().Msg("Missing required parameters")
-		http.Error(w, "Missing required parameters", http.StatusBadRequest)
-		return
-	}
-
 	// Get button buffer from NATS KV
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s.buffer",
 		instanceID, deviceID, profileID, pageID, buttonID)
 
 	entry, err := s.kv.Get(key)
+
 	if err != nil {
-		s.log.Error().Err(err).Msg("Failed to get button buffer")
-		http.Error(w, "Failed to get button data", http.StatusInternalServerError)
 		return
 	}
 
 	// Write buffer data to response
-	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Type", "image/jpeg")
 	w.Write(entry.Value())
 }
 
-func (s *Server) handleDeviceCardList(w http.ResponseWriter, r *http.Request) {
-	s.log.Info().Msg("Handling device list request")
-	instanceID := chi.URLParam(r, "instanceId")
+func (s *Server) handleButtonPress(w http.ResponseWriter, r *http.Request) {
+	nc, _ := natsconn.GetNATSConn()
 
-	devices, err := s.getDevices(instanceID)
+	// Get button info from query params
+	instanceID := chi.URLParam(r, "instanceId")
+	deviceID := chi.URLParam(r, "deviceId")
+	profileID := chi.URLParam(r, "profileId")
+	pageID := chi.URLParam(r, "pageId")
+	buttonID := chi.URLParam(r, "buttonId")
+
+	var button, err = buttons.GetButton("instances." + instanceID + ".devices." + deviceID + ".profiles." + profileID + ".pages." + pageID + ".buttons." + buttonID)
 
 	if err != nil {
-		s.log.Error().Err(err).Msg("Failed to get devices")
+		log.Error().Err(err).Msg("Failed to get button")
+		return
+	}
+
+	buttonData, err := json.Marshal(button)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal button")
+		return
+	}
+
+	nc.Publish(button.UUID, buttonData)
+}
+
+func (s *Server) handleDeviceCardList(w http.ResponseWriter, r *http.Request) {
+	log.Info().Msg("Handling device list request")
+	instanceID := chi.URLParam(r, "instanceId")
+
+	devices, err := devices.GetDevices(instanceID)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get devices")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	s.log.Info().Interface("devices", devices).Msg("Found devices")
+	log.Info().Interface("devices", devices).Msg("Found devices")
 	partials.DeviceCardList(devices).Render(r.Context(), w)
 }
 
-// TODO move this to the instance package.
-func (s *Server) getInstances() ([]types.Instance, error) {
-	keys, err := s.kv.Keys()
-	if err != nil {
-		return nil, err
-	}
-
-	instances := make([]types.Instance, 0)
-	seen := make(map[string]bool)
-
-	for _, key := range keys {
-		if strings.HasPrefix(key, "instances.") {
-			parts := strings.Split(key, ".")
-			if len(parts) < 2 {
-				continue
-			}
-
-			instanceID := parts[1]
-			if seen[instanceID] {
-				continue // Skip duplicates
-			}
-
-			instances = append(instances, types.Instance{
-				ID:     instanceID,
-				Status: "Connected", // TODO: Get actual status
-			})
-			seen[instanceID] = true
-		}
-	}
-
-	return instances, nil
-}
-
 func (s *Server) handleInstanceCardList(w http.ResponseWriter, r *http.Request) {
-	s.log.Info().Msg("Handling instance list request")
+	log.Info().Msg("Handling instance list request")
 
-	instances, err := s.getInstances()
+	instances, err := instance.GetInstances()
 	if err != nil {
-		s.log.Error().Err(err).Msg("Failed to get instances")
+		log.Error().Err(err).Msg("Failed to get instances")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	s.log.Info().Interface("instances", instances).Msg("Found instances")
+	log.Info().Interface("instances", instances).Msg("Found instances")
 	partials.InstanceCardList(instances).Render(r.Context(), w)
 }
 
@@ -400,7 +335,7 @@ func (s *Server) Start() error {
 		port = "3000"
 	}
 
-	s.log.Info().Msgf("Starting server on port %s", port)
+	log.Info().Msgf("Starting server on port %s", port)
 	return http.ListenAndServe(":"+port, s.router)
 }
 
