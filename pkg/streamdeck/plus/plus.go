@@ -147,6 +147,7 @@ func (plus *Plus) Init() error {
 	buf := make([]byte, 512)
 
 	go WatchForButtonChanges(plus.device)
+	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
 
 	// Initialize touch screen with current profile
 	if err := plus.touchScreen.UpdateFromProfile(currentProfile); err != nil {
@@ -181,6 +182,71 @@ func BlankAllKeys(device *hid.Device) {
 
 	for i := 1; i <= 8; i++ {
 		BlankKey(device, i, buffer)
+	}
+}
+
+func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
+	// Add contextual information to the logger for this function
+	log := log.With().
+		Str("instanceId", instanceId).
+		Str("deviceSerial", device.Serial).
+		Logger()
+
+	_, kv := natsconn.GetNATSConn()
+
+	currentProfile := profiles.GetCurrentProfile(instanceId, device.Serial)
+	currentPage := pages.GetCurrentPage(instanceId, device.Serial, currentProfile.ID)
+
+	// Start watching the KV bucket for updates for a specific profile and page.
+	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
+	defer watcher.Stop()
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error creating watcher")
+	}
+
+	// Flag to track when all initial values have been processed.
+	initialValuesProcessed := false
+
+	// Start the watch loop.
+	for update := range watcher.Updates() {
+		// If the update is nil, it means all initial values have been received.
+		if update == nil {
+			if !initialValuesProcessed {
+				log.Info().Msg("All initial values have been processed. Waiting for updates")
+				initialValuesProcessed = true
+			}
+			// Continue listening for future updates, so don't break here.
+			continue
+		}
+
+		// Process the update.
+		switch update.Operation() {
+		case nats.KeyValuePut:
+			log.Info().Str("key", update.Key()).Msg("Key added/updated")
+			// Get Stream Deck key id from the kv key.
+
+			// Split the string by the delimiter ".".
+			segments := strings.Split(update.Key(), ".")
+
+			// Get the last segment.
+			sdKeyId := segments[len(segments)-2]
+
+			// Convert to an int.
+			id, err := strconv.Atoi(sdKeyId)
+
+			if err != nil {
+				// ... handle error.
+				panic(err)
+			}
+
+			// Update Key.
+			util.SetKeyFromBuffer(device, id, update.Value())
+		case nats.KeyValueDelete:
+			log.Info().Str("key", update.Key()).Msg("Key deleted")
+		default:
+			log.Info().Str("key", update.Key()).Msg("Unknown operation")
+		}
 	}
 }
 

@@ -5,3 +5,4 @@ bin/
 .codegpt
 # TUI logs
 cmd/tui/app.log
+

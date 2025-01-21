@@ -62,6 +62,7 @@ func ParseEventBuffer(buf []byte) []int {
 }
 
 func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) {
+	log.Debug().Int("keyId", keyId).Msg("Setting key")
 	// Calculate the total length of the image data
 	content := buffer
 

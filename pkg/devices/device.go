@@ -1,10 +1,7 @@
 package devices
 
-import "time"
-
+// TODO refactor
 type Info struct {
-	Type      string    `json:"type"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Status    string    `json:"status"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
 }

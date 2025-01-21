@@ -22,7 +22,8 @@ func (b *BrowserPlugin) Name() string {
 }
 
 func (b *BrowserPlugin) Init() {
-	OpenSubscriber()
+	log.Info().Msg("Browser plugin initialized")
+	b.openSubscriber()
 }
 
 func (b *BrowserPlugin) GetActionTypes() []actions.ActionType {
@@ -42,21 +43,10 @@ func (b *BrowserPlugin) ValidateConfig(actionType actions.ActionType, config jso
 	return nil
 }
 
-func (b *BrowserPlugin) ExecuteAction(actionType actions.ActionType, config json.RawMessage) error {
-	var cfg OpenURLConfig
-	if err := json.Unmarshal(config, &cfg); err != nil {
-		return err
-	}
-	return b.OpenURL(cfg.URL)
-}
-
-func (b *BrowserPlugin) OpenURL(url string) error {
-	return browser.OpenURL(url)
-}
-
-func OpenSubscriber() {
+func (b *BrowserPlugin) openSubscriber() {
 	nc, _ := natsconn.GetNATSConn()
 	nc.Subscribe("sd.plugin.browser.open_url", func(msg *nats.Msg) {
+		log.Info().Interface("msg", msg.Data).Msg("Browser plugin received message")
 		var action actions.ActionInstance
 		if err := json.Unmarshal(msg.Data, &action); err != nil {
 			log.Error().Err(err).Msg("Failed to unmarshal action")

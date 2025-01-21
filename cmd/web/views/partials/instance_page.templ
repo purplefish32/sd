@@ -1,13 +1,16 @@
 //go:generate templ generate
 package partials
-import "sd/cmd/web/views/layouts"
-import "sd/pkg/types"
+
+import (
+	"sd/cmd/web/views/layouts"
+	"sd/pkg/types"
+)
 
 templ InstancePage(instances []types.Instance, devices []types.Device) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
 			@InstancePanel(instances)
-			@DevicePanel(devices)
+			@DevicePanel(instances[0].ID, devices)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				<div class="p-6 text-center text-gray-400">

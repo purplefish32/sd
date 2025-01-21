@@ -6,16 +6,16 @@ import (
 	"sd/pkg/types"
 )
 
-templ DevicePage(instances []types.Instance, devices []types.Device) {
+templ DevicePage(instances []types.Instance, devices []types.Device, profiles []types.Profile, pages []types.Page) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
 			@InstancePanel(instances)
-			@DevicePanel(devices)
+			@DevicePanel(instances[0].ID, devices)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				<div class="p-6 text-center text-gray-400">
 					STREAM DECK CONFIGURATION
-					@StreamDeckXL(instances[0].ID, devices[0].ID)
+					@StreamDeckXL(instances[0].ID, devices[0].ID, profiles[0].ID, pages[0].ID)
 				</div>
 			</div>
 			<div class="w-64 bg-sd-dark border-r border-sd-darker p-4">

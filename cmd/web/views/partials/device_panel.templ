@@ -1,16 +1,17 @@
 //go:generate templ generate
 package partials
+
 import "sd/pkg/types"
 
-templ DevicePanel(devices []types.Device) {
-    <div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
-        <h2 class="text-xl font-semibold mb-4">Devices</h2>
-        <div
-            hx-ext="sse"
-            sse-connect="/stream"
-            sse-swap="DeviceCardListUpdate"
-        >
-            @DeviceCardList(devices)
-        </div>
-    </div>
+templ DevicePanel(instanceID string, devices []types.Device) {
+	<div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
+		<h2 class="text-xl font-semibold mb-4">Devices</h2>
+		<div
+			hx-ext="sse"
+			sse-connect={ "/stream/" + instanceID }
+			sse-swap="DeviceCardListUpdate"
+		>
+			@DeviceCardList(devices)
+		</div>
+	</div>
 }

@@ -1,6 +1,7 @@
 package xl
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sd/pkg/actions"
@@ -21,23 +22,38 @@ import (
 type XL struct {
 	instanceID string
 	device     *hid.Device
+	vendorID   uint16
+	productID  uint16
+	cancel     context.CancelFunc
+	ctx        context.Context
 }
 
-var ProductID uint16 = 0x006c
-
-const VendorID uint16 = 0x0fd9
-
 func New(instanceID string, device *hid.Device) XL {
+	ctx, cancel := context.WithCancel(context.Background())
 	return XL{
 		instanceID: instanceID,
 		device:     device,
+		vendorID:   0x0fd9,
+		productID:  0x006c,
+		ctx:        ctx,
+		cancel:     cancel,
+	}
+}
+
+func (xl *XL) Cleanup() {
+	if xl.cancel != nil {
+		xl.cancel()
+	}
+	if xl.device != nil {
+		xl.device.Close()
 	}
 }
 
 func (xl *XL) Init() error {
+	log.Info().Interface("device", xl.device).Msg("Initializing Stream Deck XL")
 	// Add reconnection attempt if device is nil
 	if xl.device == nil {
-		devices := hid.Enumerate(VendorID, ProductID)
+		devices := hid.Enumerate(xl.vendorID, xl.productID)
 		if len(devices) == 0 {
 			return fmt.Errorf("no Stream Deck XL devices found")
 		}
@@ -49,12 +65,8 @@ func (xl *XL) Init() error {
 		xl.device = device
 	}
 
-	log.Info().
-		Str("device_serial", xl.device.Serial).
-		Msg("Stream Deck XL Initialization")
-
 	// Blank all keys.
-	BlankAllKeys(xl.device)
+	xl.blankAllKeys()
 
 	currentProfile := profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
 
@@ -94,82 +106,97 @@ func (xl *XL) Init() error {
 		pages.SetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID, page.ID)
 	}
 
-	// Buffer for outgoing events.
-	buf := make([]byte, 512)
+	// Start watchers with context
+	go xl.watchForButtonChanges(xl.ctx)
+	go xl.watchKVForButtonImageBufferChanges(xl.ctx)
 
-	// Get NATS connection an KV store.
+	// Start button input loop with context
+	go xl.handleButtonInput(xl.ctx)
+
+	return nil
+}
+
+// Split out the button input handling into its own function
+func (xl *XL) handleButtonInput(ctx context.Context) {
+	buf := make([]byte, 512)
 	nc, kv := natsconn.GetNATSConn()
 
-	go WatchForButtonChanges(xl.device)
-
-	// Listen for incoming device input.
 	for {
-		n, _ := xl.device.Read(buf)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			n, err := xl.device.Read(buf)
+			if err != nil {
+				log.Error().Err(err).Msg("Error reading from device")
+				return
+			}
 
-		if n > 0 {
-			pressedButtons := util.ParseEventBuffer(buf)
+			if n > 0 {
+				pressedButtons := util.ParseEventBuffer(buf)
 
-			// TODO implement long press.
-			for _, buttonIndex := range pressedButtons {
+				// TODO implement long press.
+				for _, buttonIndex := range pressedButtons {
 
-				// Ignore button up event for now.
-				if buttonIndex == 0 {
-					continue
+					// Ignore button up event for now.
+					if buttonIndex == 0 {
+						continue
+					}
+
+					log.Info().Int("buttonIndex", buttonIndex).Msg("Button pressed")
+
+					var currentProfile = profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
+					var currentPage = pages.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
+
+					key := "instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
+
+					// Get the associated data from the NATS KV Store.
+					entry, _ := nats.KeyValue.Get(kv, key)
+
+					// Unmarshal the JSON into the Payload struct
+					var payload actions.ActionInstance
+
+					if err := json.Unmarshal(entry.Value(), &payload); err != nil {
+						log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
+						return
+					}
+
+					// Use the `UUID` field as the topic
+					if payload.UUID == "" {
+						log.Error().Msg("Missing UUID field in JSON payload")
+						return
+					}
+
+					// Publish Action Instance to NATS.
+					nc.Publish(payload.UUID, entry.Value())
 				}
-
-				key := "instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
-
-				// Get the associated data from the NATS KV Store.
-				entry, _ := nats.KeyValue.Get(kv, key)
-
-				// if err != nil {
-				// 	log.Warn().Err(err).Msg("Failed to get value from KV store")
-				// 	continue
-				// }
-
-				// Unmarshal the JSON into the Payload struct
-				var payload actions.ActionInstance
-
-				if err := json.Unmarshal(entry.Value(), &payload); err != nil {
-					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
-					return nil
-				}
-
-				// Use the `UUID` field as the topic
-				if payload.UUID == "" {
-					log.Error().Msg("Missing UUID field in JSON payload")
-					return nil
-				}
-
-				// Publish Action Instance to NATS.
-				nc.Publish(payload.UUID, entry.Value())
 			}
 		}
 	}
 }
 
-func BlankKey(device *hid.Device, keyId int, buffer []byte) {
-	// Update Key.
-	util.SetKeyFromBuffer(device, keyId, buffer)
-}
-
-func BlankAllKeys(device *hid.Device) {
+func (xl *XL) blankKey(keyId int) {
 	var assetPath = env.Get("ASSET_PATH", "")
 	var buffer, err = util.ConvertImageToRotatedBuffer(assetPath+"images/black.png", 96)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
 	}
+	// Update Key.
+	util.SetKeyFromBuffer(xl.device, keyId, buffer)
+}
 
+func (xl *XL) blankAllKeys() {
 	for i := 1; i <= 32; i++ {
-		BlankKey(device, i, buffer)
+		xl.blankKey(i)
 	}
 }
 
-func WatchForButtonChanges(device *hid.Device) {
+func (xl *XL) watchForButtonChanges(ctx context.Context) {
 	_, kv := natsconn.GetNATSConn()
 
-	buttonPattern := fmt.Sprintf("instances.*.devices.%s.profiles.*.pages.*.buttons.*", device.Serial)
+	buttonPattern := "instances.*.devices." + xl.device.Serial + ".profiles.*.pages.*.buttons.*"
+
 	watcher, err := kv.Watch(buttonPattern)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating watcher")
@@ -177,38 +204,99 @@ func WatchForButtonChanges(device *hid.Device) {
 	}
 	defer watcher.Stop()
 
-	for update := range watcher.Updates() {
-		if update == nil {
-			continue
-		}
-
-		// Get button number from the key
-		segments := strings.Split(update.Key(), ".")
-		buttonNum := segments[len(segments)-1]
-
-		id, err := strconv.Atoi(buttonNum)
-		if err != nil {
-			continue
-		}
-
-		switch update.Operation() {
-		case nats.KeyValueDelete:
-			// Blank the key when button is deleted
-			buffer, _ := util.ConvertImageToRotatedBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 96)
-			BlankKey(device, id, buffer)
-		case nats.KeyValuePut:
-			var button buttons.Button
-			if err := json.Unmarshal(update.Value(), &button); err != nil {
-				log.Error().Err(err).Msg("Failed to unmarshal button")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-watcher.Updates():
+			if update == nil {
 				continue
 			}
-			if len(button.States) > 0 {
-				buf, err := util.ConvertImageToRotatedBuffer(button.States[0].ImagePath, 96)
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to create button buffer")
+
+			// Get button number from the key
+			segments := strings.Split(update.Key(), ".")
+			buttonNum := segments[len(segments)-1]
+
+			id, err := strconv.Atoi(buttonNum)
+			if err != nil {
+				continue
+			}
+
+			switch update.Operation() {
+			case nats.KeyValueDelete:
+				xl.blankKey(id)
+			case nats.KeyValuePut:
+				var button buttons.Button
+				if err := json.Unmarshal(update.Value(), &button); err != nil {
+					log.Error().Err(err).Msg("Failed to unmarshal button")
 					continue
 				}
-				BlankKey(device, id, buf)
+				if len(button.States) > 0 {
+					buf, err := util.ConvertImageToRotatedBuffer(button.States[0].ImagePath, 96)
+					if err != nil {
+						log.Error().Err(err).Msg("Failed to create button buffer")
+						continue
+					}
+
+					key := update.Key() + ".buffer"
+					kv.Put(key, buf)
+				}
+			}
+		}
+	}
+}
+
+func (xl *XL) watchKVForButtonImageBufferChanges(ctx context.Context) {
+	log := log.With().
+		Str("instanceId", xl.instanceID).
+		Str("deviceSerial", xl.device.Serial).
+		Logger()
+
+	_, kv := natsconn.GetNATSConn()
+	currentProfile := profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
+	currentPage := pages.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
+
+	watcher, err := kv.Watch("instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
+	if err != nil {
+		log.Error().Err(err).Msg("Error creating watcher")
+		return
+	}
+	defer watcher.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-watcher.Updates():
+			if update == nil {
+				continue
+			}
+
+			switch update.Operation() {
+			case nats.KeyValuePut:
+				log.Info().Str("key", update.Key()).Msg("Key added/updated")
+				// Get Stream Deck key id from the kv key.
+
+				// Split the string by the delimiter ".".
+				segments := strings.Split(update.Key(), ".")
+
+				// Get the last segment.
+				sdKeyId := segments[len(segments)-2]
+
+				// Convert to an int.
+				id, err := strconv.Atoi(sdKeyId)
+
+				if err != nil {
+					// ... handle error.
+					panic(err)
+				}
+
+				// Update Key.
+				util.SetKeyFromBuffer(xl.device, id, update.Value())
+			case nats.KeyValueDelete:
+				log.Info().Str("key", update.Key()).Msg("Key deleted")
+			default:
+				log.Info().Str("key", update.Key()).Msg("Unknown operation")
 			}
 		}
 	}

@@ -1,33 +1,32 @@
 //go:generate templ generate
 package partials
 
-import "golang.org/x/text/cases"
-import "golang.org/x/text/language"
-import "sd/pkg/types"
+import (
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"sd/pkg/types"
+)
 
 templ DeviceCard(device types.Device) {
-    <a 
-        class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
-        id={"device-card-" + device.ID}
-        href={templ.SafeURL("/instance/" + device.Instance + "/device/" + device.ID)}
-        hx-get={"/instance/" + device.Instance + "/device/" + device.ID}
-        hx-select="#main-content"
-        hx-target="#main-content"
-        hx-swap="outerHTML"
-        hx-push-url="true"
-        preload
-    >
-        <div class="font-medium">Stream Deck {cases.Title(language.English).String(device.Type)}</div>
-        <div class="text-sm text-gray-400">{device.ID}</div>
-        <div class="status-indicator">
-
-            if device.Status == "connected" {
-                <span class="text-green-500">Status: Connected</span>
-            } else if device.Status == "disconnected" {
-                <span class="text-red-500">Status: Disconnected</span>
-            } else {
-                <span class="text-yellow-500">Status: Unknown</span>
-            }
-        </div>
-    </a>
+	<div
+		class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
+		id={ "device-card-" + device.ID }
+		hx-get={ "/instance/" + device.Instance + "/device/" + device.ID }
+		hx-select="#main-content"
+		hx-target="#main-content"
+		hx-swap="outerHTML"
+		hx-push-url="true"
+	>
+		<div class="font-medium">Stream Deck { cases.Title(language.English).String(device.Type) }</div>
+		<div class="text-sm text-gray-400">{ device.ID }</div>
+		<div class="status-indicator">
+			if device.Status == "connected" {
+				<span class="text-green-500">Status: Connected</span>
+			} else if device.Status == "disconnected" {
+				<span class="text-red-500">Status: Disconnected</span>
+			} else {
+				<span class="text-yellow-500">Status: Unknown</span>
+			}
+		</div>
+	</div>
 }

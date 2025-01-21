@@ -1,6 +1,8 @@
 package partials
 
-templ StreamDeckXL(instanceID string, deviceID string) {
+import "fmt"
+
+templ StreamDeckXL(instanceID string, deviceID string, profileID string, pageID string) {
 	<div class="p-6">
 		<h2 class="text-xl font-semibold mb-4">Stream Deck XL Configuration ({ instanceID }/{ deviceID })</h2>
 		<div class="grid grid-cols-8 gap-4 max-w-4xl mx-auto">
@@ -13,7 +15,11 @@ templ StreamDeckXL(instanceID string, deviceID string) {
 					<div class="stream-deck-button-empty flex items-center justify-center text-gray-600">
 						<span>{ string(rune(i + 1)) }</span>
 					</div>
-					<img class="w-full h-full object-cover rounded-lg" src="/home/donovan/.config/sd/buttons/red.png" alt="Button Image"/>
+					<img
+						class="w-full h-full object-cover rounded-lg"
+						src={ fmt.Sprintf("/partials/button?instanceId=%s&deviceId=%s&profileId=%s&pageId=%s&buttonId=%d", instanceID, deviceID, profileID, pageID, i+1) }
+						alt="Button Image"
+					/>
 				</div>
 			}
 		</div>

@@ -10,8 +10,10 @@ package partials
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "sd/cmd/web/views/layouts"
-import "sd/pkg/types"
+import (
+	"sd/cmd/web/views/layouts"
+	"sd/pkg/types"
+)
 
 func InstancePage(instances []types.Instance, devices []types.Device) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -54,7 +56,7 @@ func InstancePage(instances []types.Instance, devices []types.Device) templ.Comp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = DevicePanel(devices).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = DevicePanel(instances[0].ID, devices).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
