@@ -50,7 +50,7 @@ func DevicePanel(instanceID string, devices []types.Device) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DeviceCardList(devices).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DeviceCardList(instanceID, devices).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

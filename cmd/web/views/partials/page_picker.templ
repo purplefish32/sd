@@ -1,0 +1,17 @@
+package partials
+
+import (
+	"sd/pkg/types"
+	"strconv"
+)
+
+templ PagePicker(pages []types.Page) {
+	<div>
+		<h2>Page Picker</h2>
+		<select>
+			for i, _ := range pages {
+				<option value={ strconv.Itoa(i) }>{ strconv.Itoa(i) }- HELLO</option>
+			}
+		</select>
+	</div>
+}

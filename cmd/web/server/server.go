@@ -142,6 +142,33 @@ func (s *Server) setupRoutes() {
 		partials.DevicePage(instances, devices, profiles, pages, instanceID, deviceID).Render(r.Context(), w)
 	})
 
+	s.router.Get("/instance/{instanceID}/device/{deviceID}/profile/{profileID}", func(w http.ResponseWriter, r *http.Request) {
+		instances, err := instance.GetInstances()
+		instanceID := chi.URLParam(r, "instanceID")
+		deviceID := chi.URLParam(r, "deviceID")
+		profileID := chi.URLParam(r, "profileID")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		devices, err := devices.GetDevices(instanceID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		profiles, err := profiles.GetProfiles(instanceID, deviceID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		pages, err := s.getPages()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		partials.ProfilePage(instances, devices, profiles, pages, instanceID, deviceID, profileID).Render(r.Context(), w)
+	})
+
 	// HTMX Routes
 	s.router.Get("/partials/instance-card-list", s.handleInstanceCardList)
 	s.router.Get("/partials/{instanceId}/device-card-list", s.handleDeviceCardList)
@@ -185,7 +212,7 @@ func (s *Server) setupRoutes() {
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to get initial devices")
 		} else {
-			if err := s.sendDeviceList(w, r.Context(), d); err != nil {
+			if err := s.sendDeviceList(w, r.Context(), instanceID, d); err != nil {
 				log.Error().Err(err).Msg("Failed to send initial device list")
 				return
 			}
@@ -217,7 +244,7 @@ func (s *Server) setupRoutes() {
 						continue
 					}
 
-					if err := s.sendDeviceList(w, r.Context(), d); err != nil {
+					if err := s.sendDeviceList(w, r.Context(), instanceID, d); err != nil {
 						if err != context.Canceled {
 							log.Error().Err(err).Msg("Failed to send device list")
 						}
@@ -230,9 +257,9 @@ func (s *Server) setupRoutes() {
 }
 
 // Move sendDeviceList outside setupRoutes
-func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, devices []types.Device) error {
+func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, instanceID string, devices []types.Device) error {
 	var buf bytes.Buffer
-	if err := partials.DeviceCardList(devices).Render(ctx, &buf); err != nil {
+	if err := partials.DeviceCardList(instanceID, devices).Render(ctx, &buf); err != nil {
 		return err
 	}
 
@@ -312,7 +339,7 @@ func (s *Server) handleDeviceCardList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().Interface("devices", devices).Msg("Found devices")
-	partials.DeviceCardList(devices).Render(r.Context(), w)
+	partials.DeviceCardList(instanceID, devices).Render(r.Context(), w)
 }
 
 func (s *Server) handleInstanceCardList(w http.ResponseWriter, r *http.Request) {

@@ -45,6 +45,13 @@ func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
 			continue
 		}
 
+		// Skip the current profile
+		// TODO: This is a hack to skip the current profile, we should find a better way to do this
+		if parts[5] == "current" {
+			log.Info().Str("key", key).Msg("Skipping current profile")
+			continue
+		}
+
 		// Fetch the profile data for each key
 		entry, err := kv.Get(key)
 

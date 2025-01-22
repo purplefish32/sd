@@ -11,7 +11,7 @@ templ DevicePanel(instanceID string, devices []types.Device) {
 			sse-connect={ "/stream/" + instanceID }
 			sse-swap="DeviceCardListUpdate"
 		>
-			@DeviceCardList(devices)
+			@DeviceCardList(instanceID, devices)
 		</div>
 	</div>
 }
