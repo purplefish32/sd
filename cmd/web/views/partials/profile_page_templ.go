@@ -76,7 +76,7 @@ func ProfilePage(
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StreamDeckXL(instanceID, deviceID, "8e66bd8a-2963-4423-a26d-98b12f573323", "2e914b60-b4c6-43e3-8567-b129f840369a").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StreamDeckXL(instanceID, deviceID, profileID, "2e914b60-b4c6-43e3-8567-b129f840369a").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

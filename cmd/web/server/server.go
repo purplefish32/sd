@@ -3,18 +3,16 @@ package server
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 
+	"sd/cmd/web/handlers"
 	"sd/cmd/web/views/partials"
-	"sd/pkg/buttons"
 	"sd/pkg/devices"
 	"sd/pkg/instance"
 	"sd/pkg/natsconn"
@@ -24,8 +22,6 @@ import (
 
 type Server struct {
 	router *chi.Mux
-	nc     *nats.Conn
-	kv     nats.KeyValue
 }
 
 // Add these constants for device types
@@ -80,8 +76,6 @@ func NewServer() *Server {
 
 	s := &Server{
 		router: r,
-		nc:     nc,
-		kv:     kv,
 	}
 
 	// Setup routes
@@ -170,15 +164,16 @@ func (s *Server) setupRoutes() {
 	})
 
 	// HTMX Routes
-	s.router.Get("/partials/instance-card-list", s.handleInstanceCardList)
-	s.router.Get("/partials/{instanceId}/device-card-list", s.handleDeviceCardList)
-	s.router.Get("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", s.handleButton)
-	s.router.Post("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", s.handleButtonPress)
+	s.router.Get("/partials/instance-card-list", handlers.HandleInstanceCardList)
+	s.router.Get("/partials/{instanceId}/device-card-list", handlers.HandleDeviceCardList)
+	s.router.Get("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", handlers.HandleButton)
+	s.router.Post("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", handlers.HandleButtonPress)
 
-	s.router.Post("/api/profile/create", s.handleProfileCreate)
+	s.router.Post("/api/profile/create", handlers.HandleProfileCreate)
 
 	// Add SSE endpoint for device updates
 	s.router.Get("/stream/{instanceId}", func(w http.ResponseWriter, r *http.Request) {
+		_, kv := natsconn.GetNATSConn()
 		instanceID := chi.URLParam(r, "instanceId")
 		log.Info().
 			Str("remote_addr", r.RemoteAddr).
@@ -196,7 +191,7 @@ func (s *Server) setupRoutes() {
 		defer close(done)
 
 		// 3. Create watcher with proper error handling
-		watcher, err := s.kv.Watch("instances." + instanceID + ".devices.*")
+		watcher, err := kv.Watch("instances." + instanceID + ".devices.*")
 
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to create KV watcher")
@@ -257,7 +252,7 @@ func (s *Server) setupRoutes() {
 		}
 	})
 
-	s.router.Get("/partials/profile/add", s.handleProfileAddDialog())
+	s.router.Get("/partials/profile/add", handlers.HandleProfileAddDialog())
 	s.router.Get("/partials/profile/close-dialog", func(w http.ResponseWriter, r *http.Request) {
 		// Return empty response to remove the dialog
 		w.Write([]byte(""))
@@ -283,126 +278,6 @@ func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, inst
 
 func (s *Server) getPages() ([]types.Page, error) {
 	return nil, nil
-}
-
-func (s *Server) handleButton(w http.ResponseWriter, r *http.Request) {
-	// Get button info from query params
-	instanceID := chi.URLParam(r, "instanceId")
-	deviceID := chi.URLParam(r, "deviceId")
-	profileID := chi.URLParam(r, "profileId")
-	pageID := chi.URLParam(r, "pageId")
-	buttonID := chi.URLParam(r, "buttonId")
-
-	// Get button buffer from NATS KV
-	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s.buffer",
-		instanceID, deviceID, profileID, pageID, buttonID)
-
-	entry, err := s.kv.Get(key)
-
-	if err != nil {
-		return
-	}
-
-	// Write buffer data to response
-	w.Header().Set("Content-Type", "image/jpeg")
-	w.Write(entry.Value())
-}
-
-func (s *Server) handleButtonPress(w http.ResponseWriter, r *http.Request) {
-	nc, _ := natsconn.GetNATSConn()
-
-	// Get button info from query params
-	instanceID := chi.URLParam(r, "instanceId")
-	deviceID := chi.URLParam(r, "deviceId")
-	profileID := chi.URLParam(r, "profileId")
-	pageID := chi.URLParam(r, "pageId")
-	buttonID := chi.URLParam(r, "buttonId")
-
-	var button, err = buttons.GetButton("instances." + instanceID + ".devices." + deviceID + ".profiles." + profileID + ".pages." + pageID + ".buttons." + buttonID)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get button")
-		return
-	}
-
-	buttonData, err := json.Marshal(button)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to marshal button")
-		return
-	}
-
-	nc.Publish(button.UUID, buttonData)
-}
-
-func (s *Server) handleDeviceCardList(w http.ResponseWriter, r *http.Request) {
-	log.Info().Msg("Handling device list request")
-	instanceID := chi.URLParam(r, "instanceId")
-
-	devices, err := devices.GetDevices(instanceID)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get devices")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Info().Interface("devices", devices).Msg("Found devices")
-	partials.DeviceCardList(instanceID, devices).Render(r.Context(), w)
-}
-
-func (s *Server) handleInstanceCardList(w http.ResponseWriter, r *http.Request) {
-	log.Info().Msg("Handling instance list request")
-
-	instances, err := instance.GetInstances()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get instances")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Info().Interface("instances", instances).Msg("Found instances")
-	partials.InstanceCardList(instances).Render(r.Context(), w)
-}
-
-func (s *Server) handleProfileAddDialog() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		instanceID := r.URL.Query().Get("instanceId")
-		deviceID := r.URL.Query().Get("deviceId")
-
-		component := partials.ProfileAddDialog(instanceID, deviceID)
-		component.Render(r.Context(), w)
-	}
-}
-
-func (s *Server) handleProfileCreate(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	instanceID := r.FormValue("instanceId")
-	deviceID := r.FormValue("deviceId")
-	name := r.FormValue("name")
-
-	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("name", name).Msg("Creating profile")
-
-	_, err = profiles.CreateProfile(instanceID, deviceID, name)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create profile")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	profiles, err := profiles.GetProfiles(instanceID, deviceID)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	partials.ProfileCardList(instanceID, deviceID, profiles).Render(r.Context(), w)
 }
 
 func (s *Server) Start() error {

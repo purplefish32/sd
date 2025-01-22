@@ -32,7 +32,17 @@ templ Base(title string) {
 			hx-boost="true"
 			hx-ext="debug, sse"
 		>
-			<div class="flex h-screen">
+			<header class="bg-sd-dark border-b border-sd-darker p-4">
+				<div class="container mx-auto flex items-center justify-between">
+					<h1 class="text-2xl font-bold text-white tracking-wide">
+						<span class="text-sd-accent">Open</span>Deck
+					</h1>
+					<div class="flex items-center space-x-4">
+						<span class="text-sm text-gray-400">v0.1.0</span>
+					</div>
+				</div>
+			</header>
+			<div class="flex h-[calc(100vh-4rem)]">
 				<!-- Sidebar -->
 				<aside class="w-16 bg-sd-dark border-r border-sd-darker flex flex-col items-center py-4">
 					<a href="/" class="p-2 rounded hover:bg-sd-darker mb-4">
