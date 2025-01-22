@@ -13,7 +13,7 @@ templ StreamDeckXL(instanceID string, deviceID string, profileID string, pageID 
 					data-device={ deviceID }
 				>
 					<img
-						class="w-full h-full object-cover rounded-lg rotate-180"
+						class="w-full h-full object-cover rounded-lg"
 						src={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instanceID, deviceID, profileID, pageID, i+1) }
 						alt="Button Image"
 						hx-post={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instanceID, deviceID, profileID, pageID, i+1) }

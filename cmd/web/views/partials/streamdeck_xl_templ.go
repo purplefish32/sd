@@ -88,7 +88,7 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><img class=\"w-full h-full object-cover rounded-lg rotate-180\" src=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><img class=\"w-full h-full object-cover rounded-lg\" src=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -61,10 +61,37 @@ func ParseEventBuffer(buf []byte) []int {
 	return pressedButtons
 }
 
-func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) {
-	log.Debug().Int("keyId", keyId).Msg("Setting key")
-	// Calculate the total length of the image data
+// RotateImageBuffer rotates a JPEG image buffer by 180 degrees
+func RotateImageBuffer(buffer []byte) ([]byte, error) {
+	// Create an image object from buffer
+	image := bimg.NewImage(buffer)
+
+	// Rotate the image 180 degrees
+	options := bimg.Options{
+		Rotate: 180,
+	}
+
+	rotated, err := image.Process(options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to rotate image: %w", err)
+	}
+
+	return rotated, nil
+}
+
+// SetKeyFromBuffer sets a key image from a buffer, with optional rotation
+func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte, rotate bool) (err error) {
+	log.Debug().Int("keyId", keyId).Bool("rotate", rotate).Msg("Setting key")
+
 	content := buffer
+	if rotate {
+		rotated, err := RotateImageBuffer(buffer)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to rotate image")
+			return err
+		}
+		content = rotated
+	}
 
 	remainingBytes := len(content)
 	iteration := 0
@@ -123,7 +150,6 @@ func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte) (err error) 
 	return nil
 }
 
-// TODO IS THIS USED ANYWHERE?
 func ConvertImageToBuffer(imagePath string, width int) ([]byte, error) {
 	// Read the image file into a buffer using bimg
 	buffer, err := bimg.Read(imagePath)
@@ -157,43 +183,8 @@ func ConvertImageToBuffer(imagePath string, width int) ([]byte, error) {
 	return processed, nil
 }
 
-func ConvertImageToRotatedBuffer(imagePath string, size int) (buffer []byte, err error) {
-
-	// Read the image file into a buffer using bimg
-	buffer, err = bimg.Read(imagePath)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create an image object
-	image := bimg.NewImage(buffer)
-
-	// Resize the image
-	resizedImage, err := image.Resize(size, size)
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Rotate the image 180 deg.
-	rotatedImage, err := bimg.NewImage(resizedImage).Rotate(180)
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert to JPEG.
-	finalImage, err := bimg.NewImage(rotatedImage).Convert(bimg.JPEG)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return finalImage, nil
-}
-
 // ConvertButtonImageToBuffer converts an image for button display (120x120)
-func ConvertButtonImageToBuffer(imagePath string) ([]byte, error) {
+func ConvertButtonImageToBuffer(imagePath string, size int) ([]byte, error) {
 	buffer, err := bimg.Read(imagePath)
 	if err != nil {
 		return nil, err
@@ -203,10 +194,10 @@ func ConvertButtonImageToBuffer(imagePath string) ([]byte, error) {
 
 	// Square buttons need different options
 	options := bimg.Options{
-		Width:   120,
-		Height:  120,
+		Width:   size,
+		Height:  size,
 		Type:    bimg.JPEG,
-		Quality: 95,
+		Quality: 100,
 		Gravity: bimg.GravityCentre,
 		Crop:    true,
 	}

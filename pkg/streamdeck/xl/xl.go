@@ -177,13 +177,13 @@ func (xl *XL) handleButtonInput(ctx context.Context) {
 
 func (xl *XL) blankKey(keyId int) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertImageToRotatedBuffer(assetPath+"images/black.png", 96)
+	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/black.png", 96)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
 	}
-	// Update Key.
-	util.SetKeyFromBuffer(xl.device, keyId, buffer)
+	// Update Key with rotation for XL
+	util.SetKeyFromBuffer(xl.device, keyId, buffer, true)
 }
 
 func (xl *XL) blankAllKeys() {
@@ -232,7 +232,7 @@ func (xl *XL) watchForButtonChanges(ctx context.Context) {
 					continue
 				}
 				if len(button.States) > 0 {
-					buf, err := util.ConvertImageToRotatedBuffer(button.States[0].ImagePath, 96)
+					buf, err := util.ConvertImageToBuffer(button.States[0].ImagePath, 96)
 					if err != nil {
 						log.Error().Err(err).Msg("Failed to create button buffer")
 						continue
@@ -291,8 +291,8 @@ func (xl *XL) watchKVForButtonImageBufferChanges(ctx context.Context) {
 					panic(err)
 				}
 
-				// Update Key.
-				util.SetKeyFromBuffer(xl.device, id, update.Value())
+				// Update Key with rotation for XL
+				util.SetKeyFromBuffer(xl.device, id, update.Value(), true)
 			case nats.KeyValueDelete:
 				log.Info().Str("key", update.Key()).Msg("Key deleted")
 			default:

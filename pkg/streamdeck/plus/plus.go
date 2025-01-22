@@ -169,12 +169,12 @@ func (plus *Plus) Init() error {
 
 func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 	// Update Key.
-	util.SetKeyFromBuffer(device, keyId, buffer)
+	util.SetKeyFromBuffer(device, keyId, buffer, false)
 }
 
 func BlankAllKeys(device *hid.Device) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertButtonImageToBuffer(assetPath + "images/black.png")
+	var buffer, err = util.ConvertButtonImageToBuffer(assetPath+"images/black.png", 96)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
@@ -241,7 +241,7 @@ func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
 			}
 
 			// Update Key.
-			util.SetKeyFromBuffer(device, id, update.Value())
+			util.SetKeyFromBuffer(device, id, update.Value(), false)
 		case nats.KeyValueDelete:
 			log.Info().Str("key", update.Key()).Msg("Key deleted")
 		default:
@@ -278,7 +278,7 @@ func WatchForButtonChanges(device *hid.Device) {
 		switch update.Operation() {
 		case nats.KeyValueDelete:
 			// Blank the key when button is deleted
-			buffer, _ := util.ConvertButtonImageToBuffer(env.Get("ASSET_PATH", "") + "images/black.png")
+			buffer, _ := util.ConvertButtonImageToBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 96)
 			BlankKey(device, id, buffer)
 		case nats.KeyValuePut:
 			var button buttons.Button
@@ -287,7 +287,7 @@ func WatchForButtonChanges(device *hid.Device) {
 				continue
 			}
 			if len(button.States) > 0 {
-				buf, err := util.ConvertButtonImageToBuffer(button.States[0].ImagePath)
+				buf, err := util.ConvertButtonImageToBuffer(button.States[0].ImagePath, 96)
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to create button buffer")
 					continue
