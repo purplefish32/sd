@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sd/pkg/natsconn"
+	"sd/pkg/pages"
 	"sd/pkg/store"
 	"sd/pkg/types"
 	"strings"
@@ -192,6 +193,28 @@ func UpdateProfile(instanceID, deviceID, profileID string, profile *types.Profil
 	_, err = kv.Put(key, data)
 	if err != nil {
 		return fmt.Errorf("failed to save profile: %w", err)
+	}
+
+	return nil
+}
+
+func DeleteProfile(instanceID, deviceID, profileID string) error {
+	_, kv := natsconn.GetNATSConn()
+
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
+
+	kv.Delete(key)
+
+	// All pages in the profile need to be deleted too.
+	pages, err := pages.GetPages(instanceID, deviceID, profileID)
+
+	if err != nil {
+		return err
+	}
+
+	for _, page := range pages {
+		//pages.DeletePage(instanceID, deviceID, profileID, page.ID)
+		log.Info().Str("page_id", page.ID).Msg("Deleting page")
 	}
 
 	return nil

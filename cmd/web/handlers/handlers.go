@@ -136,3 +136,48 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 
 	partials.ProfileCardList(instanceID, deviceID, profiles).Render(r.Context(), w)
 }
+
+func HandleProfileDeleteDialog() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		instanceID := r.URL.Query().Get("instanceId")
+		deviceID := r.URL.Query().Get("deviceId")
+		profileID := r.URL.Query().Get("profileId")
+
+		profile, err := profiles.GetProfile(instanceID, deviceID, profileID)
+
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get profile")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		component := partials.ProfileDeleteDialog(instanceID, deviceID, *profile)
+		component.Render(r.Context(), w)
+	}
+}
+
+func HandleProfileDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		instanceID := r.URL.Query().Get("instanceId")
+		deviceID := r.URL.Query().Get("deviceId")
+		profileID := r.URL.Query().Get("profileId")
+
+		err := profiles.DeleteProfile(instanceID, deviceID, profileID)
+
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to delete profile")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		profiles, err := profiles.GetProfiles(instanceID, deviceID)
+
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get profiles after deletion")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		partials.ProfileCardList(instanceID, deviceID, profiles).Render(r.Context(), w)
+	}
+}

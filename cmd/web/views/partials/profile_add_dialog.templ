@@ -6,6 +6,10 @@ templ ProfileAddDialog(instanceID string, deviceID string) {
 		id="modal-backdrop"
 		hx-target="this"
 		hx-swap="outerHTML"
+		_="on keyup[key=='Escape'] trigger click on <button[hx-get='/partials/profile/close-dialog']/>
+		   on click if event.target.id == 'modal-backdrop' trigger click on <button[hx-get='/partials/profile/close-dialog']/>"
+		tabindex="0"
+		autofocus
 	>
 		<div class="bg-sd-dark p-6 rounded-lg shadow-xl w-96">
 			<h2 class="text-xl font-semibold mb-4 text-white">Add New Profile</h2>
@@ -20,9 +24,10 @@ templ ProfileAddDialog(instanceID string, deviceID string) {
 				<div>
 					<label class="block text-sm font-medium text-gray-300 mb-2">Profile Name</label>
 					<input
+						autofocus
 						type="text"
 						name="name"
-						class="w-full p-2 bg-sd-lighter text-white rounded border border-sd-light focus:outline-none focus:border-blue-500"
+						class="w-full p-2 bg-sd-lighter text-black rounded border border-sd-light focus:outline-none focus:border-blue-500"
 						placeholder="Enter profile name"
 						required
 					/>

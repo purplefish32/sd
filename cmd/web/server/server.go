@@ -169,8 +169,6 @@ func (s *Server) setupRoutes() {
 	s.router.Get("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", handlers.HandleButton)
 	s.router.Post("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", handlers.HandleButtonPress)
 
-	s.router.Post("/api/profile/create", handlers.HandleProfileCreate)
-
 	// Add SSE endpoint for device updates
 	s.router.Get("/stream/{instanceId}", func(w http.ResponseWriter, r *http.Request) {
 		_, kv := natsconn.GetNATSConn()
@@ -257,6 +255,11 @@ func (s *Server) setupRoutes() {
 		// Return empty response to remove the dialog
 		w.Write([]byte(""))
 	})
+
+	s.router.Get("/partials/profile/delete-dialog", handlers.HandleProfileDeleteDialog())
+
+	s.router.Post("/api/profile/create", handlers.HandleProfileCreate)
+	s.router.Delete("/api/profile/delete", handlers.HandleProfileDelete())
 }
 
 // Move sendDeviceList outside setupRoutes
