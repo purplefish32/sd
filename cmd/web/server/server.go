@@ -175,6 +175,8 @@ func (s *Server) setupRoutes() {
 	s.router.Get("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", s.handleButton)
 	s.router.Post("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", s.handleButtonPress)
 
+	s.router.Post("/api/profile/create", s.handleProfileCreate)
+
 	// Add SSE endpoint for device updates
 	s.router.Get("/stream/{instanceId}", func(w http.ResponseWriter, r *http.Request) {
 		instanceID := chi.URLParam(r, "instanceId")
@@ -370,6 +372,37 @@ func (s *Server) handleProfileAddDialog() http.HandlerFunc {
 		component := partials.ProfileAddDialog(instanceID, deviceID)
 		component.Render(r.Context(), w)
 	}
+}
+
+func (s *Server) handleProfileCreate(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	instanceID := r.FormValue("instanceId")
+	deviceID := r.FormValue("deviceId")
+	name := r.FormValue("name")
+
+	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("name", name).Msg("Creating profile")
+
+	_, err = profiles.CreateProfile(instanceID, deviceID, name)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create profile")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	profiles, err := profiles.GetProfiles(instanceID, deviceID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	partials.ProfileCardList(instanceID, deviceID, profiles).Render(r.Context(), w)
 }
 
 func (s *Server) Start() error {
