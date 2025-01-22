@@ -254,6 +254,12 @@ func (s *Server) setupRoutes() {
 			}
 		}
 	})
+
+	s.router.Get("/partials/profile/add", s.handleProfileAddDialog())
+	s.router.Get("/partials/profile/close-dialog", func(w http.ResponseWriter, r *http.Request) {
+		// Return empty response to remove the dialog
+		w.Write([]byte(""))
+	})
 }
 
 // Move sendDeviceList outside setupRoutes
@@ -354,6 +360,16 @@ func (s *Server) handleInstanceCardList(w http.ResponseWriter, r *http.Request) 
 
 	log.Info().Interface("instances", instances).Msg("Found instances")
 	partials.InstanceCardList(instances).Render(r.Context(), w)
+}
+
+func (s *Server) handleProfileAddDialog() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		instanceID := r.URL.Query().Get("instanceId")
+		deviceID := r.URL.Query().Get("deviceId")
+
+		component := partials.ProfileAddDialog(instanceID, deviceID)
+		component.Render(r.Context(), w)
+	}
 }
 
 func (s *Server) Start() error {

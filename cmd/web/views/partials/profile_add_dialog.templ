@@ -1,0 +1,50 @@
+package partials
+
+templ ProfileAddDialog(instanceID string, deviceID string) {
+	<div
+		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+		id="modal-backdrop"
+		hx-target="this"
+		hx-swap="outerHTML"
+	>
+		<div class="bg-sd-dark p-6 rounded-lg shadow-xl w-96">
+			<h2 class="text-xl font-semibold mb-4 text-white">Add New Profile</h2>
+			<form
+				hx-post="/api/profile/create"
+				hx-target="#profile-card-list"
+				hx-swap="innerHTML"
+				class="space-y-4"
+			>
+				<input type="hidden" name="instanceId" value={ instanceID }/>
+				<input type="hidden" name="deviceId" value={ deviceID }/>
+				<div>
+					<label class="block text-sm font-medium text-gray-300 mb-2">Profile Name</label>
+					<input
+						type="text"
+						name="name"
+						class="w-full p-2 bg-sd-lighter text-white rounded border border-sd-light focus:outline-none focus:border-blue-500"
+						placeholder="Enter profile name"
+						required
+					/>
+				</div>
+				<div class="flex justify-end gap-2">
+					<button
+						type="button"
+						class="px-4 py-2 bg-sd-light text-white rounded hover:bg-sd-lighter transition-colors"
+						hx-get="/partials/profile/close-dialog"
+						hx-target="#modal-backdrop"
+						hx-swap="outerHTML"
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+					>
+						Create
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}
