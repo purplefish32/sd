@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "sd/pkg/types"
 
-func ProfileDeleteDialog(instanceID string, deviceID string, profile types.Profile) templ.Component {
+func ProfileDeleteDialog(instance types.Instance, device types.Device, profile types.Profile) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -49,9 +49,9 @@ func ProfileDeleteDialog(instanceID string, deviceID string, profile types.Profi
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("/api/profile/delete?instanceId=" + instanceID + "&deviceId=" + deviceID + "&profileId=" + profile.ID)
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("/api/profile/delete?instanceId=" + instance.ID + "&deviceId=" + device.ID + "&profileId=" + profile.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_delete_dialog.templ`, Line: 18, Col: 117}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_delete_dialog.templ`, Line: 18, Col: 119}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

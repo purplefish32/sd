@@ -8,9 +8,12 @@ package partials
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "fmt"
+import (
+	"fmt"
+	"sd/pkg/types"
+)
 
-func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID string) templ.Component {
+func StreamDeckXL(instance types.Instance, device types.Device, profile types.Profile, page types.Page) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -43,7 +46,7 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(string(rune(i)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 11, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 14, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -54,9 +57,9 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(deviceID)
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(device.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 12, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 15, Col: 28}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -67,9 +70,9 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instanceID, deviceID, profileID, pageID, i+1))
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 16, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 19, Col: 108}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -80,9 +83,9 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instanceID, deviceID, profileID, pageID, i+1))
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 18, Col: 108}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 21, Col: 112}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -98,9 +101,9 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/delete?instanceId=" + instanceID + "&deviceId=" + deviceID)
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/delete?instanceId=" + instance.ID + "&deviceId=" + device.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 51, Col: 88}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 54, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -111,9 +114,9 @@ func StreamDeckXL(instanceID string, deviceID string, profileID string, pageID s
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/delete-dialog?instanceId=" + instanceID + "&deviceId=" + deviceID + "&profileId=" + profileID)
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/delete-dialog?instanceId=" + instance.ID + "&deviceId=" + device.ID + "&profileId=" + profile.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 63, Col: 123}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_xl.templ`, Line: 66, Col: 126}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {

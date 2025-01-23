@@ -7,11 +7,11 @@ import (
 	"sd/pkg/types"
 )
 
-templ DeviceCard(instanceID string, device types.Device) {
+templ DeviceCard(instance types.Instance, device types.Device) {
 	<a
 		class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
 		id={ "device-card-" + device.ID }
-		href={ templ.SafeURL("/instance/" + instanceID + "/device/" + device.ID) }
+		href={ templ.SafeURL("/instance/" + instance.ID + "/device/" + device.ID) }
 	>
 		//hx-get={ "/instance/" + device.Instance + "/device/" + device.ID }
 		//hx-select="#main-content"

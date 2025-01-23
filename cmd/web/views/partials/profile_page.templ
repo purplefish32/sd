@@ -11,16 +11,16 @@ templ ProfilePage(
 	devices []types.Device,
 	profiles []types.Profile,
 	pages []types.Page,
-	instanceID string,
-	deviceID string,
-	profileID string,
-	pageID string,
+	instance types.Instance,
+	device types.Device,
+	profile types.Profile,
+	page types.Page,
 ) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
 			@InstancePanel(instances)
-			@DevicePanel(instances[0].ID, devices)
-			@ProfilePanel(instanceID, deviceID, profiles)
+			@DevicePanel(instance, devices)
+			@ProfilePanel(instance, device, profiles)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				STREAM DECK CONFIGURATION
@@ -31,7 +31,7 @@ templ ProfilePage(
 						</svg>
 					</div>
 					<div class="flex-grow p-6 text-center text-gray-400">
-						@StreamDeckXL(instanceID, deviceID, profileID, pageID)
+						@StreamDeckXL(instance, device, profile, page)
 					</div>
 					<div class="w-32 p-6 flex items-center justify-center text-gray-400">
 						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

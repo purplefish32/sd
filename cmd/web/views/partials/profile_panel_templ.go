@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "sd/pkg/types"
 
-func ProfilePanel(instanceID string, deviceID string, profiles []types.Profile) templ.Component {
+func ProfilePanel(instance types.Instance, device types.Device, profiles []types.Profile) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -35,7 +35,7 @@ func ProfilePanel(instanceID string, deviceID string, profiles []types.Profile) 
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = ProfileCardList(instanceID, deviceID, profiles).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ProfileCardList(instance, device, profiles).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

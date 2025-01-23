@@ -12,7 +12,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "sd/pkg/types"
 
-func ProfileCardList(instanceID string, deviceID string, profiles []types.Profile) templ.Component {
+func ProfileCardList(instance types.Instance, device types.Device, profiles []types.Profile) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -44,7 +44,7 @@ func ProfileCardList(instanceID string, deviceID string, profiles []types.Profil
 			}
 		} else {
 			for _, profile := range profiles {
-				templ_7745c5c3_Err = ProfileCard(instanceID, deviceID, profile, profile.CurrentPage).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = ProfileCard(instance, device, profile).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -55,9 +55,9 @@ func ProfileCardList(instanceID string, deviceID string, profiles []types.Profil
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/add?instanceId=" + instanceID + "&deviceId=" + deviceID)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/add?instanceId=" + instance.ID + "&deviceId=" + device.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_card_list.templ`, Line: 20, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_card_list.templ`, Line: 20, Col: 88}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {

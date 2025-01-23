@@ -115,7 +115,7 @@ func (pedal *Pedal) ensureDefaultProfile() error {
 
 func (pedal *Pedal) handleButtonPress(buttonIndex int, nc *nats.Conn, kv nats.KeyValue) error {
 	currentProfile := store.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
-	if currentProfile == nil {
+	if currentProfile.IsEmpty() {
 		return fmt.Errorf("no current profile found")
 	}
 

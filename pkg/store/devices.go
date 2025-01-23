@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetDevice(instanceID string, deviceID string) *types.Device {
+func GetDevice(instanceID string, deviceID string) types.Device {
 	_, kv := natsconn.GetNATSConn()
 
 	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
@@ -19,26 +19,27 @@ func GetDevice(instanceID string, deviceID string) *types.Device {
 	entry, err := kv.Get(key)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to get device")
-		return nil
+		return types.Device{}
 	}
 
 	var device types.Device
 
 	if err := json.Unmarshal(entry.Value(), &device); err != nil {
 		log.Error().Err(err).Msg("Unmarshal error")
-		return nil
+		return types.Device{}
 	}
 
-	return &device
+	return device
 }
 
-func GetDevices(instanceID string) ([]types.Device, error) {
+func GetDevices(instanceID string) []types.Device {
 	_, kv := natsconn.GetNATSConn()
 
 	keyList, err := kv.ListKeys()
 
 	if err != nil {
-		return nil, err
+		log.Warn().Err(err).Msg("Failed to get devices")
+		return nil
 	}
 
 	devices := make([]types.Device, 0)
@@ -78,5 +79,5 @@ func GetDevices(instanceID string) ([]types.Device, error) {
 
 	}
 
-	return devices, nil
+	return devices
 }

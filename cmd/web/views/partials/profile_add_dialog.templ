@@ -1,6 +1,8 @@
 package partials
 
-templ ProfileAddDialog(instanceID string, deviceID string) {
+import "sd/pkg/types"
+
+templ ProfileAddDialog(instance types.Instance, device types.Device) {
 	<div
 		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
 		id="modal-backdrop"
@@ -19,8 +21,8 @@ templ ProfileAddDialog(instanceID string, deviceID string) {
 				hx-swap="innerHTML"
 				class="space-y-4"
 			>
-				<input type="hidden" name="instanceId" value={ instanceID }/>
-				<input type="hidden" name="deviceId" value={ deviceID }/>
+				<input type="hidden" name="instanceId" value={ instance.ID }/>
+				<input type="hidden" name="deviceId" value={ device.ID }/>
 				<div>
 					<label class="block text-sm font-medium text-gray-300 mb-2">Profile Name</label>
 					<input

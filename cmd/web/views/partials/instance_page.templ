@@ -6,11 +6,11 @@ import (
 	"sd/pkg/types"
 )
 
-templ InstancePage(instances []types.Instance, devices []types.Device) {
+templ InstancePage(instance types.Instance, instances []types.Instance, devices []types.Device) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
 			@InstancePanel(instances)
-			@DevicePanel(instances[0].ID, devices)
+			@DevicePanel(instance, devices)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				<div class="p-6 text-center text-gray-400">

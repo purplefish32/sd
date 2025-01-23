@@ -256,14 +256,14 @@ func (xl *XL) watchKVForButtonImageBufferChanges(ctx context.Context) {
 	// Get current profile and page, with error checking
 	currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
 
-	if currentProfile == nil {
+	if currentProfile.IsEmpty() {
 		log.Warn().Msg("No current profile found")
 		return
 	}
 
 	currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
 
-	if currentPage == nil {
+	if currentPage.IsEmpty() {
 		log.Warn().Msg("No current page found")
 		return
 	}

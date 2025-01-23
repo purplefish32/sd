@@ -5,12 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"sd/cmd/web/views/partials"
-	"sd/pkg/buttons"
-	"sd/pkg/devices"
-	"sd/pkg/instance"
 	"sd/pkg/natsconn"
-	"sd/pkg/pages"
-	"sd/pkg/profiles"
+	"sd/pkg/store"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -53,7 +49,7 @@ func HandleButtonPress(w http.ResponseWriter, r *http.Request) {
 	pageID := chi.URLParam(r, "pageId")
 	buttonID := chi.URLParam(r, "buttonId")
 
-	var button, err = buttons.GetButton("instances." + instanceID + ".devices." + deviceID + ".profiles." + profileID + ".pages." + pageID + ".buttons." + buttonID)
+	var button, err = store.GetButton("instances." + instanceID + ".devices." + deviceID + ".profiles." + profileID + ".pages." + pageID + ".buttons." + buttonID)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get button")
@@ -70,32 +66,14 @@ func HandleButtonPress(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleDeviceCardList(w http.ResponseWriter, r *http.Request) {
-	log.Info().Msg("Handling device list request")
 	instanceID := chi.URLParam(r, "instanceId")
-
-	devices, err := devices.GetDevices(instanceID)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get devices")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Info().Interface("devices", devices).Msg("Found devices")
-	partials.DeviceCardList(instanceID, devices).Render(r.Context(), w)
+	instance := store.GetInstance(instanceID)
+	devices := store.GetDevices(instanceID)
+	partials.DeviceCardList(instance, devices).Render(r.Context(), w)
 }
 
 func HandleInstanceCardList(w http.ResponseWriter, r *http.Request) {
-	log.Info().Msg("Handling instance list request")
-
-	instances, err := instance.GetInstances()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get instances")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Info().Interface("instances", instances).Msg("Found instances")
+	instances := store.GetInstances()
 	partials.InstanceCardList(instances).Render(r.Context(), w)
 }
 
@@ -104,13 +82,17 @@ func HandleProfileAddDialog() http.HandlerFunc {
 		instanceID := r.URL.Query().Get("instanceId")
 		deviceID := r.URL.Query().Get("deviceId")
 
-		component := partials.ProfileAddDialog(instanceID, deviceID)
+		instance := store.GetInstance(instanceID)
+		device := store.GetDevice(instanceID, deviceID)
+
+		component := partials.ProfileAddDialog(instance, device)
 		component.Render(r.Context(), w)
 	}
 }
 
 func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -120,9 +102,10 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 	deviceID := r.FormValue("deviceId")
 	name := r.FormValue("name")
 
-	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("name", name).Msg("Creating profile")
+	instance := store.GetInstance(instanceID)
+	device := store.GetDevice(instanceID, deviceID)
 
-	profile, err := profiles.CreateProfile(instanceID, deviceID, name)
+	profile, err := store.CreateProfile(instanceID, deviceID, name)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create profile")
@@ -130,7 +113,7 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page, err := pages.CreatePage(instanceID, deviceID, profile.ID)
+	page, err := store.CreatePage(instanceID, deviceID, profile.ID)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create page")
@@ -138,19 +121,12 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// I want to create 32 blank buttons for the page
-	for i := 0; i < 32; i++ {
-		buttons.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i))
+	for i := 0; i < 32; i++ { // TODO: Make this configurable
+		store.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i))
 	}
 
-	profiles, err := profiles.GetProfiles(instanceID, deviceID)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	partials.ProfileCardList(instanceID, deviceID, profiles).Render(r.Context(), w)
+	profiles := store.GetProfiles(instanceID, deviceID)
+	partials.ProfileCardList(instance, device, profiles).Render(r.Context(), w)
 }
 
 func HandleProfileDeleteDialog() http.HandlerFunc {
@@ -159,15 +135,11 @@ func HandleProfileDeleteDialog() http.HandlerFunc {
 		deviceID := r.URL.Query().Get("deviceId")
 		profileID := r.URL.Query().Get("profileId")
 
-		profile, err := profiles.GetProfile(instanceID, deviceID, profileID)
+		instance := store.GetInstance(instanceID)
+		device := store.GetDevice(instanceID, deviceID)
+		profile := store.GetProfile(instanceID, deviceID, profileID)
 
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to get profile")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		component := partials.ProfileDeleteDialog(instanceID, deviceID, *profile)
+		component := partials.ProfileDeleteDialog(instance, device, profile)
 		component.Render(r.Context(), w)
 	}
 }
@@ -178,7 +150,7 @@ func HandleProfileDelete() http.HandlerFunc {
 		deviceID := r.URL.Query().Get("deviceId")
 		profileID := r.URL.Query().Get("profileId")
 
-		err := profiles.DeleteProfile(instanceID, deviceID, profileID)
+		err := store.DeleteProfile(instanceID, deviceID, profileID)
 
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to delete profile")
@@ -186,14 +158,10 @@ func HandleProfileDelete() http.HandlerFunc {
 			return
 		}
 
-		profiles, err := profiles.GetProfiles(instanceID, deviceID)
+		instance := store.GetInstance(instanceID)
+		device := store.GetDevice(instanceID, deviceID)
+		profiles := store.GetProfiles(instanceID, deviceID)
 
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to get profiles after deletion")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		partials.ProfileCardList(instanceID, deviceID, profiles).Render(r.Context(), w)
+		partials.ProfileCardList(instance, device, profiles).Render(r.Context(), w)
 	}
 }

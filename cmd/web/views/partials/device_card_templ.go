@@ -16,7 +16,7 @@ import (
 	"sd/pkg/types"
 )
 
-func DeviceCard(instanceID string, device types.Device) templ.Component {
+func DeviceCard(instance types.Instance, device types.Device) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -54,7 +54,7 @@ func DeviceCard(instanceID string, device types.Device) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 templ.SafeURL = templ.SafeURL("/instance/" + instanceID + "/device/" + device.ID)
+		var templ_7745c5c3_Var3 templ.SafeURL = templ.SafeURL("/instance/" + instance.ID + "/device/" + device.ID)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var3)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

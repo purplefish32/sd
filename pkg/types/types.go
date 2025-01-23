@@ -30,6 +30,10 @@ type Page struct {
 	ID string `json:"id"`
 }
 
+func (p Page) IsEmpty() bool {
+	return p.ID == ""
+}
+
 type TouchScreenLayout struct {
 	Mode      string    `json:"mode"`
 	FullImage string    `json:"fullImage"`
@@ -43,9 +47,17 @@ type Profile struct {
 	CurrentPage string `json:"currentPage"`
 }
 
+func (p Profile) IsEmpty() bool {
+	return p.ID == ""
+}
+
 type Instance struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
+}
+
+func (i Instance) IsEmpty() bool {
+	return i.ID == ""
 }
 
 type Device struct {
@@ -56,13 +68,25 @@ type Device struct {
 	CurrentProfile string `json:"currentProfile"`
 }
 
+func (d Device) IsEmpty() bool {
+	return d.ID == ""
+}
+
 type State struct {
 	ID        string `json:"id"`
 	ImagePath string `json:"imagePath"`
 }
 
+func (s State) IsEmpty() bool {
+	return s.ID == ""
+}
+
 type StateId struct {
 	ID int `json:"id"`
+}
+
+func (s StateId) IsEmpty() bool {
+	return s.ID == 0
 }
 
 type Button struct {
@@ -74,8 +98,16 @@ type Button struct {
 	Title    string   `json:"title"`
 }
 
+func (b Button) IsEmpty() bool {
+	return b.ID == ""
+}
+
 type Settings struct {
 	URL     string `json:"url,omitempty"`
 	Text    string `json:"text,omitempty"`
 	Command string `json:"command,omitempty"`
+}
+
+func (s Settings) IsEmpty() bool {
+	return s.URL == "" && s.Text == "" && s.Command == ""
 }

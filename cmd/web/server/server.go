@@ -13,10 +13,8 @@ import (
 
 	"sd/cmd/web/handlers"
 	"sd/cmd/web/views/partials"
-	"sd/pkg/devices"
-	"sd/pkg/instance"
 	"sd/pkg/natsconn"
-	"sd/pkg/profiles"
+	"sd/pkg/store"
 	"sd/pkg/types"
 )
 
@@ -87,81 +85,47 @@ func NewServer() *Server {
 func (s *Server) setupRoutes() {
 	// Routes
 	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := instance.GetInstances()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		instances := store.GetInstances()
 		partials.HomePage(instances).Render(r.Context(), w)
 	})
 
 	s.router.Get("/instance/{instanceID}", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := instance.GetInstances()
 		instanceID := chi.URLParam(r, "instanceID")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		devices, err := devices.GetDevices(instanceID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		partials.InstancePage(instances, devices).Render(r.Context(), w)
+
+		instances := store.GetInstances()
+		devices := store.GetDevices(instanceID)
+		instance := store.GetInstance(instanceID)
+		partials.InstancePage(instance, instances, devices).Render(r.Context(), w)
 	})
 
 	s.router.Get("/instance/{instanceID}/device/{deviceID}", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := instance.GetInstances()
+		instances := store.GetInstances()
 		instanceID := chi.URLParam(r, "instanceID")
 		deviceID := chi.URLParam(r, "deviceID")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		devices, err := devices.GetDevices(instanceID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		profiles, err := profiles.GetProfiles(instanceID, deviceID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		pages, err := s.getPages()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		partials.DevicePage(instances, devices, profiles, pages, instanceID, deviceID).Render(r.Context(), w)
+
+		devices := store.GetDevices(instanceID)
+		profiles := store.GetProfiles(instanceID, deviceID)
+		pages := store.GetPages(instanceID, deviceID, profiles[0].ID) // TODO: Fix this
+		instance := store.GetInstance(instanceID)
+		device := store.GetDevice(instanceID, deviceID)
+		partials.DevicePage(instances, devices, profiles, pages, instance, device).Render(r.Context(), w)
 	})
 
 	s.router.Get("/instance/{instanceID}/device/{deviceID}/profile/{profileID}/page/{pageID}", func(w http.ResponseWriter, r *http.Request) {
-		instances, err := instance.GetInstances()
 		instanceID := chi.URLParam(r, "instanceID")
 		deviceID := chi.URLParam(r, "deviceID")
 		profileID := chi.URLParam(r, "profileID")
 		pageID := chi.URLParam(r, "pageID")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		devices, err := devices.GetDevices(instanceID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		profiles, err := profiles.GetProfiles(instanceID, deviceID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		pages, err := s.getPages()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		partials.ProfilePage(instances, devices, profiles, pages, instanceID, deviceID, profileID, pageID).Render(r.Context(), w)
+
+		instances := store.GetInstances()
+		devices := store.GetDevices(instanceID)
+		instance := store.GetInstance(instanceID)
+		device := store.GetDevice(instanceID, deviceID)
+		profile := store.GetProfile(instanceID, deviceID, profileID)
+		page := store.GetPage(instanceID, deviceID, profileID, pageID)
+		profiles := store.GetProfiles(instanceID, deviceID)
+		pages := store.GetPages(instanceID, deviceID, profileID)
+		partials.ProfilePage(instances, devices, profiles, pages, instance, device, profile, page).Render(r.Context(), w)
 	})
 
 	// HTMX Routes
@@ -201,14 +165,15 @@ func (s *Server) setupRoutes() {
 		defer watcher.Stop()
 
 		// 4. Send initial device list
-		d, err := devices.GetDevices(instanceID)
+		d := store.GetDevices(instanceID)
 
 		log.Info().Interface("devices", d).Msg("Initial devices")
 
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to get initial devices")
 		} else {
-			if err := s.sendDeviceList(w, r.Context(), instanceID, d); err != nil {
+			instance := store.GetInstance(instanceID)
+			if err := s.sendDeviceList(w, r.Context(), instance, d); err != nil {
 				log.Error().Err(err).Msg("Failed to send initial device list")
 				return
 			}
@@ -234,13 +199,10 @@ func (s *Server) setupRoutes() {
 				case <-done:
 					return
 				default:
-					d, err := devices.GetDevices(instanceID)
-					if err != nil {
-						log.Error().Err(err).Msg("Failed to get devices")
-						continue
-					}
+					d := store.GetDevices(instanceID)
+					instance := store.GetInstance(instanceID)
 
-					if err := s.sendDeviceList(w, r.Context(), instanceID, d); err != nil {
+					if err := s.sendDeviceList(w, r.Context(), instance, d); err != nil {
 						if err != context.Canceled {
 							log.Error().Err(err).Msg("Failed to send device list")
 						}
@@ -264,9 +226,10 @@ func (s *Server) setupRoutes() {
 }
 
 // Move sendDeviceList outside setupRoutes
-func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, instanceID string, devices []types.Device) error {
+func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, instance types.Instance, devices []types.Device) error {
 	var buf bytes.Buffer
-	if err := partials.DeviceCardList(instanceID, devices).Render(ctx, &buf); err != nil {
+
+	if err := partials.DeviceCardList(instance, devices).Render(ctx, &buf); err != nil {
 		return err
 	}
 
@@ -278,10 +241,6 @@ func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, inst
 	}
 
 	return nil
-}
-
-func (s *Server) getPages() ([]types.Page, error) {
-	return nil, nil
 }
 
 func (s *Server) Start() error {

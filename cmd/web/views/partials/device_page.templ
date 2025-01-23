@@ -11,14 +11,14 @@ templ DevicePage(
 	devices []types.Device,
 	profiles []types.Profile,
 	pages []types.Page,
-	instanceID string,
-	deviceID string,
+	instance types.Instance,
+	device types.Device,
 ) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
 			@InstancePanel(instances)
-			@DevicePanel(instances[0].ID, devices)
-			@ProfilePanel(instanceID, deviceID, profiles)
+			@DevicePanel(instance, devices)
+			@ProfilePanel(instance, device, profiles)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				STREAM DECK CONFIGURATION

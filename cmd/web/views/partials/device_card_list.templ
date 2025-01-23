@@ -3,7 +3,7 @@ package partials
 
 import "sd/pkg/types"
 
-templ DeviceCardList(instanceID string, devices []types.Device) {
+templ DeviceCardList(instance types.Instance, devices []types.Device) {
 	<div
 		id="device-card-list"
 		class="space-y-2"
@@ -12,7 +12,7 @@ templ DeviceCardList(instanceID string, devices []types.Device) {
 			<div class="text-gray-400">No devices connected</div>
 		} else {
 			for _, device := range devices {
-				@DeviceCard(instanceID, device)
+				@DeviceCard(instance, device)
 			}
 		}
 	</div>

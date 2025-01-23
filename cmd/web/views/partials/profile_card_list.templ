@@ -3,7 +3,7 @@ package partials
 
 import "sd/pkg/types"
 
-templ ProfileCardList(instanceID string, deviceID string, profiles []types.Profile) {
+templ ProfileCardList(instance types.Instance, device types.Device, profiles []types.Profile) {
 	<div
 		id="profile-card-list"
 		class="space-y-2"
@@ -12,12 +12,12 @@ templ ProfileCardList(instanceID string, deviceID string, profiles []types.Profi
 			<div class="text-gray-400">No profiles found</div>
 		} else {
 			for _, profile := range profiles {
-				@ProfileCard(instanceID, deviceID, profile, profile.CurrentPage)
+				@ProfileCard(instance, device, profile)
 			}
 		}
 		<button
 			class="w-full p-3 mt-4 bg-sd-light hover:bg-sd-lighter text-white font-medium rounded transition-colors flex items-center justify-center gap-2"
-			hx-get={ "/partials/profile/add?instanceId=" + instanceID + "&deviceId=" + deviceID }
+			hx-get={ "/partials/profile/add?instanceId=" + instance.ID + "&deviceId=" + device.ID }
 			hx-target="#dialog-container"
 			hx-trigger="click"
 			hx-swap="innerHTML"

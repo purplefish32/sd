@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
+func GetProfiles(instanceID string, deviceID string) []types.Profile {
 	_, kv := natsconn.GetNATSConn()
 
 	// List the keys in the NATS KV store under the given prefix
@@ -20,7 +20,7 @@ func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not list NATS KV keys")
-		return nil, err
+		return nil
 	}
 
 	// Initialize a slice to store the profiles
@@ -69,13 +69,19 @@ func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
 		profiles = append(profiles, profile)
 	}
 
-	return profiles, nil
+	return profiles
 }
 
 func CreateProfile(instanceID, deviceID, name string) (*types.Profile, error) {
+	if instanceID == "" || deviceID == "" || name == "" {
+		return nil, fmt.Errorf("instanceID, deviceID, and name are required")
+	}
+
 	profile := &types.Profile{
-		ID:   uuid.New().String(),
-		Name: name,
+		ID:          uuid.New().String(),
+		Name:        name,
+		Pages:       make([]types.Page, 0), // Initialize empty slice
+		CurrentPage: "",                    // Explicit empty string
 	}
 
 	// Save the profile
@@ -86,7 +92,7 @@ func CreateProfile(instanceID, deviceID, name string) (*types.Profile, error) {
 	return profile, nil
 }
 
-func GetCurrentProfile(instanceID string, deviceID string) *types.Profile {
+func GetCurrentProfile(instanceID string, deviceID string) types.Profile {
 	log.Info().Str("instanceID", instanceID).Str("deviceID", deviceID).Msg("Getting current profile")
 	_, kv := natsconn.GetNATSConn()
 
@@ -95,29 +101,24 @@ func GetCurrentProfile(instanceID string, deviceID string) *types.Profile {
 
 	// Get the device
 	entry, err := kv.Get(key)
-
 	if err != nil {
 		log.Warn().Str("device_serial", deviceID).Msg("No NATS key for current profile found")
-		return nil
+		return types.Profile{}
 	}
 
 	// Parse the value into a Profile struct
 	var device types.Device
-
 	if err := json.Unmarshal(entry.Value(), &device); err != nil {
 		log.Warn().Err(err).Msg("Failed to unmarshal device")
-		return nil
+		return types.Profile{}
 	}
 
 	if device.CurrentProfile == "" {
 		log.Warn().Msg("No current profile found")
-		return nil
+		return types.Profile{}
 	}
 
 	profile := GetProfile(instanceID, deviceID, device.CurrentProfile)
-
-	log.Info().Interface("profile", profile).Msg("Profile")
-
 	return profile
 }
 
@@ -167,23 +168,23 @@ func SetCurrentProfile(instanceID string, deviceID string, profileID string) err
 	return nil
 }
 
-func GetProfile(instanceID, deviceID, profileID string) *types.Profile {
+func GetProfile(instanceID, deviceID, profileID string) types.Profile {
 	_, kv := natsconn.GetNATSConn()
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
 
 	entry, err := kv.Get(key)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to get profile")
-		return nil
+		return types.Profile{}
 	}
 
 	var profile types.Profile
 	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
 		log.Warn().Err(err).Msg("Failed to unmarshal profile")
-		return nil
+		return types.Profile{}
 	}
 
-	return &profile
+	return profile
 }
 
 func UpdateProfile(instanceID, deviceID, profileID string, profile *types.Profile) error {
@@ -210,11 +211,7 @@ func DeleteProfile(instanceID, deviceID, profileID string) error {
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
 
 	// All pages in the profile need to be deleted too.
-	p, err := GetPages(instanceID, deviceID, profileID)
-
-	if err != nil {
-		return err
-	}
+	p := GetPages(instanceID, deviceID, profileID)
 
 	log.Info().Interface("pages", p).Msg("Pages")
 

@@ -13,7 +13,25 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetCurrentPage(instanceId string, deviceId string, profileId string) *types.Page {
+func GetPage(instanceID, deviceID, profileID, pageID string) types.Page {
+	_, kv := natsconn.GetNATSConn()
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s", instanceID, deviceID, profileID, pageID)
+
+	entry, err := kv.Get(key)
+	if err != nil {
+		return types.Page{}
+	}
+
+	var page types.Page
+	if err := json.Unmarshal(entry.Value(), &page); err != nil {
+		log.Error().Err(err).Msg("Failed to unmarshal page")
+		return types.Page{}
+	}
+
+	return page
+}
+
+func GetCurrentPage(instanceId string, deviceId string, profileId string) types.Page {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current profile
@@ -25,10 +43,10 @@ func GetCurrentPage(instanceId string, deviceId string, profileId string) *types
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
 			log.Printf("Device key not found: %s", deviceId)
-			return nil
+			return types.Page{}
 		}
 		log.Printf("Failed to get device: %s, error: %v", deviceId, err)
-		return nil
+		return types.Page{}
 	}
 
 	// Parse the value into a Page struct
@@ -36,7 +54,7 @@ func GetCurrentPage(instanceId string, deviceId string, profileId string) *types
 
 	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
 		log.Error().Err(err).Msg("Failed to parse JSON")
-		return nil
+		return types.Page{}
 	}
 
 	key = "instances." + instanceId + ".devices." + deviceId + ".profiles." + profileId + ".pages." + profile.CurrentPage
@@ -47,11 +65,11 @@ func GetCurrentPage(instanceId string, deviceId string, profileId string) *types
 		if err == nats.ErrKeyNotFound {
 			log.Printf("Page key not found: %s", deviceId)
 
-			return nil
+			return types.Page{}
 		}
 		log.Printf("Failed to get page: %s, error: %v", deviceId, err)
 
-		return nil
+		return types.Page{}
 	}
 
 	var page types.Page
@@ -59,10 +77,10 @@ func GetCurrentPage(instanceId string, deviceId string, profileId string) *types
 	if err := json.Unmarshal(entry.Value(), &page); err != nil {
 		log.Error().Err(err).Msg("Failed to parse JSON")
 
-		return nil
+		return types.Page{}
 	}
 
-	return &page
+	return page
 }
 
 func SetCurrentPage(instanceId string, deviceId string, profileId string, pageId string) error {
@@ -98,7 +116,7 @@ func SetCurrentPage(instanceId string, deviceId string, profileId string, pageId
 	return nil
 }
 
-func CreatePage(instanceID string, deviceID string, profileID string) (*types.Page, error) {
+func CreatePage(instanceID string, deviceID string, profileID string) (types.Page, error) {
 	_, kv := natsconn.GetNATSConn()
 	log.Printf("Creating Page for Instance: %v, device: %v, profile: %v", instanceID, deviceID, profileID)
 
@@ -118,13 +136,13 @@ func CreatePage(instanceID string, deviceID string, profileID string) (*types.Pa
 	// Serialize the Profile struct to JSON
 	data, err := json.Marshal(p)
 	if err != nil {
-		return nil, fmt.Errorf("failed to serialize page data: %w", err)
+		return types.Page{}, fmt.Errorf("failed to serialize page data: %w", err)
 	}
 
 	// Put the serialized data into the KV store
 	_, err = kv.Put(key, data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create page in KV store: %w", err)
+		return types.Page{}, fmt.Errorf("failed to create page in KV store: %w", err)
 	}
 
 	log.Printf("Page created successfully: %+v", p)
@@ -136,17 +154,17 @@ func CreatePage(instanceID string, deviceID string, profileID string) (*types.Pa
 	profile.Pages = append(profile.Pages, p)
 
 	// Save the updated profile
-	err = UpdateProfile(instanceID, deviceID, profileID, profile)
+	err = UpdateProfile(instanceID, deviceID, profileID, &profile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update profile with new page: %w", err)
+		return types.Page{}, fmt.Errorf("failed to update profile with new page: %w", err)
 	}
 
 	log.Printf("Page created successfully: %+v", p)
 
-	return &p, nil
+	return p, nil
 }
 
-func GetPages(instanceId string, deviceId string, profileId string) ([]types.Page, error) {
+func GetPages(instanceId string, deviceId string, profileId string) []types.Page {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key prefix to search for pages
@@ -156,7 +174,7 @@ func GetPages(instanceId string, deviceId string, profileId string) ([]types.Pag
 	keyLister, err := kv.ListKeys()
 	if err != nil {
 		log.Error().Err(err).Msg("Could not list NATS KV keys")
-		return nil, err
+		return nil
 	}
 
 	// Initialize a slice to store the pages
@@ -195,7 +213,7 @@ func GetPages(instanceId string, deviceId string, profileId string) ([]types.Pag
 
 	log.Info().Interface("pages", pages).Msg("Retrieved pages")
 
-	return pages, nil
+	return pages
 }
 
 func DeletePage(instanceID string, deviceID string, profileID string, pageID string) error {
