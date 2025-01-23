@@ -1,4 +1,4 @@
-package devices
+package store
 
 import (
 	"encoding/json"
@@ -9,6 +9,28 @@ import (
 
 	"github.com/rs/zerolog/log"
 )
+
+func GetDevice(instanceID string, deviceID string) *types.Device {
+	_, kv := natsconn.GetNATSConn()
+
+	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
+	log.Info().Str("key", key).Msg("Key")
+
+	entry, err := kv.Get(key)
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to get device")
+		return nil
+	}
+
+	var device types.Device
+
+	if err := json.Unmarshal(entry.Value(), &device); err != nil {
+		log.Error().Err(err).Msg("Unmarshal error")
+		return nil
+	}
+
+	return &device
+}
 
 func GetDevices(instanceID string) ([]types.Device, error) {
 	_, kv := natsconn.GetNATSConn()
@@ -47,10 +69,11 @@ func GetDevices(instanceID string) ([]types.Device, error) {
 		}
 
 		devices = append(devices, types.Device{
-			ID:       device.ID,
-			Instance: device.Instance,
-			Type:     device.Type,
-			Status:   device.Status,
+			ID:             device.ID,
+			Instance:       device.Instance,
+			Type:           device.Type,
+			Status:         device.Status,
+			CurrentProfile: device.CurrentProfile,
 		})
 
 	}

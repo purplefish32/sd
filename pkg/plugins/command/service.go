@@ -2,26 +2,24 @@ package command
 
 import (
 	"encoding/json"
-	"sd/pkg/actions"
+	"sd/pkg/types"
 )
-
-var pluginNamespace = "sd.plugin.command"
 
 // CommandPlugin represents the command plugin.
 type CommandPlugin struct{}
 
 // ExecuteAction implements actions.Plugin.
-func (c *CommandPlugin) ExecuteAction(actionType actions.ActionType, config json.RawMessage) error {
+func (c *CommandPlugin) ExecuteAction(actionType types.ActionType, config json.RawMessage) error {
 	panic("unimplemented")
 }
 
 // GetActionTypes implements actions.Plugin.
-func (c *CommandPlugin) GetActionTypes() []actions.ActionType {
+func (c *CommandPlugin) GetActionTypes() []types.ActionType {
 	panic("unimplemented")
 }
 
 // ValidateConfig implements actions.Plugin.
-func (c *CommandPlugin) ValidateConfig(actionType actions.ActionType, config json.RawMessage) error {
+func (c *CommandPlugin) ValidateConfig(actionType types.ActionType, config json.RawMessage) error {
 	panic("unimplemented")
 }
 

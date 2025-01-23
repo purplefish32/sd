@@ -3,9 +3,9 @@ package command
 import (
 	"encoding/json"
 	"os/exec"
-	"sd/pkg/actions"
 	"sd/pkg/env"
 	"sd/pkg/natsconn"
+	"sd/pkg/types"
 	"sd/pkg/util"
 	"syscall"
 
@@ -31,7 +31,7 @@ func OpenSubscriber() {
 	nc, _ := natsconn.GetNATSConn()
 
 	if _, err := nc.Subscribe("sd.plugin.command.exec", func(m *nats.Msg) {
-		var actionInstance actions.ActionInstance
+		var actionInstance types.ActionInstance
 
 		// Parse the incoming message
 		if err := json.Unmarshal(m.Data, &actionInstance); err != nil {

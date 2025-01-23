@@ -2,7 +2,7 @@ package keyboard
 
 import (
 	"encoding/json"
-	"sd/pkg/actions"
+	"sd/pkg/types"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -26,18 +26,18 @@ func (k *KeyboardPlugin) Init() {
 	SubscribeActionType(pluginNamespace)
 }
 
-func (k *KeyboardPlugin) GetActionTypes() []actions.ActionType {
-	return []actions.ActionType{
+func (k *KeyboardPlugin) GetActionTypes() []types.ActionType {
+	return []types.ActionType{
 		"type",
 	}
 }
 
-func (k *KeyboardPlugin) ValidateConfig(actionType actions.ActionType, config json.RawMessage) error {
+func (k *KeyboardPlugin) ValidateConfig(actionType types.ActionType, config json.RawMessage) error {
 	var cfg TypeConfig
 	return json.Unmarshal(config, &cfg)
 }
 
-func (k *KeyboardPlugin) ExecuteAction(actionType actions.ActionType, config json.RawMessage) error {
+func (k *KeyboardPlugin) ExecuteAction(actionType types.ActionType, config json.RawMessage) error {
 	var cfg TypeConfig
 	if err := json.Unmarshal(config, &cfg); err != nil {
 		return err

@@ -12,7 +12,7 @@ templ ProfileCardList(instanceID string, deviceID string, profiles []types.Profi
 			<div class="text-gray-400">No profiles found</div>
 		} else {
 			for _, profile := range profiles {
-				@ProfileCard(instanceID, deviceID, profile)
+				@ProfileCard(instanceID, deviceID, profile, profile.CurrentPage)
 			}
 		}
 		<button

@@ -14,6 +14,7 @@ templ ProfilePage(
 	instanceID string,
 	deviceID string,
 	profileID string,
+	pageID string,
 ) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
@@ -30,7 +31,7 @@ templ ProfilePage(
 						</svg>
 					</div>
 					<div class="flex-grow p-6 text-center text-gray-400">
-						@StreamDeckXL(instanceID, deviceID, profileID, "2e914b60-b4c6-43e3-8567-b129f840369a")
+						@StreamDeckXL(instanceID, deviceID, profileID, pageID)
 					</div>
 					<div class="w-32 p-6 flex items-center justify-center text-gray-400">
 						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

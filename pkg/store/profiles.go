@@ -1,11 +1,9 @@
-package profiles
+package store
 
 import (
 	"encoding/json"
 	"fmt"
 	"sd/pkg/natsconn"
-	"sd/pkg/pages"
-	"sd/pkg/store"
 	"sd/pkg/types"
 	"strings"
 
@@ -13,10 +11,6 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 )
-
-type CurrentProfile struct {
-	ID string `json:"id"` // Unique identifier for the profile
-}
 
 func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
 	_, kv := natsconn.GetNATSConn()
@@ -68,14 +62,11 @@ func GetProfiles(instanceID string, deviceID string) ([]types.Profile, error) {
 		if err != nil {
 			log.Warn().Err(err).Str("key", key).Msg("Skipping malformed device data")
 			continue
+
 		}
 
 		// Append the profile to the list
-		profiles = append(profiles, types.Profile{
-			ID:    profile.ID,
-			Name:  profile.Name,
-			Pages: profile.Pages,
-		})
+		profiles = append(profiles, profile)
 	}
 
 	return profiles, nil
@@ -88,7 +79,7 @@ func CreateProfile(instanceID, deviceID, name string) (*types.Profile, error) {
 	}
 
 	// Save the profile
-	if err := store.UpdateProfile(instanceID, deviceID, profile.ID, profile); err != nil {
+	if err := UpdateProfile(instanceID, deviceID, profile.ID, profile); err != nil {
 		return nil, fmt.Errorf("failed to save profile: %w", err)
 	}
 
@@ -96,13 +87,53 @@ func CreateProfile(instanceID, deviceID, name string) (*types.Profile, error) {
 }
 
 func GetCurrentProfile(instanceID string, deviceID string) *types.Profile {
+	log.Info().Str("instanceID", instanceID).Str("deviceID", deviceID).Msg("Getting current profile")
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key for the current profile
-	key := "instances." + instanceID + ".devices." + deviceID + ".profiles.current"
+	key := "instances." + instanceID + ".devices." + deviceID
 
-	// Get current profile and page
+	// Get the device
 	entry, err := kv.Get(key)
+
+	if err != nil {
+		log.Warn().Str("device_serial", deviceID).Msg("No NATS key for current profile found")
+		return nil
+	}
+
+	// Parse the value into a Profile struct
+	var device types.Device
+
+	if err := json.Unmarshal(entry.Value(), &device); err != nil {
+		log.Warn().Err(err).Msg("Failed to unmarshal device")
+		return nil
+	}
+
+	if device.CurrentProfile == "" {
+		log.Warn().Msg("No current profile found")
+		return nil
+	}
+
+	profile := GetProfile(instanceID, deviceID, device.CurrentProfile)
+
+	log.Info().Interface("profile", profile).Msg("Profile")
+
+	return profile
+}
+
+func SetCurrentProfile(instanceID string, deviceID string, profileID string) error {
+	log.Info().Str("instanceID", instanceID).Str("deviceID", deviceID).Str("profileID", profileID).Msg("Setting current profile")
+	_, kv := natsconn.GetNATSConn()
+
+	// Define the key for the current device
+	key := "instances." + instanceID + ".devices." + deviceID
+
+	log.Info().Str("key", key).Msg("Key")
+
+	// Get the device
+	entry, err := kv.Get(key)
+
+	log.Info().Interface("entry", entry).Msg("Entry")
 
 	if err != nil {
 		if err == nats.ErrKeyNotFound {
@@ -111,74 +142,48 @@ func GetCurrentProfile(instanceID string, deviceID string) *types.Profile {
 		return nil
 	}
 
-	// Parse the value into a Profile struct
-	var profile types.Profile
+	var device types.Device
 
-	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
+	if err := json.Unmarshal(entry.Value(), &device); err != nil {
 		return nil
 	}
 
-	log.Info().
-		Str("instance_id", instanceID).
-		Str("device_serial", deviceID).
-		Str("profile_id", profile.ID).
-		Msg("Current profile found")
+	device.CurrentProfile = profileID
 
-	return &profile
-}
+	log.Info().Interface("device", device).Msg("Device")
 
-func SetCurrentProfile(instanceId string, deviceId string, profileId string) error {
-	_, kv := natsconn.GetNATSConn()
-
-	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + deviceId + ".profiles.current"
-
-	currentProfile := CurrentProfile{
-		ID: profileId,
-	}
-
-	// Serialize the Profile struct to JSON
-	data, err := json.Marshal(currentProfile)
-
+	// Save the device to NATS
+	deviceData, err := json.Marshal(device)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to serialize json")
 		return err
 	}
 
-	// Put the serialized data into the KV store
-	if _, err := kv.Put(key, data); err != nil {
-		log.Error().
-			Str("instance_id", instanceId).
-			Str("device_id", deviceId).
-			Err(err).
-			Msg("Failed to set current profile")
+	log.Info().Interface("deviceData", deviceData).Msg("Device data")
 
-		return err
-	}
+	kv.Put(key, deviceData)
 
-	log.Info().
-		Str("instance_id", instanceId).
-		Str("device_id", deviceId).
-		Msg("Current profile set successfully")
+	log.Info().Str("key", key).Msg("Key")
 
 	return nil
 }
 
-func GetProfile(instanceID, deviceID, profileID string) (*types.Profile, error) {
+func GetProfile(instanceID, deviceID, profileID string) *types.Profile {
 	_, kv := natsconn.GetNATSConn()
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
 
 	entry, err := kv.Get(key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get profile: %w", err)
+		log.Warn().Err(err).Msg("Failed to get profile")
+		return nil
 	}
 
 	var profile types.Profile
 	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal profile: %w", err)
+		log.Warn().Err(err).Msg("Failed to unmarshal profile")
+		return nil
 	}
 
-	return &profile, nil
+	return &profile
 }
 
 func UpdateProfile(instanceID, deviceID, profileID string, profile *types.Profile) error {
@@ -199,23 +204,27 @@ func UpdateProfile(instanceID, deviceID, profileID string, profile *types.Profil
 }
 
 func DeleteProfile(instanceID, deviceID, profileID string) error {
+	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("profileId", profileID).Msg("Deleting profile")
 	_, kv := natsconn.GetNATSConn()
 
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID)
 
-	kv.Delete(key)
-
 	// All pages in the profile need to be deleted too.
-	pages, err := pages.GetPages(instanceID, deviceID, profileID)
+	p, err := GetPages(instanceID, deviceID, profileID)
 
 	if err != nil {
 		return err
 	}
 
-	for _, page := range pages {
-		//pages.DeletePage(instanceID, deviceID, profileID, page.ID)
+	log.Info().Interface("pages", p).Msg("Pages")
+
+	for _, page := range p {
 		log.Info().Str("page_id", page.ID).Msg("Deleting page")
+		DeletePage(instanceID, deviceID, profileID, page.ID)
 	}
+
+	log.Info().Str("key", key).Msg("Deleting profile")
+	kv.Delete(key)
 
 	return nil
 }

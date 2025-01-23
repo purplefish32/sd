@@ -9,7 +9,9 @@ import (
 	"sd/pkg/devices"
 	"sd/pkg/instance"
 	"sd/pkg/natsconn"
+	"sd/pkg/pages"
 	"sd/pkg/profiles"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
@@ -32,6 +34,7 @@ func HandleButton(w http.ResponseWriter, r *http.Request) {
 	entry, err := kv.Get(key)
 
 	if err != nil {
+		log.Error().Err(err).Str("key", key).Msg("Failed to get button buffer")
 		return
 	}
 
@@ -63,7 +66,7 @@ func HandleButtonPress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nc.Publish(button.UUID, buttonData)
+	nc.Publish(button.ID, buttonData)
 }
 
 func HandleDeviceCardList(w http.ResponseWriter, r *http.Request) {
@@ -119,12 +122,25 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("name", name).Msg("Creating profile")
 
-	_, err = profiles.CreateProfile(instanceID, deviceID, name)
+	profile, err := profiles.CreateProfile(instanceID, deviceID, name)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create profile")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	page, err := pages.CreatePage(instanceID, deviceID, profile.ID)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create page")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// I want to create 32 blank buttons for the page
+	for i := 0; i < 32; i++ {
+		buttons.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i))
 	}
 
 	profiles, err := profiles.GetProfiles(instanceID, deviceID)

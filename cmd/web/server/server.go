@@ -136,11 +136,12 @@ func (s *Server) setupRoutes() {
 		partials.DevicePage(instances, devices, profiles, pages, instanceID, deviceID).Render(r.Context(), w)
 	})
 
-	s.router.Get("/instance/{instanceID}/device/{deviceID}/profile/{profileID}", func(w http.ResponseWriter, r *http.Request) {
+	s.router.Get("/instance/{instanceID}/device/{deviceID}/profile/{profileID}/page/{pageID}", func(w http.ResponseWriter, r *http.Request) {
 		instances, err := instance.GetInstances()
 		instanceID := chi.URLParam(r, "instanceID")
 		deviceID := chi.URLParam(r, "deviceID")
 		profileID := chi.URLParam(r, "profileID")
+		pageID := chi.URLParam(r, "pageID")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -160,7 +161,7 @@ func (s *Server) setupRoutes() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		partials.ProfilePage(instances, devices, profiles, pages, instanceID, deviceID, profileID).Render(r.Context(), w)
+		partials.ProfilePage(instances, devices, profiles, pages, instanceID, deviceID, profileID, pageID).Render(r.Context(), w)
 	})
 
 	// HTMX Routes

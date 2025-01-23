@@ -12,11 +12,11 @@ import (
 
 	"sd/pkg/core"
 	"sd/pkg/env"
-	"sd/pkg/instance"
 	"sd/pkg/natsconn"
 	"sd/pkg/plugins/browser"
 	"sd/pkg/plugins/command"
 	"sd/pkg/plugins/keyboard"
+	"sd/pkg/store"
 	"sd/pkg/streamdeck"
 	"sd/pkg/types"
 	"sd/pkg/util"
@@ -93,19 +93,22 @@ func connectDevice(instanceID string, deviceID string, productID uint16) error {
 		return fmt.Errorf("failed to get NATS KV store")
 	}
 
-	deviceType := DetermineDeviceType(productID)
-	if deviceType == "unknown" {
-		return fmt.Errorf("unknown device type for product ID: %x", productID)
-	}
-
 	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
 
-	device := types.Device{
-		ID:       deviceID,
-		Instance: instanceID,
-		Type:     deviceType,
-		Status:   "connected",
+	// Try to get existing device first
+	entry, _ := kv.Get(key)
+	var device types.Device
+	if entry != nil {
+		if err := json.Unmarshal(entry.Value(), &device); err != nil {
+			log.Warn().Err(err).Msg("Failed to unmarshal existing device")
+		}
 	}
+
+	// Update device fields while preserving others
+	device.ID = deviceID
+	device.Instance = instanceID
+	device.Type = DetermineDeviceType(productID)
+	device.Status = "connected"
 
 	data, err := json.Marshal(device)
 	if err != nil {
@@ -118,7 +121,6 @@ func connectDevice(instanceID string, deviceID string, productID uint16) error {
 	}
 
 	streamdeck.New(instanceID, deviceID, productID)
-
 	return nil
 }
 
@@ -169,7 +171,7 @@ func main() {
 	log.Info().Msg("Starting application")
 
 	// Retrieve or create the instance UUID.
-	instanceID := instance.GetOrCreateInstanceUUID()
+	instanceID := store.GetOrCreateInstanceUUID()
 
 	// Load environment variables
 	root, err := util.GetProjectRoot()

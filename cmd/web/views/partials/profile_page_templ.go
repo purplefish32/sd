@@ -23,6 +23,7 @@ func ProfilePage(
 	instanceID string,
 	deviceID string,
 	profileID string,
+	pageID string,
 ) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -76,7 +77,7 @@ func ProfilePage(
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StreamDeckXL(instanceID, deviceID, profileID, "2e914b60-b4c6-43e3-8567-b129f840369a").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StreamDeckXL(instanceID, deviceID, profileID, pageID).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

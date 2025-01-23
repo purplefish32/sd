@@ -81,8 +81,6 @@ func RotateImageBuffer(buffer []byte) ([]byte, error) {
 
 // SetKeyFromBuffer sets a key image from a buffer, with optional rotation
 func SetKeyFromBuffer(device *hid.Device, keyId int, buffer []byte, rotate bool) (err error) {
-	log.Debug().Int("keyId", keyId).Bool("rotate", rotate).Msg("Setting key")
-
 	content := buffer
 	if rotate {
 		rotated, err := RotateImageBuffer(buffer)

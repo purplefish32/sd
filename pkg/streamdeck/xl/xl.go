@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sd/pkg/actions"
-	"sd/pkg/buttons"
 	"sd/pkg/env"
 	"sd/pkg/natsconn"
-	"sd/pkg/pages"
-	"sd/pkg/profiles"
+	"sd/pkg/store"
+	"sd/pkg/types"
 	"sd/pkg/util"
 	"strconv"
 	"strings"
@@ -68,42 +66,27 @@ func (xl *XL) Init() error {
 	// Blank all keys.
 	xl.blankAllKeys()
 
-	currentProfile := profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
+	// If there is no profile, create one.
+	device := store.GetDevice(xl.instanceID, xl.device.Serial)
 
-	// If no default profile exists, create one and set is as the default profile.
-	if currentProfile == nil {
-		log.Warn().Msg("Current profile not found creating one")
-
+	if device.CurrentProfile == "" {
+		log.Warn().Msg("No default profile found, creating new profile")
 		// Create a new profile.
-		profile, _ := profiles.CreateProfile(xl.instanceID, xl.device.Serial, "Default")
-
-		log.Info().Str("profileId", profile.ID).Msg("Profile created")
+		profile, _ := store.CreateProfile(xl.instanceID, xl.device.Serial, "Default")
 
 		// Set the profile as the current profile.
-		profiles.SetCurrentProfile(xl.instanceID, xl.device.Serial, profile.ID)
-	}
-
-	currentProfile = profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
-
-	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
-
-	currentPage := pages.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
-
-	// If no default page exists, create one and set is as the default page for the given profile.
-	if currentPage == nil {
-		log.Warn().Msg("Current page not found creating one")
+		store.SetCurrentProfile(xl.instanceID, xl.device.Serial, profile.ID)
 
 		// Create a new page.
-		page, err := pages.CreatePage(xl.instanceID, xl.device.Serial, currentProfile.ID)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to create page")
-			return nil
-		}
-
-		log.Info().Interface("page", page).Msg("Page created")
+		page, _ := store.CreatePage(xl.instanceID, xl.device.Serial, profile.ID)
 
 		// Set the page as the current page.
-		pages.SetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID, page.ID)
+		store.SetCurrentPage(xl.instanceID, xl.device.Serial, profile.ID, page.ID)
+
+		// Create 32 blank buttons for the page.
+		for i := 0; i < 32; i++ {
+			store.CreateButton(xl.instanceID, xl.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1))
+		}
 	}
 
 	// Start watchers with context
@@ -145,8 +128,9 @@ func (xl *XL) handleButtonInput(ctx context.Context) {
 
 					log.Info().Int("buttonIndex", buttonIndex).Msg("Button pressed")
 
-					var currentProfile = profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
-					var currentPage = pages.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
+					currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
+
+					currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
 
 					key := "instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
 
@@ -154,7 +138,7 @@ func (xl *XL) handleButtonInput(ctx context.Context) {
 					entry, _ := nats.KeyValue.Get(kv, key)
 
 					// Unmarshal the JSON into the Payload struct
-					var payload actions.ActionInstance
+					var payload types.ActionInstance
 
 					if err := json.Unmarshal(entry.Value(), &payload); err != nil {
 						log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
@@ -199,8 +183,7 @@ func (xl *XL) watchForButtonChanges(ctx context.Context) {
 
 	watcher, err := kv.Watch(buttonPattern)
 	if err != nil {
-		log.Error().Err(err).Msg("Error creating watcher")
-		return
+		log.Warn().Err(err).Msg("Error creating watcher")
 	}
 	defer watcher.Stop()
 
@@ -226,7 +209,7 @@ func (xl *XL) watchForButtonChanges(ctx context.Context) {
 			case nats.KeyValueDelete:
 				xl.blankKey(id)
 			case nats.KeyValuePut:
-				var button buttons.Button
+				var button types.Button
 				if err := json.Unmarshal(update.Value(), &button); err != nil {
 					log.Error().Err(err).Msg("Failed to unmarshal button")
 					continue
@@ -247,16 +230,28 @@ func (xl *XL) watchForButtonChanges(ctx context.Context) {
 }
 
 func (xl *XL) watchKVForButtonImageBufferChanges(ctx context.Context) {
-	log := log.With().
-		Str("instanceId", xl.instanceID).
-		Str("deviceSerial", xl.device.Serial).
-		Logger()
-
 	_, kv := natsconn.GetNATSConn()
-	currentProfile := profiles.GetCurrentProfile(xl.instanceID, xl.device.Serial)
-	currentPage := pages.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
 
-	watcher, err := kv.Watch("instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
+	// Get current profile and page, with error checking
+	currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
+
+	if currentProfile == nil {
+		log.Warn().Msg("No current profile found")
+		return
+	}
+
+	currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
+
+	if currentPage == nil {
+		log.Warn().Msg("No current page found")
+		return
+	}
+
+	// Create watcher with error handling
+	pattern := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.*.buffer",
+		xl.instanceID, xl.device.Serial, currentProfile.ID, currentPage.ID)
+
+	watcher, err := kv.Watch(pattern)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating watcher")
 		return

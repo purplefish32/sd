@@ -3,9 +3,9 @@ package pedal
 import (
 	"encoding/json"
 	"fmt"
-	"sd/pkg/actions"
 	"sd/pkg/natsconn"
 	"sd/pkg/profiles"
+	"sd/pkg/types"
 	"sd/pkg/util"
 	"strconv"
 
@@ -100,7 +100,7 @@ func (pedal *Pedal) Init() error {
 				// }
 
 				// Unmarshal the JSON into the Payload struct
-				var payload actions.ActionInstance
+				var payload types.ActionInstance
 
 				if err := json.Unmarshal(entry.Value(), &payload); err != nil {
 					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")

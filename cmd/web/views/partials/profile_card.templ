@@ -3,11 +3,11 @@ package partials
 
 import "sd/pkg/types"
 
-templ ProfileCard(instanceID string, deviceID string, profile types.Profile) {
+templ ProfileCard(instanceID string, deviceID string, profile types.Profile, pageID string) {
 	<a
 		class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
 		id={ "profile-card-" + profile.ID }
-		href={ templ.SafeURL("/instance/" + instanceID + "/device/" + deviceID + "/profile/" + profile.ID) }
+		href={ templ.SafeURL("/instance/" + instanceID + "/device/" + deviceID + "/profile/" + profile.ID + "/page/" + pageID) }
 	>
 		<div
 			class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"

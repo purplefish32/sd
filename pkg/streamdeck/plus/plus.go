@@ -3,12 +3,13 @@ package plus
 import (
 	"encoding/json"
 	"fmt"
-	"sd/pkg/actions"
 	"sd/pkg/buttons"
 	"sd/pkg/env"
 	"sd/pkg/natsconn"
 	"sd/pkg/pages"
 	"sd/pkg/profiles"
+	"sd/pkg/types"es"
+	"sd/pkg/typ
 	"sd/pkg/util"
 	"strconv"
 	"strings"
@@ -312,7 +313,7 @@ func (d *Plus) handleButtonPress(buttonIndex int) {
 	nc, _ := natsconn.GetNATSConn()
 
 	// Create ActionInstance from Button
-	actionInstance := actions.ActionInstance{
+	actionInstance := types.ActionInstance{
 		UUID:     button.UUID,
 		Settings: button.Settings,
 		State:    button.State,
