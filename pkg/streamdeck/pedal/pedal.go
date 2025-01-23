@@ -1,10 +1,11 @@
 package pedal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sd/pkg/natsconn"
-	"sd/pkg/profiles"
+	"sd/pkg/store"
 	"sd/pkg/types"
 	"sd/pkg/util"
 	"strconv"
@@ -14,109 +15,162 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var ProductID uint16 = 0x0086
-
-const VendorID uint16 = 0x0fd9
+// Constants for device configuration
+const (
+	vendorID  = 0x0fd9
+	productID = 0x0086
+	numKeys   = 3
+	keySize   = 96
+)
 
 type Pedal struct {
 	instanceID string
 	device     *hid.Device
+	cancel     context.CancelFunc
+	ctx        context.Context
 }
 
 func New(instanceID string, device *hid.Device) Pedal {
+	ctx, cancel := context.WithCancel(context.Background())
 	return Pedal{
 		instanceID: instanceID,
 		device:     device,
+		ctx:        ctx,
+		cancel:     cancel,
+	}
+}
+
+func (pedal *Pedal) Cleanup() {
+	if pedal.cancel != nil {
+		pedal.cancel()
+	}
+	if pedal.device != nil {
+		pedal.device.Close()
 	}
 }
 
 func (pedal *Pedal) Init() error {
-	// Add reconnection attempt if device is nil
-	if pedal.device == nil {
-		devices := hid.Enumerate(VendorID, ProductID)
-		if len(devices) == 0 {
-			return fmt.Errorf("no Stream Deck Pedal devices found")
-		}
+	log.Info().Interface("device", pedal.device).Msg("Initializing Stream Deck Pedal")
 
-		device, err := devices[0].Open()
-		if err != nil {
-			return fmt.Errorf("failed to open Stream Deck Pedal: %w", err)
-		}
-		pedal.device = device
+	if err := pedal.ensureDeviceConnection(); err != nil {
+		return err
 	}
 
-	log.Info().
-		Str("device_serial", pedal.device.Serial).
-		Msg("Stream Deck Pedal Initialization")
-
-	currentProfile := profiles.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
-
-	// If no default profile exists, create one and set is as the default profile.
-	if currentProfile == nil {
-		log.Warn().Msg("Current profile not found creating one")
-
-		// Create a new profile.
-		profile, _ := profiles.CreateProfile(pedal.instanceID, pedal.device.Serial, "Default")
-
-		log.Info().Str("profileId", profile.ID).Msg("Profile created")
-
-		// Set the profile as the current profile.
-		profiles.SetCurrentProfile(pedal.instanceID, pedal.device.Serial, profile.ID)
+	if err := pedal.ensureDefaultProfile(); err != nil {
+		return err
 	}
 
-	currentProfile = profiles.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
+	// Start input handler
+	go pedal.handleButtonInput(pedal.ctx)
 
-	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
+	return nil
+}
 
-	// Buffer for outgoing events.
-	buf := make([]byte, 512)
+func (pedal *Pedal) ensureDeviceConnection() error {
+	if pedal.device != nil {
+		return nil
+	}
 
-	// Get NATS connection an KV store.
-	nc, kv := natsconn.GetNATSConn()
+	devices := hid.Enumerate(vendorID, productID)
+	if len(devices) == 0 {
+		return fmt.Errorf("no Stream Deck Pedal devices found")
+	}
 
-	// Listen for incoming device input.
-	for {
-		n, _ := pedal.device.Read(buf)
+	device, err := devices[0].Open()
+	if err != nil {
+		return fmt.Errorf("failed to open Stream Deck Pedal: %w", err)
+	}
+	pedal.device = device
+	return nil
+}
 
-		if n > 0 {
-			pressedButtons := util.ParseEventBuffer(buf)
+func (pedal *Pedal) ensureDefaultProfile() error {
+	device := store.GetDevice(pedal.instanceID, pedal.device.Serial)
+	if device.CurrentProfile != "" {
+		return nil
+	}
 
-			// TODO implement long press.
-			for _, buttonIndex := range pressedButtons {
+	profile, err := store.CreateProfile(pedal.instanceID, pedal.device.Serial, "Default")
+	if err != nil {
+		return fmt.Errorf("failed to create default profile: %w", err)
+	}
 
-				// Ignore button up event for now.
-				if buttonIndex == 0 {
-					continue
-				}
+	store.SetCurrentProfile(pedal.instanceID, pedal.device.Serial, profile.ID)
 
-				key := "instances." + pedal.instanceID + ".devices." + pedal.device.Serial + ".profiles." + currentProfile.ID + ".switches." + strconv.Itoa(buttonIndex)
+	page, err := store.CreatePage(pedal.instanceID, pedal.device.Serial, profile.ID)
+	if err != nil {
+		return fmt.Errorf("failed to create default page: %w", err)
+	}
 
-				// Get the associated data from the NATS KV Store.
-				entry, _ := nats.KeyValue.Get(kv, key)
+	store.SetCurrentPage(pedal.instanceID, pedal.device.Serial, profile.ID, page.ID)
 
-				// if err != nil {
-				// 	log.Warn().Err(err).Msg("Failed to get value from KV store")
-				// 	continue
-				// }
-
-				// Unmarshal the JSON into the Payload struct
-				var payload types.ActionInstance
-
-				if err := json.Unmarshal(entry.Value(), &payload); err != nil {
-					log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
-					return
-				}
-
-				// Use the `UUID` field as the topic
-				if payload.UUID == "" {
-					log.Error().Msg("Missing UUID field in JSON payload")
-					return
-				}
-
-				// Publish Action Instance to NATS.
-				nc.Publish(payload.UUID, entry.Value())
-			}
+	// Create blank switches for pedal (3 switches)
+	for i := 0; i < numKeys; i++ {
+		if err := store.CreateButton(pedal.instanceID, pedal.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1)); err != nil {
+			return fmt.Errorf("failed to create switch %d: %w", i+1, err)
 		}
 	}
 	return nil
+}
+
+func (pedal *Pedal) handleButtonPress(buttonIndex int, nc *nats.Conn, kv nats.KeyValue) error {
+	currentProfile := store.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
+	if currentProfile == nil {
+		return fmt.Errorf("no current profile found")
+	}
+
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.switches.%d",
+		pedal.instanceID, pedal.device.Serial, currentProfile.ID, buttonIndex)
+
+	entry, err := kv.Get(key)
+	if err != nil {
+		return fmt.Errorf("failed to get switch data: %w", err)
+	}
+
+	var payload types.ActionInstance
+	if err := json.Unmarshal(entry.Value(), &payload); err != nil {
+		return fmt.Errorf("failed to unmarshal switch data: %w", err)
+	}
+
+	if payload.UUID == "" {
+		return fmt.Errorf("missing UUID in payload")
+	}
+
+	return nc.Publish(payload.UUID, entry.Value())
+}
+
+func (pedal *Pedal) handleButtonInput(ctx context.Context) {
+	buf := make([]byte, 512)
+	nc, kv := natsconn.GetNATSConn()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			n, err := pedal.device.Read(buf)
+			if err != nil {
+				log.Error().Err(err).Msg("Error reading from device")
+				return
+			}
+
+			if n > 0 {
+				pressedButtons := util.ParseEventBuffer(buf)
+
+				// TODO implement long press.
+				for _, buttonIndex := range pressedButtons {
+					// Ignore button up event for now.
+					if buttonIndex == 0 {
+						continue
+					}
+
+					log.Info().Int("buttonIndex", buttonIndex).Msg("Switch pressed")
+
+					if err := pedal.handleButtonPress(buttonIndex, nc, kv); err != nil {
+						log.Error().Err(err).Msg("Error handling switch press")
+					}
+				}
+			}
+		}
+	}
 }

@@ -1,6 +1,7 @@
 package streamdeck
 
 import (
+	"sd/pkg/streamdeck/pedal"
 	"sd/pkg/streamdeck/xl"
 	"sync"
 
@@ -46,9 +47,9 @@ func New(instanceID string, deviceID string, productID uint16) error {
 	// case ProductIDPlus:
 	// 	plusDevice := plus.New(instanceID, device)
 	// 	return plusDevice.Init()
-	// case ProductIDPedal:
-	// 	pedalDevice := pedal.New(instanceID, device)
-	// 	return pedalDevice.Init()
+	case ProductIDPedal:
+		pedalDevice := pedal.New(instanceID, device)
+		return pedalDevice.Init()
 	default:
 		return fmt.Errorf("unsupported device type: %x", productID)
 	}

@@ -208,7 +208,7 @@ func DeleteButton(instanceID string, deviceID string, profileID string, pageID s
 // }
 
 // CreateButton
-func CreateButton(instanceID string, deviceID string, profileID string, pageID string, buttonID string) (*types.Button, error) {
+func CreateButton(instanceID string, deviceID string, profileID string, pageID string, buttonID string) error {
 	_, kv := natsconn.GetNATSConn()
 	log.Info().Str("instanceID", instanceID).Str("deviceID", deviceID).Str("profileID", profileID).Str("pageID", pageID).Str("buttonID", buttonID).Msg("Creating button")
 
@@ -236,7 +236,7 @@ func CreateButton(instanceID string, deviceID string, profileID string, pageID s
 
 	if err != nil {
 		log.Error().Err(err).Str("key", key).Msg("Failed to marshal button")
-		return nil, err
+		return err
 	}
 
 	// Put the serialized data into the KV store
@@ -248,7 +248,7 @@ func CreateButton(instanceID string, deviceID string, profileID string, pageID s
 		} else {
 			log.Error().Err(err).Str("key", key).Msg("Failed to create key in KV store")
 		}
-		return nil, err
+		return err
 	}
 
 	// updateStateId(key, 0)
@@ -257,7 +257,7 @@ func CreateButton(instanceID string, deviceID string, profileID string, pageID s
 	updateImageBuffer(key, button.States[0].ImagePath)
 
 	log.Info().Str("key", key).Msg("Created button")
-	return &button, nil
+	return nil
 }
 
 func updateImageBuffer(key string, imagePath string) (err error) {

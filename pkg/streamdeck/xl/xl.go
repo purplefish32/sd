@@ -17,11 +17,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Constants for device configuration
+const (
+	vendorID  = 0x0fd9
+	productID = 0x006c
+	numKeys   = 32
+	keySize   = 96
+)
+
 type XL struct {
 	instanceID string
 	device     *hid.Device
-	vendorID   uint16
-	productID  uint16
 	cancel     context.CancelFunc
 	ctx        context.Context
 }
@@ -31,8 +37,6 @@ func New(instanceID string, device *hid.Device) XL {
 	return XL{
 		instanceID: instanceID,
 		device:     device,
-		vendorID:   0x0fd9,
-		productID:  0x006c,
 		ctx:        ctx,
 		cancel:     cancel,
 	}
@@ -49,57 +53,96 @@ func (xl *XL) Cleanup() {
 
 func (xl *XL) Init() error {
 	log.Info().Interface("device", xl.device).Msg("Initializing Stream Deck XL")
-	// Add reconnection attempt if device is nil
-	if xl.device == nil {
-		devices := hid.Enumerate(xl.vendorID, xl.productID)
-		if len(devices) == 0 {
-			return fmt.Errorf("no Stream Deck XL devices found")
-		}
 
-		device, err := devices[0].Open()
-		if err != nil {
-			return fmt.Errorf("failed to open Stream Deck XL: %w", err)
-		}
-		xl.device = device
+	if err := xl.ensureDeviceConnection(); err != nil {
+		return err
 	}
 
-	// Blank all keys.
 	xl.blankAllKeys()
 
-	// If there is no profile, create one.
-	device := store.GetDevice(xl.instanceID, xl.device.Serial)
-
-	if device.CurrentProfile == "" {
-		log.Warn().Msg("No default profile found, creating new profile")
-		// Create a new profile.
-		profile, _ := store.CreateProfile(xl.instanceID, xl.device.Serial, "Default")
-
-		// Set the profile as the current profile.
-		store.SetCurrentProfile(xl.instanceID, xl.device.Serial, profile.ID)
-
-		// Create a new page.
-		page, _ := store.CreatePage(xl.instanceID, xl.device.Serial, profile.ID)
-
-		// Set the page as the current page.
-		store.SetCurrentPage(xl.instanceID, xl.device.Serial, profile.ID, page.ID)
-
-		// Create 32 blank buttons for the page.
-		for i := 0; i < 32; i++ {
-			store.CreateButton(xl.instanceID, xl.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1))
-		}
+	if err := xl.ensureDefaultProfile(); err != nil {
+		return err
 	}
 
-	// Start watchers with context
+	// Start watchers and input handler
 	go xl.watchForButtonChanges(xl.ctx)
 	go xl.watchKVForButtonImageBufferChanges(xl.ctx)
-
-	// Start button input loop with context
 	go xl.handleButtonInput(xl.ctx)
 
 	return nil
 }
 
-// Split out the button input handling into its own function
+func (xl *XL) ensureDeviceConnection() error {
+	if xl.device != nil {
+		return nil
+	}
+
+	devices := hid.Enumerate(vendorID, productID)
+	if len(devices) == 0 {
+		return fmt.Errorf("no Stream Deck XL devices found")
+	}
+
+	device, err := devices[0].Open()
+	if err != nil {
+		return fmt.Errorf("failed to open Stream Deck XL: %w", err)
+	}
+	xl.device = device
+	return nil
+}
+
+func (xl *XL) ensureDefaultProfile() error {
+	device := store.GetDevice(xl.instanceID, xl.device.Serial)
+	if device.CurrentProfile != "" {
+		return nil
+	}
+
+	profile, err := store.CreateProfile(xl.instanceID, xl.device.Serial, "Default")
+	if err != nil {
+		return fmt.Errorf("failed to create default profile: %w", err)
+	}
+
+	store.SetCurrentProfile(xl.instanceID, xl.device.Serial, profile.ID)
+
+	page, err := store.CreatePage(xl.instanceID, xl.device.Serial, profile.ID)
+	if err != nil {
+		return fmt.Errorf("failed to create default page: %w", err)
+	}
+
+	store.SetCurrentPage(xl.instanceID, xl.device.Serial, profile.ID, page.ID)
+
+	// Create blank buttons
+	for i := 0; i < numKeys; i++ {
+		if err := store.CreateButton(xl.instanceID, xl.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1)); err != nil {
+			return fmt.Errorf("failed to create button %d: %w", i+1, err)
+		}
+	}
+	return nil
+}
+
+func (xl *XL) handleButtonPress(buttonIndex int, nc *nats.Conn, kv nats.KeyValue) error {
+	currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
+	currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
+
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%d",
+		xl.instanceID, xl.device.Serial, currentProfile.ID, currentPage.ID, buttonIndex)
+
+	entry, err := kv.Get(key)
+	if err != nil {
+		return fmt.Errorf("failed to get button data: %w", err)
+	}
+
+	var payload types.ActionInstance
+	if err := json.Unmarshal(entry.Value(), &payload); err != nil {
+		return fmt.Errorf("failed to unmarshal button data: %w", err)
+	}
+
+	if payload.UUID == "" {
+		return fmt.Errorf("missing UUID in payload")
+	}
+
+	return nc.Publish(payload.UUID, entry.Value())
+}
+
 func (xl *XL) handleButtonInput(ctx context.Context) {
 	buf := make([]byte, 512)
 	nc, kv := natsconn.GetNATSConn()
@@ -128,31 +171,9 @@ func (xl *XL) handleButtonInput(ctx context.Context) {
 
 					log.Info().Int("buttonIndex", buttonIndex).Msg("Button pressed")
 
-					currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
-
-					currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
-
-					key := "instances." + xl.instanceID + ".devices." + xl.device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons." + strconv.Itoa(buttonIndex)
-
-					// Get the associated data from the NATS KV Store.
-					entry, _ := nats.KeyValue.Get(kv, key)
-
-					// Unmarshal the JSON into the Payload struct
-					var payload types.ActionInstance
-
-					if err := json.Unmarshal(entry.Value(), &payload); err != nil {
-						log.Error().Err(err).Msg("Failed to unmarshal JSON from KV store")
-						return
+					if err := xl.handleButtonPress(buttonIndex, nc, kv); err != nil {
+						log.Error().Err(err).Msg("Error handling button press")
 					}
-
-					// Use the `UUID` field as the topic
-					if payload.UUID == "" {
-						log.Error().Msg("Missing UUID field in JSON payload")
-						return
-					}
-
-					// Publish Action Instance to NATS.
-					nc.Publish(payload.UUID, entry.Value())
 				}
 			}
 		}
