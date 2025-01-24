@@ -11,6 +11,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// TouchScreenLayout needs to be added to types.Profile
+type TouchScreenLayout struct {
+	Mode      string    `json:"mode"`
+	FullImage string    `json:"fullImage"`
+	Segments  [4]string `json:"segments"`
+}
+
 // TouchScreenManager handles touch screen display state
 type TouchScreenManager struct {
 	plus          *Plus
@@ -63,7 +70,7 @@ func (tsm *TouchScreenManager) SetSegmentImages(imagePaths [4]string) error {
 // BlankTouchScreen sets the entire touch screen to black
 func (tsm *TouchScreenManager) BlankTouchScreen() error {
 	assetPath := env.Get("ASSET_PATH", "")
-	return tsm.SetFullScreenImage(assetPath + "images/black.png")
+	return tsm.SetFullScreenImage(assetPath + "images/correct.png")
 }
 
 // UpdateFromProfile updates the touch screen display based on profile settings

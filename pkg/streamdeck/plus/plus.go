@@ -1,15 +1,13 @@
 package plus
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"sd/pkg/buttons"
 	"sd/pkg/env"
 	"sd/pkg/natsconn"
-	"sd/pkg/pages"
-	"sd/pkg/profiles"
-	"sd/pkg/types"es"
-	"sd/pkg/typ
+	"sd/pkg/store"
+	"sd/pkg/types"
 	"sd/pkg/util"
 	"strconv"
 	"strings"
@@ -20,22 +18,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Plus struct {
-	instanceID       string
-	device           *hid.Device
-	currentProfile   string
-	currentPage      string
-	wasDialPressed   [4]bool
-	wasScreenPressed bool
-	lastX            int
-	touchScreen      *TouchScreenManager
-}
-
-var ProductID uint16 = 0x0084
-
-const VendorID uint16 = 0x0fd9
-
+// Constants for device configuration
 const (
+	vendorID  = 0x0fd9
+	productID = 0x0084
+	numKeys   = 8
+	keySize   = 120
+
 	DialTurningFlag          = 0x01
 	DialTurnRight            = 0x01
 	DialTurnLeft             = 0xFF
@@ -52,6 +41,17 @@ const (
 	ChunkDelay               = 20 * time.Millisecond
 )
 
+type Plus struct {
+	instanceID       string
+	device           *hid.Device
+	cancel           context.CancelFunc
+	ctx              context.Context
+	wasDialPressed   [4]bool
+	wasScreenPressed bool
+	lastX            int
+	touchScreen      *TouchScreenManager
+}
+
 type DialEvent struct {
 	DialIndex int // 0-3 for dials A-D
 	IsTurning bool
@@ -67,105 +67,53 @@ type TouchEvent struct {
 }
 
 func New(instanceID string, device *hid.Device) Plus {
+	ctx, cancel := context.WithCancel(context.Background())
 	plus := Plus{
 		instanceID: instanceID,
 		device:     device,
+		ctx:        ctx,
+		cancel:     cancel,
 	}
 	plus.touchScreen = NewTouchScreenManager(&plus)
 	return plus
 }
 
+func (plus *Plus) Cleanup() {
+	if plus.cancel != nil {
+		plus.cancel()
+	}
+	if plus.device != nil {
+		plus.device.Close()
+	}
+}
+
 func (plus *Plus) Init() error {
-	// Add reconnection attempt if device is nil
-	if plus.device == nil {
-		devices := hid.Enumerate(VendorID, ProductID)
-		if len(devices) == 0 {
-			return fmt.Errorf("no Stream Deck Plus devices found")
-		}
+	log.Info().Interface("device", plus.device).Msg("Initializing Stream Deck Plus")
 
-		device, err := devices[0].Open()
-		if err != nil {
-			return fmt.Errorf("failed to open Stream Deck Plus: %w", err)
-		}
-		plus.device = device
-	}
-
-	log.Info().
-		Str("device_serial", plus.device.Serial).
-		Msg("Stream Deck Plus Initialization")
-
-	// Blank all keys.
-	BlankAllKeys(plus.device)
-
-	currentProfile := profiles.GetCurrentProfile(plus.instanceID, plus.device.Serial)
-
-	// If no default profile exists, create one and set it as the default profile.
-	if currentProfile == nil {
-		log.Info().Msg("Creating default profile")
-
-		// Create a new profile.
-		profile, err := profiles.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to create default profile")
-			return err
-		}
-
-		log.Info().Str("profileId", profile.ID).Msg("Default profile created")
-
-		// Set the profile as the current profile.
-		profiles.SetCurrentProfile(plus.instanceID, plus.device.Serial, profile.ID)
-		currentProfile = profile
-	}
-
-	if currentProfile == nil {
-		log.Error().Msg("Failed to get or create current profile")
-		return fmt.Errorf("failed to get or create current profile")
-	}
-
-	log.Info().Interface("current_profile", currentProfile).Msg("Current profile")
-
-	currentPage := pages.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
-
-	// If no default page exists, create one and set it as the default page for the given profile.
-	if currentPage == nil {
-		log.Info().Msg("Creating default page")
-
-		// Create a new page.
-		page, err := pages.CreatePage(plus.instanceID, plus.device.Serial, currentProfile.ID)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to create default page")
-			return err
-		}
-
-		log.Info().Interface("page", page).Msg("Default page created")
-
-		// Set the page as the current page.
-		pages.SetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID, page.ID)
-		currentPage = &page
-	}
-
-	// Buffer for outgoing events.
-	buf := make([]byte, 512)
-
-	go WatchForButtonChanges(plus.device)
-	go WatchKVForButtonImageBufferChanges(plus.instanceID, plus.device)
-
-	// Initialize touch screen with current profile
-	if err := plus.touchScreen.UpdateFromProfile(currentProfile); err != nil {
-		log.Error().Err(err).Msg("Failed to initialize touch screen")
+	if err := plus.ensureDeviceConnection(); err != nil {
 		return err
 	}
 
-	// Watch for profile changes
-	go plus.touchScreen.WatchProfileChanges(plus.instanceID)
+	plus.blankAllKeys()
 
-	// Listen for incoming device input.
-	for {
-		n, _ := plus.device.Read(buf)
-		if n > 0 {
-			plus.handleEvent(buf)
+	if err := plus.ensureDefaultProfile(); err != nil {
+		return err
+	}
+
+	// Start watchers and input handlers
+	go plus.watchForButtonChanges(plus.ctx)
+	go plus.watchKVForButtonImageBufferChanges(plus.ctx)
+	go plus.handleInput(plus.ctx)
+
+	// Initialize touch screen with current profile
+	currentProfile := store.GetCurrentProfile(plus.instanceID, plus.device.Serial)
+	if !currentProfile.IsEmpty() {
+		if err := plus.touchScreen.UpdateFromProfile(&currentProfile); err != nil {
+			log.Error().Err(err).Msg("Failed to initialize touch screen")
 		}
 	}
+
+	return nil
 }
 
 func BlankKey(device *hid.Device, keyId int, buffer []byte) {
@@ -173,88 +121,62 @@ func BlankKey(device *hid.Device, keyId int, buffer []byte) {
 	util.SetKeyFromBuffer(device, keyId, buffer, false)
 }
 
-func BlankAllKeys(device *hid.Device) {
+func (plus *Plus) blankAllKeys() {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertButtonImageToBuffer(assetPath+"images/black.png", 96)
+	var buffer, err = util.ConvertButtonImageToBuffer(assetPath+"images/correct.png", keySize)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
 	}
 
-	for i := 1; i <= 8; i++ {
-		BlankKey(device, i, buffer)
+	for i := 1; i <= numKeys; i++ {
+		BlankKey(plus.device, i, buffer)
 	}
 }
 
-func WatchKVForButtonImageBufferChanges(instanceId string, device *hid.Device) {
-	// Add contextual information to the logger for this function
-	log := log.With().
-		Str("instanceId", instanceId).
-		Str("deviceSerial", device.Serial).
-		Logger()
-
+func (plus *Plus) watchKVForButtonImageBufferChanges(ctx context.Context) {
 	_, kv := natsconn.GetNATSConn()
 
-	currentProfile := profiles.GetCurrentProfile(instanceId, device.Serial)
-	currentPage := pages.GetCurrentPage(instanceId, device.Serial, currentProfile.ID)
+	currentProfile := store.GetCurrentProfile(plus.instanceID, plus.device.Serial)
+	currentPage := store.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
 
-	// Start watching the KV bucket for updates for a specific profile and page.
-	watcher, err := kv.Watch("instances." + instanceId + ".devices." + device.Serial + ".profiles." + currentProfile.ID + ".pages." + currentPage.ID + ".buttons.*.buffer")
-	defer watcher.Stop()
+	pattern := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.*.buffer",
+		plus.instanceID, plus.device.Serial, currentProfile.ID, currentPage.ID)
 
+	watcher, err := kv.Watch(pattern)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating watcher")
+		return
 	}
+	defer watcher.Stop()
 
-	// Flag to track when all initial values have been processed.
-	initialValuesProcessed := false
-
-	// Start the watch loop.
-	for update := range watcher.Updates() {
-		// If the update is nil, it means all initial values have been received.
-		if update == nil {
-			if !initialValuesProcessed {
-				log.Info().Msg("All initial values have been processed. Waiting for updates")
-				initialValuesProcessed = true
-			}
-			// Continue listening for future updates, so don't break here.
-			continue
-		}
-
-		// Process the update.
-		switch update.Operation() {
-		case nats.KeyValuePut:
-			log.Info().Str("key", update.Key()).Msg("Key added/updated")
-			// Get Stream Deck key id from the kv key.
-
-			// Split the string by the delimiter ".".
-			segments := strings.Split(update.Key(), ".")
-
-			// Get the last segment.
-			sdKeyId := segments[len(segments)-2]
-
-			// Convert to an int.
-			id, err := strconv.Atoi(sdKeyId)
-
-			if err != nil {
-				// ... handle error.
-				panic(err)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-watcher.Updates():
+			if update == nil {
+				continue
 			}
 
-			// Update Key.
-			util.SetKeyFromBuffer(device, id, update.Value(), false)
-		case nats.KeyValueDelete:
-			log.Info().Str("key", update.Key()).Msg("Key deleted")
-		default:
-			log.Info().Str("key", update.Key()).Msg("Unknown operation")
+			switch update.Operation() {
+			case nats.KeyValuePut:
+				segments := strings.Split(update.Key(), ".")
+				sdKeyId := segments[len(segments)-2]
+				id, err := strconv.Atoi(sdKeyId)
+				if err != nil {
+					continue
+				}
+				util.SetKeyFromBuffer(plus.device, id, update.Value(), false)
+			}
 		}
 	}
 }
 
-func WatchForButtonChanges(device *hid.Device) {
+func (plus *Plus) watchForButtonChanges(ctx context.Context) {
 	_, kv := natsconn.GetNATSConn()
 
-	buttonPattern := fmt.Sprintf("instances.*.devices.%s.profiles.*.pages.*.buttons.*", device.Serial)
+	buttonPattern := fmt.Sprintf("instances.*.devices.%s.profiles.*.pages.*.buttons.*", plus.device.Serial)
 	watcher, err := kv.Watch(buttonPattern)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating watcher")
@@ -262,48 +184,61 @@ func WatchForButtonChanges(device *hid.Device) {
 	}
 	defer watcher.Stop()
 
-	for update := range watcher.Updates() {
-		if update == nil {
-			continue
-		}
-
-		// Get button number from the key
-		segments := strings.Split(update.Key(), ".")
-		buttonNum := segments[len(segments)-1]
-
-		id, err := strconv.Atoi(buttonNum)
-		if err != nil {
-			continue
-		}
-
-		switch update.Operation() {
-		case nats.KeyValueDelete:
-			// Blank the key when button is deleted
-			buffer, _ := util.ConvertButtonImageToBuffer(env.Get("ASSET_PATH", "")+"images/black.png", 96)
-			BlankKey(device, id, buffer)
-		case nats.KeyValuePut:
-			var button buttons.Button
-			if err := json.Unmarshal(update.Value(), &button); err != nil {
-				log.Error().Err(err).Msg("Failed to unmarshal button")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-watcher.Updates():
+			if update == nil {
 				continue
 			}
-			if len(button.States) > 0 {
-				buf, err := util.ConvertButtonImageToBuffer(button.States[0].ImagePath, 96)
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to create button buffer")
+
+			segments := strings.Split(update.Key(), ".")
+			buttonNum := segments[len(segments)-1]
+
+			id, err := strconv.Atoi(buttonNum)
+			if err != nil {
+				continue
+			}
+
+			switch update.Operation() {
+			case nats.KeyValueDelete:
+				buffer, _ := util.ConvertButtonImageToBuffer(env.Get("ASSET_PATH", "")+"images/correct.png", keySize)
+				BlankKey(plus.device, id, buffer)
+			case nats.KeyValuePut:
+				var button types.Button
+				if err := json.Unmarshal(update.Value(), &button); err != nil {
+					log.Error().Err(err).Msg("Failed to unmarshal button")
 					continue
 				}
-				BlankKey(device, id, buf)
+				if len(button.States) > 0 {
+					buf, err := util.ConvertButtonImageToBuffer(button.States[0].ImagePath, keySize)
+					if err != nil {
+						log.Error().Err(err).Msg("Failed to create button buffer")
+						continue
+					}
+					BlankKey(plus.device, id, buf)
+				}
 			}
 		}
 	}
 }
 
-func (d *Plus) handleButtonPress(buttonIndex int) {
-	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
-		d.instanceID, d.device.Serial, d.currentProfile, d.currentPage, strconv.Itoa(buttonIndex))
+func (plus *Plus) handleButtonPress(buttonIndex int) {
+	currentProfile := store.GetCurrentProfile(plus.instanceID, plus.device.Serial)
+	if currentProfile.IsEmpty() {
+		return
+	}
 
-	button, err := buttons.GetButton(key)
+	currentPage := store.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
+	if currentPage.IsEmpty() {
+		return
+	}
+
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
+		plus.instanceID, plus.device.Serial, currentProfile.ID, currentPage.ID, strconv.Itoa(buttonIndex))
+
+	button, err := store.GetButton(key)
 	if err != nil {
 		log.Error().Err(err).Str("key", key).Msg("Failed to get button configuration")
 		return
@@ -313,7 +248,7 @@ func (d *Plus) handleButtonPress(buttonIndex int) {
 	nc, _ := natsconn.GetNATSConn()
 
 	// Create ActionInstance from Button
-	actionInstance := types.ActionInstance{
+	actionInstance := types.Button{
 		UUID:     button.UUID,
 		Settings: button.Settings,
 		State:    button.State,
@@ -444,34 +379,39 @@ func (plus *Plus) handleDialAction(event DialEvent) {
 	nc.Publish(topic, data)
 }
 
-func (plus *Plus) handleEvent(buf []byte) {
-	// Check for dial events first (they have a specific pattern)
-	if buf[0] == 0x01 && buf[1] == 0x03 && buf[2] == 0x05 {
-		plus.handleDialEvent(buf)
-		return
-	}
+func (plus *Plus) handleInput(ctx context.Context) {
+	buf := make([]byte, 512)
 
-	// Check for touch events
-	if buf[0] == 0x01 && buf[1] == 0x02 && buf[2] == 0x0E {
-		plus.handleTouchEvent(buf) // Remove the slice, pass full buffer
-		return
-	}
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			n, err := plus.device.Read(buf)
+			if err != nil {
+				log.Error().Err(err).Msg("Error reading from device")
+				return
+			}
 
-	// Handle button events (they start with 0x01)
-	if buf[0] == 0x01 {
-		plus.handleButtonPress(int(buf[1]))
-		return
-	}
-}
+			if n > 0 {
+				// Check for dial events first
+				if buf[0] == 0x01 && buf[1] == 0x03 && buf[2] == 0x05 {
+					plus.handleDialEvent(buf)
+					continue
+				}
 
-func (plus *Plus) handleButtonEvent(buf []byte) {
-	pressedButtons := util.ParseEventBuffer(buf)
-	for _, buttonIndex := range pressedButtons {
-		// Ignore button up event for now.
-		if buttonIndex == 0 {
-			continue
+				// Check for touch events
+				if buf[0] == 0x01 && buf[1] == 0x02 && buf[2] == 0x0E {
+					plus.handleTouchEvent(buf)
+					continue
+				}
+
+				// Handle button events
+				if buf[0] == 0x01 {
+					plus.handleButtonPress(int(buf[1]))
+				}
+			}
 		}
-		plus.handleButtonPress(buttonIndex)
 	}
 }
 
@@ -586,5 +526,52 @@ func writeChunkWithDelay(device *hid.Device, payload []byte) error {
 		return err
 	}
 	time.Sleep(ChunkDelay)
+	return nil
+}
+
+func (plus *Plus) ensureDeviceConnection() error {
+	if plus.device != nil {
+		return nil
+	}
+
+	devices := hid.Enumerate(vendorID, productID)
+	if len(devices) == 0 {
+		return fmt.Errorf("no Stream Deck Plus devices found")
+	}
+
+	device, err := devices[0].Open()
+	if err != nil {
+		return fmt.Errorf("failed to open Stream Deck Plus: %w", err)
+	}
+	plus.device = device
+	return nil
+}
+
+func (plus *Plus) ensureDefaultProfile() error {
+	device := store.GetDevice(plus.instanceID, plus.device.Serial)
+	if device.CurrentProfile != "" {
+		return nil
+	}
+
+	profile, err := store.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
+	if err != nil {
+		return fmt.Errorf("failed to create default profile: %w", err)
+	}
+
+	store.SetCurrentProfile(plus.instanceID, plus.device.Serial, profile.ID)
+
+	page, err := store.CreatePage(plus.instanceID, plus.device.Serial, profile.ID)
+	if err != nil {
+		return fmt.Errorf("failed to create default page: %w", err)
+	}
+
+	store.SetCurrentPage(plus.instanceID, plus.device.Serial, profile.ID, page.ID)
+
+	// Create blank buttons
+	for i := 0; i < numKeys; i++ {
+		if err := store.CreateButton(plus.instanceID, plus.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1)); err != nil {
+			return fmt.Errorf("failed to create button %d: %w", i+1, err)
+		}
+	}
 	return nil
 }

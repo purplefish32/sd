@@ -33,8 +33,12 @@ templ ProfilePage(
 						// If device is a pedal, show pedal config
 						if device.Type == "pedal" {
 							@StreamDeckPedal(instance, device, profile, page)
-						} else {
+						}
+						if device.Type == "xl" {
 							@StreamDeckXL(instance, device, profile, page)
+						}
+						if device.Type == "plus" {
+							@StreamDeckPlus(instance, device, profile, page)
 						}
 					</div>
 					<div class="w-32 p-6 flex items-center justify-center text-gray-400">

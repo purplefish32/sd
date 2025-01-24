@@ -182,7 +182,7 @@ func (xl *XL) handleButtonInput(ctx context.Context) {
 
 func (xl *XL) blankKey(keyId int) {
 	var assetPath = env.Get("ASSET_PATH", "")
-	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/black.png", 96)
+	var buffer, err = util.ConvertImageToBuffer(assetPath+"images/correct.png", keySize)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Could not convert blank image to buffer")
@@ -192,7 +192,7 @@ func (xl *XL) blankKey(keyId int) {
 }
 
 func (xl *XL) blankAllKeys() {
-	for i := 1; i <= 32; i++ {
+	for i := 1; i <= numKeys; i++ {
 		xl.blankKey(i)
 	}
 }

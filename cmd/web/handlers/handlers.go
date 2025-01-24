@@ -121,6 +121,8 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	store.SetCurrentPage(instanceID, device.ID, profile.ID, page.ID)
+
 	for i := 0; i < 32; i++ { // TODO: Make this configurable
 		store.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i))
 	}

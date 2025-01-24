@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/json"
 	"fmt"
+	"sd/pkg/env"
 	"sd/pkg/natsconn"
 	"sd/pkg/types"
 	"strings"
@@ -220,11 +221,11 @@ func CreateButton(instanceID string, deviceID string, profileID string, pageID s
 	// Define a new Button.
 	button := types.Button{
 		ID:   buttonID,
-		UUID: "",
+		UUID: "none",
 		States: []types.State{
 			{
 				ID:        "0",
-				ImagePath: "/home/donovan/.config/sd/buttons/black.png",
+				ImagePath: env.Get("ASSET_PATH", "") + "images/correct.png",
 			},
 		},
 		State: "0",

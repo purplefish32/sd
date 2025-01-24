@@ -10,12 +10,11 @@ templ StreamDeckXL(instance types.Instance, device types.Device, profile types.P
 		<div class="grid grid-cols-8 gap-4 max-w-4xl mx-auto">
 			for i := 0; i < 32; i++ {
 				<div
-					class="stream-deck-button aspect-square bg-sd-dark rounded-lg border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer"
+					class="stream-deck-button border-2 bg-sd-dark border-sd-darker hover:border-sd-accent transition-colors cursor-pointer"
 					data-button={ string(rune(i)) }
 					data-device={ device.ID }
 				>
 					<img
-						class="w-full h-full object-cover rounded-lg"
 						src={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1) }
 						alt="Button Image"
 						hx-post={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1) }

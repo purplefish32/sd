@@ -2,6 +2,7 @@ package streamdeck
 
 import (
 	"sd/pkg/streamdeck/pedal"
+	"sd/pkg/streamdeck/plus"
 	"sd/pkg/streamdeck/xl"
 	"sync"
 
@@ -44,9 +45,9 @@ func New(instanceID string, deviceID string, productID uint16) error {
 	case ProductIDXL:
 		xlDevice := xl.New(instanceID, device)
 		return xlDevice.Init()
-	// case ProductIDPlus:
-	// 	plusDevice := plus.New(instanceID, device)
-	// 	return plusDevice.Init()
+	case ProductIDPlus:
+		plusDevice := plus.New(instanceID, device)
+		return plusDevice.Init()
 	case ProductIDPedal:
 		pedalDevice := pedal.New(instanceID, device)
 		return pedalDevice.Init()
@@ -61,15 +62,15 @@ func (sd StreamDeck) Init() {
 		xl.Init()
 	}
 
-	// if sd.device.Product == "Stream Deck Plus" {
-	// 	plus := plus.New(sd.instanceID, sd.device)
-	// 	plus.Init()
-	// }
+	if sd.device.Product == "Stream Deck Plus" {
+		plus := plus.New(sd.instanceID, sd.device)
+		plus.Init()
+	}
 
-	// if sd.device.Product == "Stream Deck Pedal" {
-	// 	pedal := pedal.New(sd.instanceID, sd.device)
-	// 	pedal.Init()
-	// }
+	if sd.device.Product == "Stream Deck Pedal" {
+		pedal := pedal.New(sd.instanceID, sd.device)
+		pedal.Init()
+	}
 }
 
 func RemoveDevice(deviceID string) {

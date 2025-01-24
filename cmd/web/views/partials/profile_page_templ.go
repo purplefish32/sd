@@ -82,8 +82,15 @@ func ProfilePage(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-			} else {
+			}
+			if device.Type == "xl" {
 				templ_7745c5c3_Err = StreamDeckXL(instance, device, profile, page).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			if device.Type == "plus" {
+				templ_7745c5c3_Err = StreamDeckPlus(instance, device, profile, page).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -95,7 +102,7 @@ func ProfilePage(
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/delete?instanceId=" + instance.ID + "&deviceId=" + device.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_page.templ`, Line: 125, Col: 94}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_page.templ`, Line: 129, Col: 94}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -108,7 +115,7 @@ func ProfilePage(
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/partials/profile/delete-dialog?instanceId=" + instance.ID + "&deviceId=" + device.ID + "&profileId=" + profile.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_page.templ`, Line: 137, Col: 130}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/profile_page.templ`, Line: 141, Col: 130}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
