@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"sd/cmd/web/server"
 	"sd/pkg/env"
@@ -21,11 +22,10 @@ func main() {
 
 	log.Info().Msg("Starting application")
 
+	// Get project root
 	root, err := util.GetProjectRoot()
-
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get project root")
-		return
+		log.Fatal().Err(err).Msg("Failed to get project root")
 	}
 
 	env.LoadEnv(root + "/cmd/web/.env")
@@ -33,6 +33,11 @@ func main() {
 	// Create and start the server
 	server := server.NewServer()
 	defer server.Close()
+
+	// Set up static file server with absolute path
+	fs := http.FileServer(http.Dir(root + "/cmd/web/assets"))
+	r := server.Router()
+	r.Handle("/assets/*", http.StripPrefix("/assets/", fs))
 
 	if err := server.Start(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to start server")

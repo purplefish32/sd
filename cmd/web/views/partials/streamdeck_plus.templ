@@ -8,13 +8,27 @@ import (
 
 templ StreamDeckPlus(instance types.Instance, device types.Device, profile types.Profile, page types.Page) {
 	<div class="p-6">
-		<div class="mx-auto bg-neutral-900 p-20 rounded-3xl">
+		<div class="mx-auto sd-plus">
 			<!-- Buttons -->
-			<div class="flex justify-center mb-4">
+			<div class="flex justify-center mb-4 sd-plus-buttons">
 				<div class="grid grid-cols-4 gap-x-20 gap-y-5 w-fit">
 					for i := 0; i < 8; i++ {
 						<div
-							class="stream-deck-button w-32 h-32 p-2 border-2 aspect-square bg-sd-dark border-sd-darker hover:border-sd-accent transition-colors cursor-pointer"
+							class="
+								stream-deck-button
+								w-32
+								h-32
+								p-2
+								border-2
+								border-transparent
+								rounded-xl
+								aspect-square
+								bg-sd-dark
+								border-sd-darker
+								hover:border-sd-accent
+								transition-colors
+								cursor-pointer
+							"
 							data-button={ string(rune(i)) }
 							data-device={ device.ID }
 						>
@@ -31,17 +45,17 @@ templ StreamDeckPlus(instance types.Instance, device types.Device, profile types
 			</div>
 			<!-- Touchscreen -->
 			<div
-				class="h-[100px] w-[800px] mx-auto m-10 bg-sd-dark border-100"
+				class="mx-auto m-10 bg-sd-dark border-100 sd-plus-touchscreen"
 				data-touchscreen="true"
 				data-device={ device.ID }
 			></div>
 			<!-- Dials -->
-			<div class="flex justify-center mb-4">
+			<div class="flex justify-center mb-4 sd-plus-dials">
 				<div class="grid grid-cols-4 gap-x-20 gap-y-5 w-fit">
 					for i := 0; i < 4; i++ {
 						<div class="text-center">
 							<div
-								class="w-32 h-32 rounded-full bg-sd-dark border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer mx-auto"
+								class="w-32 h-32 rounded-full border-2 border-transparent hover:border-sd-accent transition-colors cursor-pointer mx-auto"
 								data-dial={ string(rune(i)) }
 								data-device={ device.ID }
 							>

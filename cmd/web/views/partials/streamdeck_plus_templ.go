@@ -36,19 +36,19 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-6\"><div class=\"mx-auto bg-neutral-900 p-20 rounded-3xl\"><!-- Buttons --><div class=\"flex justify-center mb-4\"><div class=\"grid grid-cols-4 gap-x-20 gap-y-5 w-fit\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-6\"><div class=\"mx-auto sd-plus\"><!-- Buttons --><div class=\"flex justify-center mb-4 sd-plus-buttons\"><div class=\"grid grid-cols-4 gap-x-20 gap-y-5 w-fit\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for i := 0; i < 8; i++ {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"stream-deck-button w-32 h-32 p-2 border-2 aspect-square bg-sd-dark border-sd-darker hover:border-sd-accent transition-colors cursor-pointer\" data-button=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\n\t\t\t\t\t\t\t\tstream-deck-button\n\t\t\t\t\t\t\t\tw-32\n\t\t\t\t\t\t\t\th-32\n\t\t\t\t\t\t\t\tp-2\n\t\t\t\t\t\t\t\tborder-2\n\t\t\t\t\t\t\t\tborder-transparent\n\t\t\t\t\t\t\t\trounded-xl\n\t\t\t\t\t\t\t\taspect-square\n\t\t\t\t\t\t\t\tbg-sd-dark\n\t\t\t\t\t\t\t\tborder-sd-darker\n\t\t\t\t\t\t\t\thover:border-sd-accent\n\t\t\t\t\t\t\t\ttransition-colors\n\t\t\t\t\t\t\t\tcursor-pointer\n\t\t\t\t\t\t\t\" data-button=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(string(rune(i)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 18, Col: 36}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 32, Col: 36}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -61,7 +61,7 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(device.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 19, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 33, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -74,7 +74,7 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 23, Col: 110}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 37, Col: 110}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -87,7 +87,7 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 25, Col: 114}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 39, Col: 114}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -98,32 +98,32 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><!-- Touchscreen --><div class=\"h-[100px] w-[800px] mx-auto m-10 bg-sd-dark border-100\" data-touchscreen=\"true\" data-device=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><!-- Touchscreen --><div class=\"mx-auto m-10 bg-sd-dark border-100 sd-plus-touchscreen\" data-touchscreen=\"true\" data-device=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(device.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 36, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 50, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"></div><!-- Dials --><div class=\"flex justify-center mb-4\"><div class=\"grid grid-cols-4 gap-x-20 gap-y-5 w-fit\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"></div><!-- Dials --><div class=\"flex justify-center mb-4 sd-plus-dials\"><div class=\"grid grid-cols-4 gap-x-20 gap-y-5 w-fit\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for i := 0; i < 4; i++ {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"text-center\"><div class=\"w-32 h-32 rounded-full bg-sd-dark border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer mx-auto\" data-dial=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"text-center\"><div class=\"w-32 h-32 rounded-full border-2 border-transparent hover:border-sd-accent transition-colors cursor-pointer mx-auto\" data-dial=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(string(rune(i)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 45, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 59, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -136,7 +136,7 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(device.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 46, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 60, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -149,7 +149,7 @@ func StreamDeckPlus(instance types.Instance, device types.Device, profile types.
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(string(rune(i + 1)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 49, Col: 36}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/streamdeck_plus.templ`, Line: 63, Col: 36}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {

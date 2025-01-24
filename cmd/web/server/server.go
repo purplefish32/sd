@@ -255,3 +255,8 @@ func (s *Server) Start() error {
 
 func (s *Server) Close() {
 }
+
+// Add this method to server.Server
+func (s *Server) Router() *chi.Mux {
+	return s.router
+}

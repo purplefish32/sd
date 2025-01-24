@@ -3,41 +3,113 @@
 @tailwind utilities;
 
 @layer base {
-    body {
-        @apply bg-sd-darker text-white;
-    }
+  body {
+    @apply bg-sd-darker text-white;
+  }
 
-    select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
-        @apply bg-sd-dark border border-sd-darker rounded px-3 py-2 focus:outline-none focus:border-sd-accent;
-    }
+  select,
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"] {
+    @apply bg-sd-dark border border-sd-darker rounded px-3 py-2 focus:outline-none focus:border-sd-accent;
+  }
 }
 
 @layer components {
-    .btn {
-        @apply px-4 py-2 bg-sd-accent text-white rounded hover:bg-sd-accent/90 transition-colors;
-    }
+  .btn {
+    @apply px-4 py-2 bg-sd-accent text-white rounded hover:bg-sd-accent/90 transition-colors;
+  }
 
-    .nav-link {
-        @apply text-gray-300 hover:text-white transition-colors;
-    }
+  .nav-link {
+    @apply text-gray-300 hover:text-white transition-colors;
+  }
 
-    .stream-deck-button {
-        @apply aspect-square bg-sd-dark rounded-lg border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer;
-    }
+  .stream-deck-button {
+    @apply aspect-square bg-sd-dark rounded-lg border-2 border-sd-darker hover:border-sd-accent transition-colors cursor-pointer;
+  }
 
-    .stream-deck-button-empty {
-        @apply flex items-center justify-center text-gray-600;
-    }
+  .stream-deck-button-empty {
+    @apply flex items-center justify-center text-gray-600;
+  }
 
-    .stream-deck-button-configured {
-        @apply relative overflow-hidden;
-    }
+  .stream-deck-button-configured {
+    @apply relative overflow-hidden;
+  }
 
-    .stream-deck-button-configured img {
-        @apply absolute inset-0 w-full h-full object-cover;
-    }
+  .stream-deck-button-configured img {
+    @apply absolute inset-0 w-full h-full object-cover;
+  }
 
-    .stream-deck-button-configured .title {
-        @apply absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center truncate;
-    }
+  .stream-deck-button-configured .title {
+    @apply absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center truncate;
+  }
+
+  .sd-pedal {
+    background-image: url("/assets/images/sd_pedal.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 1160px;
+    height: 730px;
+    position: relative;
+  }
+
+  .sd-pedal-buttons {
+    position: absolute;
+    top: 300px;
+    left: 307px;
+  }
+
+  .sd-xl {
+    background-image: url("/assets/images/sd_xl.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 1160px;
+    height: 730px;
+    position: relative;
+  }
+
+  .sd-xl-buttons {
+    position: absolute;
+    top: 160px;
+    left: 85px;
+  }
+
+  .sd-plus {
+    background-image: url("/assets/images/sd_plus.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 1000px;
+    height: 1000px;
+    position: relative;
+  }
+
+  .sd-plus-buttons {
+    width: 800px;
+    height: 100px;
+    position: absolute;
+    top: 140px;
+    left: 100px;
+  }
+
+  .sd-plus-touchscreen {
+    width: 800px;
+    height: 100px;
+    position: absolute;
+    top: 460px;
+    left: 100px;
+  }
+
+  .sd-plus-dials {
+    width: 800px;
+    height: 128px;
+    position: absolute;
+    top: 728px;
+    left: 100px;
+    padding-left: 32px;
+    padding-right: 50px;
+  }
 }

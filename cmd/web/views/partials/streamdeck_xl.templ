@@ -7,21 +7,41 @@ import (
 
 templ StreamDeckXL(instance types.Instance, device types.Device, profile types.Profile, page types.Page) {
 	<div class="p-6">
-		<div class="grid grid-cols-8 gap-4 max-w-4xl mx-auto">
-			for i := 0; i < 32; i++ {
-				<div
-					class="stream-deck-button border-2 bg-sd-dark border-sd-darker hover:border-sd-accent transition-colors cursor-pointer"
-					data-button={ string(rune(i)) }
-					data-device={ device.ID }
-				>
-					<img
-						src={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1) }
-						alt="Button Image"
-						hx-post={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1) }
-						hx-trigger="click"
-					/>
+		<div class="mx-auto sd-xl">
+			<!-- Buttons -->
+			<div class="flex justify-center mb-4 sd-xl-buttons">
+				<div class="grid grid-cols-8 gap-x-2 gap-y-2 w-fit">
+					for i := 0; i < 32; i++ {
+						<div
+							class="
+								stream-deck-button
+								w-26
+								h-26
+								p-2
+								border-2
+								border-transparent
+								rounded-xl
+								aspect-square
+								bg-sd-dark
+								border-sd-darker
+								hover:border-sd-accent
+								transition-colors
+								cursor-pointer
+							"
+							data-button={ string(rune(i)) }
+							data-device={ device.ID }
+						>
+							<img
+								class="w-full h-full"
+								src={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1) }
+								alt="Button Image"
+								hx-post={ fmt.Sprintf("/partials/button/%s/%s/%s/%s/%d", instance.ID, device.ID, profile.ID, page.ID, i+1) }
+								hx-trigger="click"
+							/>
+						</div>
+					}
 				</div>
-			}
+			</div>
 		</div>
 	</div>
 }

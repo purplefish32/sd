@@ -31,7 +31,7 @@ func ProfileDeleteDialog(instance types.Instance, device types.Device, profile t
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center\" id=\"modal-backdrop\" hx-target=\"this\" hx-swap=\"outerHTML\" _=\"on keyup[key==&#39;Escape&#39;] trigger click on &lt;button[hx-get=&#39;/partials/profile/close-dialog&#39;]/&gt;\" tabindex=\"0\"><div class=\"bg-sd-dark p-6 rounded-lg shadow-xl w-96\"><h2 class=\"text-xl font-semibold mb-4 text-white\">Delete Profile (")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50\" id=\"modal-backdrop\" hx-target=\"this\" hx-swap=\"outerHTML\" _=\"on keyup[key==&#39;Escape&#39;] trigger click on &lt;button[hx-get=&#39;/partials/profile/close-dialog&#39;]/&gt;\" tabindex=\"0\"><div class=\"bg-sd-dark p-6 rounded-lg shadow-xl w-96\"><h2 class=\"text-xl font-semibold mb-4 text-white\">Delete Profile (")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
