@@ -4,47 +4,98 @@ package partials
 import (
 	"sd/cmd/web/views/layouts"
 	"sd/pkg/types"
+	"strconv"
 )
+
+func cond(test bool, a, b string) string {
+	if test {
+		return a
+	}
+	return b
+}
 
 templ ProfilePage(
 	instances []types.Instance,
 	devices []types.Device,
 	profiles []types.Profile,
 	pages []types.Page,
-	instance types.Instance,
-	device types.Device,
-	profile types.Profile,
-	page types.Page,
+	currentInstance types.Instance,
+	currentDevice types.Device,
+	currentProfile types.Profile,
+	currentPage types.Page,
 ) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
 			@InstancePanel(instances)
-			@DevicePanel(instance, devices)
-			@ProfilePanel(instance, device, profiles)
+			@DevicePanel(currentInstance, devices)
+			@ProfilePanel(currentInstance, currentDevice, profiles)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
 				<div class="flex flex-row w-full">
 					<div class="w-32 p-6 flex items-center justify-center text-gray-400">
-						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-						</svg>
+						for i, page := range pages {
+							if page.ID == currentPage.ID && i > 0 {
+								<a
+									href={ templ.URL("/instance/" + currentInstance.ID + "/device/" + currentDevice.ID + "/profile/" + currentProfile.ID + "/page/" + pages[i-1].ID) }
+									class="hover:text-white transition-colors"
+								>
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+									</svg>
+								</a>
+							}
+						}
 					</div>
 					<div class="flex-grow p-6 text-center text-gray-400">
 						// If device is a pedal, show pedal config
-						if device.Type == "pedal" {
-							@StreamDeckPedal(instance, device, profile, page)
+						if currentDevice.Type == "pedal" {
+							@StreamDeckPedal(currentInstance, currentDevice, currentProfile, currentPage)
 						}
-						if device.Type == "xl" {
-							@StreamDeckXL(instance, device, profile, page)
+						if currentDevice.Type == "xl" {
+							@StreamDeckXL(currentInstance, currentDevice, currentProfile, currentPage)
 						}
-						if device.Type == "plus" {
-							@StreamDeckPlus(instance, device, profile, page)
+						if currentDevice.Type == "plus" {
+							@StreamDeckPlus(currentInstance, currentDevice, currentProfile, currentPage)
 						}
+						<nav class="flex justify-center mt-4">
+							<ul class="flex space-x-2">
+								for i, page := range pages {
+									<li>
+										<a
+											href={ templ.URL("/instance/" + currentInstance.ID + "/device/" + currentDevice.ID + "/profile/" + currentProfile.ID + "/page/" + page.ID) }
+											class={ "px-3 py-2 rounded-lg transition-colors " + cond(page.ID == currentPage.ID, "bg-sd-accent text-white", "bg-sd-light hover:bg-sd-lighter text-gray-300") }
+										>
+											{ strconv.Itoa(i+1) }
+										</a>
+									</li>
+								}
+								<li>
+									<a
+										href="#"
+										class={ "px-3 py-2 rounded-lg transition-colors bg-sd-light hover:bg-sd-lighter text-gray-300" }
+										hx-post={ "/api/page/create?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID + "&profileId=" + currentProfile.ID }
+										hx-target="body"
+										hx-swap="innerHTML"
+									>
+										+
+									</a>
+								</li>
+							</ul>
+						</nav>
 					</div>
 					<div class="w-32 p-6 flex items-center justify-center text-gray-400">
-						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-						</svg>
+						for i, page := range pages {
+							if page.ID == currentPage.ID && i < len(pages)-1 {
+								<a
+									href={ templ.URL("/instance/" + currentInstance.ID + "/device/" + currentDevice.ID + "/profile/" + currentProfile.ID + "/page/" + pages[i+1].ID) }
+									class="hover:text-white transition-colors"
+								>
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+									</svg>
+								</a>
+							}
+						}
 					</div>
 				</div>
 			</div>
@@ -114,19 +165,7 @@ templ ProfilePage(
 					</button>
 					<button
 						class="w-full p-3 mt-4 bg-sd-light hover:bg-sd-lighter text-white font-medium rounded transition-colors flex items-center justify-center gap-2"
-						hx-get="/"
-						hx-target="#dialog-container"
-						hx-trigger="click"
-						hx-swap="innerHTML"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-							<path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-						</svg>
-						Add Page
-					</button>
-					<button
-						class="w-full p-3 mt-4 bg-sd-light hover:bg-sd-lighter text-white font-medium rounded transition-colors flex items-center justify-center gap-2"
-						hx-get={ "/partials/profile/delete?instanceId=" + instance.ID + "&deviceId=" + device.ID }
+						hx-get={ "/partials/profile/delete?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID }
 						hx-target="#dialog-container"
 						hx-trigger="click"
 						hx-swap="innerHTML"
@@ -138,7 +177,7 @@ templ ProfilePage(
 					</button>
 					<button
 						class="w-full p-3 mt-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded transition-colors flex items-center justify-center gap-2"
-						hx-get={ "/partials/profile/delete-dialog?instanceId=" + instance.ID + "&deviceId=" + device.ID + "&profileId=" + profile.ID }
+						hx-get={ "/partials/profile/delete-dialog?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID + "&profileId=" + currentDevice.ID }
 						hx-target="#dialog-container"
 						hx-trigger="click"
 						hx-swap="innerHTML"

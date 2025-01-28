@@ -147,19 +147,23 @@ func CreatePage(instanceID string, deviceID string, profileID string) (types.Pag
 
 	log.Printf("Page created successfully: %+v", p)
 
-	// After successfully creating the page, update the profile
+	// After creating the page, update the profile
 	profile := GetProfile(instanceID, deviceID, profileID)
+	profile.Pages = append(profile.Pages, types.Page{ID: p.ID})
+	profile.CurrentPage = p.ID
 
-	// Add the new page to the profile's pages array
-	profile.Pages = append(profile.Pages, p)
-
-	// Save the updated profile
-	err = UpdateProfile(instanceID, deviceID, profileID, &profile)
+	// Update profile in KV store
+	profileData, err := json.Marshal(profile)
 	if err != nil {
-		return types.Page{}, fmt.Errorf("failed to update profile with new page: %w", err)
+		log.Error().Err(err).Msg("Failed to marshal profile")
+		return p, err
 	}
 
-	log.Printf("Page created successfully: %+v", p)
+	_, err = kv.Put(fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID), profileData)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update profile")
+		return p, err
+	}
 
 	return p, nil
 }

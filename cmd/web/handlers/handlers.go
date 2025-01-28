@@ -124,7 +124,7 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 	store.SetCurrentPage(instanceID, device.ID, profile.ID, page.ID)
 
 	for i := 0; i < 32; i++ { // TODO: Make this configurable
-		store.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i))
+		store.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i+1))
 	}
 
 	profiles := store.GetProfiles(instanceID, deviceID)
@@ -167,3 +167,82 @@ func HandleProfileDelete() http.HandlerFunc {
 		partials.ProfileCardList(instance, device, profiles).Render(r.Context(), w)
 	}
 }
+
+func HandlePageCreate(w http.ResponseWriter, r *http.Request) {
+	instanceID := r.URL.Query().Get("instanceId")
+	deviceID := r.URL.Query().Get("deviceId")
+	profileID := r.URL.Query().Get("profileId")
+
+	page, err := store.CreatePage(instanceID, deviceID, profileID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create page")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Set as current page
+	store.SetCurrentPage(instanceID, deviceID, profileID, page.ID)
+
+	// Create blank buttons for the page
+	for i := 0; i < 32; i++ {
+		store.CreateButton(instanceID, deviceID, profileID, page.ID, strconv.Itoa(i+1))
+	}
+
+	// Get updated data
+	instance := store.GetInstance(instanceID)
+	device := store.GetDevice(instanceID, deviceID)
+	profile := store.GetProfile(instanceID, deviceID, profileID)
+	pages := store.GetPages(instanceID, deviceID, profileID)
+
+	// Re-render the entire profile page
+	partials.ProfilePage(
+		store.GetInstances(),
+		store.GetDevices(instanceID),
+		store.GetProfiles(instanceID, deviceID),
+		pages,
+		instance,
+		device,
+		profile,
+		page,
+	).Render(r.Context(), w)
+}
+
+func HandlePageDeleteDialog() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		instanceID := r.URL.Query().Get("instanceId")
+		deviceID := r.URL.Query().Get("deviceId")
+		profileID := r.URL.Query().Get("profileId")
+		pageID := r.URL.Query().Get("pageId")
+
+		instance := store.GetInstance(instanceID)
+		device := store.GetDevice(instanceID, deviceID)
+		profile := store.GetProfile(instanceID, deviceID, profileID)
+		page := store.GetPage(instanceID, deviceID, profileID, pageID)
+
+		component := partials.PageDeleteDialog(instance, device, profile, page)
+		component.Render(r.Context(), w)
+	}
+}
+
+// func HandlePageDelete() http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		instanceID := r.URL.Query().Get("instanceId")
+// 		deviceID := r.URL.Query().Get("deviceId")
+// 		profileID := r.URL.Query().Get("profileId")
+// 		pageID := r.URL.Query().Get("pageId")
+
+// 		err := store.DeletePage(instanceID, deviceID, profileID, pageID)
+// 		if err != nil {
+// 			log.Error().Err(err).Msg("Failed to delete page")
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+
+// 		instance := store.GetInstance(instanceID)
+// 		device := store.GetDevice(instanceID, deviceID)
+// 		profile := store.GetProfile(instanceID, deviceID, profileID)
+// 		pages := store.GetPages(instanceID, deviceID, profileID)
+
+// 		partials.ProfileContent(instance, device, profile, pages).Render(r.Context(), w)
+// 	}
+// }

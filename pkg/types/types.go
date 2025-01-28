@@ -41,11 +41,15 @@ type TouchScreenLayout struct {
 }
 
 type Profile struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Pages       []Page            `json:"pages"`
-	CurrentPage string            `json:"currentPage"`
-	TouchScreen TouchScreenLayout `json:"touchScreen"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Pages       []Page `json:"pages"`
+	CurrentPage string `json:"currentPage"`
+	TouchScreen struct {
+		Mode      string    `json:"mode"`
+		FullImage string    `json:"fullImage"`
+		Segments  [4]string `json:"segments"`
+	} `json:"touchScreen"`
 }
 
 func (p Profile) IsEmpty() bool {

@@ -223,6 +223,14 @@ func (s *Server) setupRoutes() {
 
 	s.router.Post("/api/profile/create", handlers.HandleProfileCreate)
 	s.router.Delete("/api/profile/delete", handlers.HandleProfileDelete())
+
+	// Add these routes
+	s.router.Get("/partials/page/delete-dialog", handlers.HandlePageDeleteDialog())
+	s.router.Get("/partials/page/close-dialog", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(""))
+	})
+	s.router.Post("/api/page/create", handlers.HandlePageCreate)
+	//s.router.Delete("/api/page/delete", handlers.HandlePageDelete())
 }
 
 // Move sendDeviceList outside setupRoutes
