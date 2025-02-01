@@ -1,14 +1,16 @@
+//go:generate templ generate
 package partials
 
 import "sd/pkg/types"
 
-templ ProfilePanel(instance types.Instance, device types.Device, profiles []types.Profile) {
+templ ProfilePanel(instance types.Instance, device *types.Device, profiles []types.Profile) {
 	<div class="w-64 bg-sd-dark border-r border-sd-darker p-4">
 		<h2 class="text-xl font-semibold mb-4">Profiles</h2>
-		<div>
-			//hx-ext="sse"
-			//sse-connect={ "/stream/" + instanceID }
-			//sse-swap="ProfileCardListUpdate"
+		<div
+			hx-ext="sse"
+			sse-connect={ "/stream/instance/" + instance.ID + "/device/" + device.ID + "/profiles" }
+			sse-swap="ProfileCardListUpdate"
+		>
 			@ProfileCardList(instance, device, profiles)
 		</div>
 	</div>

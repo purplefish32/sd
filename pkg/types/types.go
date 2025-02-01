@@ -45,11 +45,6 @@ type Profile struct {
 	Name        string `json:"name"`
 	Pages       []Page `json:"pages"`
 	CurrentPage string `json:"currentPage"`
-	TouchScreen struct {
-		Mode      string    `json:"mode"`
-		FullImage string    `json:"fullImage"`
-		Segments  [4]string `json:"segments"`
-	} `json:"touchScreen"`
 }
 
 func (p Profile) IsEmpty() bool {

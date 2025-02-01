@@ -7,7 +7,6 @@ import (
 	"sd/cmd/web/views/partials"
 	"sd/pkg/natsconn"
 	"sd/pkg/store"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
@@ -102,33 +101,15 @@ func HandleProfileCreate(w http.ResponseWriter, r *http.Request) {
 	deviceID := r.FormValue("deviceId")
 	name := r.FormValue("name")
 
-	instance := store.GetInstance(instanceID)
 	device := store.GetDevice(instanceID, deviceID)
 
-	profile, err := store.CreateProfile(instanceID, deviceID, name)
+	_, err = store.CreateProfile(instanceID, device, name)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create profile")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	page, err := store.CreatePage(instanceID, deviceID, profile.ID)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create page")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	store.SetCurrentPage(instanceID, device.ID, profile.ID, page.ID)
-
-	for i := 0; i < 32; i++ { // TODO: Make this configurable
-		store.CreateButton(instanceID, deviceID, profile.ID, page.ID, strconv.Itoa(i+1))
-	}
-
-	profiles := store.GetProfiles(instanceID, deviceID)
-	partials.ProfileCardList(instance, device, profiles).Render(r.Context(), w)
 }
 
 func HandleProfileDeleteDialog() http.HandlerFunc {
@@ -139,7 +120,7 @@ func HandleProfileDeleteDialog() http.HandlerFunc {
 
 		instance := store.GetInstance(instanceID)
 		device := store.GetDevice(instanceID, deviceID)
-		profile := store.GetProfile(instanceID, deviceID, profileID)
+		profile := store.GetProfile(instanceID, device, profileID)
 
 		component := partials.ProfileDeleteDialog(instance, device, profile)
 		component.Render(r.Context(), w)
@@ -152,7 +133,9 @@ func HandleProfileDelete() http.HandlerFunc {
 		deviceID := r.URL.Query().Get("deviceId")
 		profileID := r.URL.Query().Get("profileId")
 
-		err := store.DeleteProfile(instanceID, deviceID, profileID)
+		device := store.GetDevice(instanceID, deviceID)
+
+		err := store.DeleteProfile(instanceID, device, profileID)
 
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to delete profile")
@@ -161,8 +144,7 @@ func HandleProfileDelete() http.HandlerFunc {
 		}
 
 		instance := store.GetInstance(instanceID)
-		device := store.GetDevice(instanceID, deviceID)
-		profiles := store.GetProfiles(instanceID, deviceID)
+		profiles := store.GetProfiles(instanceID, device)
 
 		partials.ProfileCardList(instance, device, profiles).Render(r.Context(), w)
 	}
@@ -173,7 +155,10 @@ func HandlePageCreate(w http.ResponseWriter, r *http.Request) {
 	deviceID := r.URL.Query().Get("deviceId")
 	profileID := r.URL.Query().Get("profileId")
 
-	page, err := store.CreatePage(instanceID, deviceID, profileID)
+	device := store.GetDevice(instanceID, deviceID)
+
+	page, err := store.CreatePage(instanceID, device, profileID)
+
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create page")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -181,24 +166,24 @@ func HandlePageCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set as current page
-	store.SetCurrentPage(instanceID, deviceID, profileID, page.ID)
+	// store.SetCurrentPage(instanceID, deviceID, profileID, page.ID)
 
 	// Create blank buttons for the page
-	for i := 0; i < 32; i++ {
-		store.CreateButton(instanceID, deviceID, profileID, page.ID, strconv.Itoa(i+1))
-	}
+	// for i := 0; i < 32; i++ {
+	// 	store.CreateButton(instanceID, device, profileID, page.ID, strconv.Itoa(i+1))
+	// }
 
 	// Get updated data
 	instance := store.GetInstance(instanceID)
-	device := store.GetDevice(instanceID, deviceID)
-	profile := store.GetProfile(instanceID, deviceID, profileID)
-	pages := store.GetPages(instanceID, deviceID, profileID)
+	device = store.GetDevice(instanceID, deviceID)
+	profile := store.GetProfile(instanceID, device, profileID)
+	pages := store.GetPages(instanceID, device, profileID)
 
 	// Re-render the entire profile page
 	partials.ProfilePage(
 		store.GetInstances(),
 		store.GetDevices(instanceID),
-		store.GetProfiles(instanceID, deviceID),
+		store.GetProfiles(instanceID, device),
 		pages,
 		instance,
 		device,
@@ -216,7 +201,7 @@ func HandlePageDeleteDialog() http.HandlerFunc {
 
 		instance := store.GetInstance(instanceID)
 		device := store.GetDevice(instanceID, deviceID)
-		profile := store.GetProfile(instanceID, deviceID, profileID)
+		profile := store.GetProfile(instanceID, device, profileID)
 		page := store.GetPage(instanceID, deviceID, profileID, pageID)
 
 		component := partials.PageDeleteDialog(instance, device, profile, page)
@@ -224,25 +209,33 @@ func HandlePageDeleteDialog() http.HandlerFunc {
 	}
 }
 
-// func HandlePageDelete() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		instanceID := r.URL.Query().Get("instanceId")
-// 		deviceID := r.URL.Query().Get("deviceId")
-// 		profileID := r.URL.Query().Get("profileId")
-// 		pageID := r.URL.Query().Get("pageId")
+func HandlePageDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		instanceID := r.URL.Query().Get("instanceId")
+		deviceID := r.URL.Query().Get("deviceId")
+		profileID := r.URL.Query().Get("profileId")
+		pageID := r.URL.Query().Get("pageId")
 
-// 		err := store.DeletePage(instanceID, deviceID, profileID, pageID)
-// 		if err != nil {
-// 			log.Error().Err(err).Msg("Failed to delete page")
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
+		device := store.GetDevice(instanceID, deviceID)
 
-// 		instance := store.GetInstance(instanceID)
-// 		device := store.GetDevice(instanceID, deviceID)
-// 		profile := store.GetProfile(instanceID, deviceID, profileID)
-// 		pages := store.GetPages(instanceID, deviceID, profileID)
+		err := store.DeletePage(instanceID, device, profileID, pageID)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to delete page")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-// 		partials.ProfileContent(instance, device, profile, pages).Render(r.Context(), w)
-// 	}
-// }
+		store.DeletePage(instanceID, device, profileID, pageID)
+
+		var profile = store.GetProfile(instanceID, device, profileID)
+
+		log.Info().Interface("profile", profile).Msg("Profile")
+
+		var previousPageID = profile.Pages[len(profile.Pages)-1].ID
+
+		log.Info().Str("previousPageID", previousPageID).Msg("Previous Page ID")
+		// store.SetCurrentPage(instanceID, deviceID, profileID, previousPageID)
+
+		w.Header().Add("Hx-Redirect", "/instance/"+instanceID+"/device/"+deviceID+"/profile/"+profileID+"/page/"+previousPageID)
+	}
+}

@@ -35,12 +35,12 @@ func GetButton(key string) (button types.Button, err error) {
 	return button, nil
 }
 
-func GetButtons(instanceID string, deviceID string, profileID string, pageID string) ([]types.Button, error) {
-	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("profileId", profileID).Str("pageId", pageID).Msg("Getting buttons")
+func GetButtons(instanceID string, device *types.Device, profileID string, pageID string) ([]types.Button, error) {
+	log.Info().Str("instanceId", instanceID).Interface("device", device).Str("profileId", profileID).Str("pageId", pageID).Msg("Getting buttons")
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key prefix to search for buttons
-	var prefix = "instances." + instanceID + ".devices." + deviceID + ".profiles." + profileID + ".pages." + pageID + ".buttons."
+	var prefix = "instances." + instanceID + ".devices." + device.ID + ".profiles." + profileID + ".pages." + pageID + ".buttons."
 	log.Info().Str("prefix", prefix).Msg("Prefix")
 
 	// List the keys in the NATS KV store under the given prefix
@@ -94,11 +94,11 @@ func GetButtons(instanceID string, deviceID string, profileID string, pageID str
 	return buttons, nil
 }
 
-func DeleteButton(instanceID string, deviceID string, profileID string, pageID string, buttonID string) error {
+func DeleteButton(instanceID string, device *types.Device, profileID string, pageID string, buttonID string) error {
 	_, kv := natsconn.GetNATSConn()
 
 	// Delete the button
-	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s", instanceID, deviceID, profileID, pageID, buttonID)
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s", instanceID, device.ID, profileID, pageID, buttonID)
 	log.Info().Str("key", key).Msg("Deleting button")
 	err := kv.Delete(key)
 
@@ -108,7 +108,7 @@ func DeleteButton(instanceID string, deviceID string, profileID string, pageID s
 	}
 
 	// Delete the buffer
-	key = fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s.buffer", instanceID, deviceID, profileID, pageID, buttonID)
+	key = fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s.buffer", instanceID, device.ID, profileID, pageID, buttonID)
 	log.Info().Str("key", key).Msg("Deleting button buffer")
 	err = kv.Delete(key)
 
@@ -209,12 +209,12 @@ func DeleteButton(instanceID string, deviceID string, profileID string, pageID s
 // }
 
 // CreateButton
-func CreateButton(instanceID string, deviceID string, profileID string, pageID string, buttonID string) error {
+func CreateButton(instanceID string, device *types.Device, profileID string, pageID string, buttonID string) error {
 	_, kv := natsconn.GetNATSConn()
-	log.Info().Str("instanceID", instanceID).Str("deviceID", deviceID).Str("profileID", profileID).Str("pageID", pageID).Str("buttonID", buttonID).Msg("Creating button")
+	log.Info().Str("instanceID", instanceID).Interface("device", device).Str("profileID", profileID).Str("pageID", pageID).Str("buttonID", buttonID).Msg("Creating button")
 
 	// Define the key for the current button
-	key := "instances." + instanceID + ".devices." + deviceID + ".profiles." + profileID + ".pages." + pageID + ".buttons." + buttonID
+	key := "instances." + instanceID + ".devices." + device.ID + ".profiles." + profileID + ".pages." + pageID + ".buttons." + buttonID
 
 	//var assetPath = env.Get("ASSET_PATH", "")
 

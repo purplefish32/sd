@@ -68,6 +68,7 @@ func (xl *XL) Init() error {
 	go xl.watchForButtonChanges(xl.ctx)
 	go xl.watchKVForButtonImageBufferChanges(xl.ctx)
 	go xl.handleButtonInput(xl.ctx)
+	go xl.watchKVForProfileChanges(xl.ctx)
 
 	return nil
 }
@@ -92,39 +93,29 @@ func (xl *XL) ensureDeviceConnection() error {
 
 func (xl *XL) ensureDefaultProfile() error {
 	device := store.GetDevice(xl.instanceID, xl.device.Serial)
+
 	if device.CurrentProfile != "" {
 		return nil
 	}
 
-	profile, err := store.CreateProfile(xl.instanceID, xl.device.Serial, "Default")
+	profile, err := store.CreateProfile(xl.instanceID, device, "Default")
+
 	if err != nil {
 		return fmt.Errorf("failed to create default profile: %w", err)
 	}
 
-	store.SetCurrentProfile(xl.instanceID, xl.device.Serial, profile.ID)
+	device.CurrentProfile = profile.ID
+	store.UpdateDevice(xl.instanceID, device)
 
-	page, err := store.CreatePage(xl.instanceID, xl.device.Serial, profile.ID)
-	if err != nil {
-		return fmt.Errorf("failed to create default page: %w", err)
-	}
-
-	store.SetCurrentPage(xl.instanceID, xl.device.Serial, profile.ID, page.ID)
-
-	// Create blank buttons
-	for i := 0; i < numKeys; i++ {
-		if err := store.CreateButton(xl.instanceID, xl.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1)); err != nil {
-			return fmt.Errorf("failed to create button %d: %w", i+1, err)
-		}
-	}
 	return nil
 }
 
 func (xl *XL) handleButtonPress(buttonIndex int, nc *nats.Conn, kv nats.KeyValue) error {
-	currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
-	currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
+	device := store.GetDevice(xl.instanceID, xl.device.Serial)
+	profile := store.GetProfile(xl.instanceID, device, device.CurrentProfile)
 
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%d",
-		xl.instanceID, xl.device.Serial, currentProfile.ID, currentPage.ID, buttonIndex)
+		xl.instanceID, xl.device.Serial, device.CurrentProfile, profile.CurrentPage, buttonIndex)
 
 	entry, err := kv.Get(key)
 	if err != nil {
@@ -250,27 +241,47 @@ func (xl *XL) watchForButtonChanges(ctx context.Context) {
 	}
 }
 
+func (xl *XL) watchKVForProfileChanges(ctx context.Context) {
+	_, kv := natsconn.GetNATSConn()
+
+	pattern := "instances.*.devices.*.profiles.*"
+
+	watcher, err := kv.Watch(pattern)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error creating watcher")
+		return
+	}
+
+	defer watcher.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-watcher.Updates():
+			if update == nil {
+				continue
+			}
+
+			log.Info().Str("key", update.Key()).Msg("Profile changed")
+
+			xl.blankAllKeys()
+			// TODO Update all keys with the new profile
+		}
+	}
+}
+
 func (xl *XL) watchKVForButtonImageBufferChanges(ctx context.Context) {
 	_, kv := natsconn.GetNATSConn()
 
 	// Get current profile and page, with error checking
-	currentProfile := store.GetCurrentProfile(xl.instanceID, xl.device.Serial)
-
-	if currentProfile.IsEmpty() {
-		log.Warn().Msg("No current profile found")
-		return
-	}
-
-	currentPage := store.GetCurrentPage(xl.instanceID, xl.device.Serial, currentProfile.ID)
-
-	if currentPage.IsEmpty() {
-		log.Warn().Msg("No current page found")
-		return
-	}
+	device := store.GetDevice(xl.instanceID, xl.device.Serial)
+	profile := store.GetProfile(xl.instanceID, device, device.CurrentProfile)
 
 	// Create watcher with error handling
 	pattern := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.*.buffer",
-		xl.instanceID, xl.device.Serial, currentProfile.ID, currentPage.ID)
+		xl.instanceID, xl.device.Serial, device.CurrentProfile, profile.CurrentPage)
 
 	watcher, err := kv.Watch(pattern)
 	if err != nil {

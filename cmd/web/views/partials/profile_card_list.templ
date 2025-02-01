@@ -3,7 +3,7 @@ package partials
 
 import "sd/pkg/types"
 
-templ ProfileCardList(instance types.Instance, device types.Device, profiles []types.Profile) {
+templ ProfileCardList(instance types.Instance, device *types.Device, profiles []types.Profile) {
 	<div
 		id="profile-card-list"
 		class="space-y-2"

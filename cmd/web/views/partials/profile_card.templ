@@ -3,7 +3,7 @@ package partials
 
 import "sd/pkg/types"
 
-templ ProfileCard(instance types.Instance, device types.Device, profile types.Profile) {
+templ ProfileCard(instance types.Instance, device *types.Device, profile types.Profile) {
 	<a
 		class="block p-3 bg-sd-dark rounded cursor-pointer hover:bg-sd-light transition-colors"
 		id={ "profile-card-" + profile.ID }

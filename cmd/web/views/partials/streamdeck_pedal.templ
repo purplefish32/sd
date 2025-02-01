@@ -5,7 +5,7 @@ import (
 	"sd/pkg/types"
 )
 
-templ StreamDeckPedal(instance types.Instance, device types.Device, profile types.Profile, page types.Page) {
+templ StreamDeckPedal(instance types.Instance, device *types.Device, profile *types.Profile, page *types.Page) {
 	<div class="p-6">
 		<div class="mx-auto sd-pedal">
 			<div class="flex justify-center mb-4 sd-pedal-buttons">

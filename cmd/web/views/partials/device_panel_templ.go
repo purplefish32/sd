@@ -38,9 +38,9 @@ func DevicePanel(instance types.Instance, devices []types.Device) templ.Componen
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/stream/" + instance.ID)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/stream/instance/" + instance.ID + "/devices")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/device_panel.templ`, Line: 11, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/partials/device_panel.templ`, Line: 11, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {

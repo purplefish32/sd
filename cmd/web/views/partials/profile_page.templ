@@ -20,9 +20,9 @@ templ ProfilePage(
 	profiles []types.Profile,
 	pages []types.Page,
 	currentInstance types.Instance,
-	currentDevice types.Device,
-	currentProfile types.Profile,
-	currentPage types.Page,
+	currentDevice *types.Device,
+	currentProfile *types.Profile,
+	currentPage *types.Page,
 ) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">
@@ -31,6 +31,7 @@ templ ProfilePage(
 			@ProfilePanel(currentInstance, currentDevice, profiles)
 			<!-- Right Panel - Device Config -->
 			<div class="flex-1 bg-sd-darker" id="main-content">
+				<h1 class="text-xl font-semibold mb-4 text-center">{ currentProfile.Name } Profile</h1>
 				<div class="flex flex-row w-full">
 					<div class="w-32 p-6 flex items-center justify-center text-gray-400">
 						for i, page := range pages {
@@ -165,7 +166,7 @@ templ ProfilePage(
 					</button>
 					<button
 						class="w-full p-3 mt-4 bg-sd-light hover:bg-sd-lighter text-white font-medium rounded transition-colors flex items-center justify-center gap-2"
-						hx-get={ "/partials/profile/delete?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID }
+						hx-get={ "/partials/page/delete-dialog?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID + "&profileId=" + currentProfile.ID + "&pageId=" + currentPage.ID }
 						hx-target="#dialog-container"
 						hx-trigger="click"
 						hx-swap="innerHTML"
@@ -177,7 +178,7 @@ templ ProfilePage(
 					</button>
 					<button
 						class="w-full p-3 mt-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded transition-colors flex items-center justify-center gap-2"
-						hx-get={ "/partials/profile/delete-dialog?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID + "&profileId=" + currentDevice.ID }
+						hx-get={ "/partials/profile/delete-dialog?instanceId=" + currentInstance.ID + "&deviceId=" + currentDevice.ID + "&profileId=" + currentProfile.ID }
 						hx-target="#dialog-container"
 						hx-trigger="click"
 						hx-swap="innerHTML"

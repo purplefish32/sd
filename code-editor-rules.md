@@ -50,7 +50,6 @@ Please use emojis to make the rules more readable.
 ## HTMX Usage
 
 - When using HTMX ssr refer to this page https://v1.htmx.org/extensions/server-sent-events/
-- The ssr endpoint is /stream
 - The ssr endpoint MUST send HTML and not JSON
 - The ssr endpoint MUST send the event name in the format of "event: event-name"
 - The ssr endpoint MUST send the data in the format of "data: data"

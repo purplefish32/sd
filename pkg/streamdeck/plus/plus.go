@@ -49,7 +49,7 @@ type Plus struct {
 	wasDialPressed   [4]bool
 	wasScreenPressed bool
 	lastX            int
-	touchScreen      *TouchScreenManager
+	//touchScreen      *TouchScreenManager
 }
 
 type DialEvent struct {
@@ -74,7 +74,7 @@ func New(instanceID string, device *hid.Device) Plus {
 		ctx:        ctx,
 		cancel:     cancel,
 	}
-	plus.touchScreen = NewTouchScreenManager(&plus)
+	//plus.touchScreen = NewTouchScreenManager(&plus)
 	return plus
 }
 
@@ -106,12 +106,13 @@ func (plus *Plus) Init() error {
 	go plus.handleInput(plus.ctx)
 
 	// Initialize touch screen with current profile
-	currentProfile := store.GetCurrentProfile(plus.instanceID, plus.device.Serial)
-	if !currentProfile.IsEmpty() {
-		if err := plus.touchScreen.UpdateFromProfile(&currentProfile); err != nil {
-			log.Error().Err(err).Msg("Failed to initialize touch screen")
-		}
-	}
+	//device := store.GetDevice(plus.instanceID, plus.device.Serial)
+
+	// if !currentProfile.IsEmpty() {
+	// 	if err := plus.touchScreen.UpdateFromProfile(&currentProfile); err != nil {
+	// 		log.Error().Err(err).Msg("Failed to initialize touch screen")
+	// 	}
+	// }
 
 	return nil
 }
@@ -137,11 +138,11 @@ func (plus *Plus) blankAllKeys() {
 func (plus *Plus) watchKVForButtonImageBufferChanges(ctx context.Context) {
 	_, kv := natsconn.GetNATSConn()
 
-	currentProfile := store.GetCurrentProfile(plus.instanceID, plus.device.Serial)
-	currentPage := store.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
+	device := store.GetDevice(plus.instanceID, plus.device.Serial)
+	profile := store.GetProfile(plus.instanceID, device, device.CurrentProfile)
 
 	pattern := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.*.buffer",
-		plus.instanceID, plus.device.Serial, currentProfile.ID, currentPage.ID)
+		plus.instanceID, plus.device.Serial, device.CurrentProfile, profile.CurrentPage)
 
 	watcher, err := kv.Watch(pattern)
 	if err != nil {
@@ -225,18 +226,11 @@ func (plus *Plus) watchForButtonChanges(ctx context.Context) {
 }
 
 func (plus *Plus) handleButtonPress(buttonIndex int) {
-	currentProfile := store.GetCurrentProfile(plus.instanceID, plus.device.Serial)
-	if currentProfile.IsEmpty() {
-		return
-	}
-
-	currentPage := store.GetCurrentPage(plus.instanceID, plus.device.Serial, currentProfile.ID)
-	if currentPage.IsEmpty() {
-		return
-	}
+	device := store.GetDevice(plus.instanceID, plus.device.Serial)
+	profile := store.GetProfile(plus.instanceID, device, device.CurrentProfile)
 
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s.buttons.%s",
-		plus.instanceID, plus.device.Serial, currentProfile.ID, currentPage.ID, strconv.Itoa(buttonIndex))
+		plus.instanceID, plus.device.Serial, device.CurrentProfile, profile.CurrentPage, strconv.Itoa(buttonIndex))
 
 	button, err := store.GetButton(key)
 	if err != nil {
@@ -553,25 +547,10 @@ func (plus *Plus) ensureDefaultProfile() error {
 		return nil
 	}
 
-	profile, err := store.CreateProfile(plus.instanceID, plus.device.Serial, "Default")
+	_, err := store.CreateProfile(plus.instanceID, device, "Default")
 	if err != nil {
 		return fmt.Errorf("failed to create default profile: %w", err)
 	}
 
-	store.SetCurrentProfile(plus.instanceID, plus.device.Serial, profile.ID)
-
-	page, err := store.CreatePage(plus.instanceID, plus.device.Serial, profile.ID)
-	if err != nil {
-		return fmt.Errorf("failed to create default page: %w", err)
-	}
-
-	store.SetCurrentPage(plus.instanceID, plus.device.Serial, profile.ID, page.ID)
-
-	// Create blank buttons
-	for i := 0; i < numKeys; i++ {
-		if err := store.CreateButton(plus.instanceID, plus.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1)); err != nil {
-			return fmt.Errorf("failed to create button %d: %w", i+1, err)
-		}
-	}
 	return nil
 }

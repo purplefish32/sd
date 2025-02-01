@@ -103,11 +103,12 @@ func (s *Server) setupRoutes() {
 		instanceID := chi.URLParam(r, "instanceID")
 		deviceID := chi.URLParam(r, "deviceID")
 
-		devices := store.GetDevices(instanceID)
-		profiles := store.GetProfiles(instanceID, deviceID)
-		pages := store.GetPages(instanceID, deviceID, profiles[0].ID) // TODO: Fix this
-		instance := store.GetInstance(instanceID)
 		device := store.GetDevice(instanceID, deviceID)
+
+		devices := store.GetDevices(instanceID)
+		profiles := store.GetProfiles(instanceID, device)
+		pages := store.GetPages(instanceID, device, profiles[0].ID) // TODO: Fix this
+		instance := store.GetInstance(instanceID)
 		partials.DevicePage(instances, devices, profiles, pages, instance, device).Render(r.Context(), w)
 	})
 
@@ -121,11 +122,16 @@ func (s *Server) setupRoutes() {
 		devices := store.GetDevices(instanceID)
 		instance := store.GetInstance(instanceID)
 		device := store.GetDevice(instanceID, deviceID)
-		profile := store.GetProfile(instanceID, deviceID, profileID)
+		profile := store.GetProfile(instanceID, device, profileID)
 		page := store.GetPage(instanceID, deviceID, profileID, pageID)
-		profiles := store.GetProfiles(instanceID, deviceID)
-		pages := store.GetPages(instanceID, deviceID, profileID)
+		profiles := store.GetProfiles(instanceID, device)
+		pages := store.GetPages(instanceID, device, profileID)
 		partials.ProfilePage(instances, devices, profiles, pages, instance, device, profile, page).Render(r.Context(), w)
+
+		// Set the current page and profile in the nats  KV store using the store package
+		// store.SetCurrentPage(instanceID, deviceID, profileID, pageID)
+		// store.SetCurrentProfile(instanceID, deviceID, profileID)
+
 	})
 
 	// HTMX Routes
@@ -133,9 +139,16 @@ func (s *Server) setupRoutes() {
 	s.router.Get("/partials/{instanceId}/device-card-list", handlers.HandleDeviceCardList)
 	s.router.Get("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", handlers.HandleButton)
 	s.router.Post("/partials/button/{instanceId}/{deviceId}/{profileId}/{pageId}/{buttonId}", handlers.HandleButtonPress)
+	s.router.Get("/partials/profile/add", handlers.HandleProfileAddDialog())
+	s.router.Get("/partials/close-dialog", func(w http.ResponseWriter, r *http.Request) {
+		// Return empty response to remove the dialog
+		w.Write([]byte(""))
+	})
+	s.router.Get("/partials/profile/delete-dialog", handlers.HandleProfileDeleteDialog())
+	s.router.Get("/partials/page/delete-dialog", handlers.HandlePageDeleteDialog())
 
 	// Add SSE endpoint for device updates
-	s.router.Get("/stream/{instanceId}", func(w http.ResponseWriter, r *http.Request) {
+	s.router.Get("/stream/instance/{instanceId}/devices", func(w http.ResponseWriter, r *http.Request) {
 		_, kv := natsconn.GetNATSConn()
 		instanceID := chi.URLParam(r, "instanceId")
 		log.Info().
@@ -164,28 +177,13 @@ func (s *Server) setupRoutes() {
 
 		defer watcher.Stop()
 
-		// 4. Send initial device list
-		d := store.GetDevices(instanceID)
-
-		log.Info().Interface("devices", d).Msg("Initial devices")
-
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to get initial devices")
-		} else {
-			instance := store.GetInstance(instanceID)
-			if err := s.sendDeviceList(w, r.Context(), instance, d); err != nil {
-				log.Error().Err(err).Msg("Failed to send initial device list")
-				return
-			}
-		}
-
-		// 5. Handle client disconnection
+		// 4. Handle client disconnection
 		go func() {
 			<-r.Context().Done()
 			done <- true
 		}()
 
-		// 6. Main event loop
+		// 5. Main event loop
 		for {
 			select {
 			case <-done:
@@ -195,45 +193,93 @@ func (s *Server) setupRoutes() {
 					continue
 				}
 
-				select {
-				case <-done:
-					return
-				default:
-					d := store.GetDevices(instanceID)
-					instance := store.GetInstance(instanceID)
+				// Re-fetch the updated devices list instead of reusing the stale one
+				updatedDevices := store.GetDevices(instanceID)
+				// Also, optionally re-fetch the instance if it could have changed:
+				updatedInstance := store.GetInstance(instanceID)
 
-					if err := s.sendDeviceList(w, r.Context(), instance, d); err != nil {
-						if err != context.Canceled {
-							log.Error().Err(err).Msg("Failed to send device list")
-						}
-						return
+				if err := s.sendDeviceList(w, r.Context(), updatedInstance, updatedDevices); err != nil {
+					if err != context.Canceled {
+						log.Error().Err(err).Msg("Failed to send device list")
 					}
+					return
 				}
 			}
 		}
 	})
 
-	s.router.Get("/partials/profile/add", handlers.HandleProfileAddDialog())
-	s.router.Get("/partials/profile/close-dialog", func(w http.ResponseWriter, r *http.Request) {
-		// Return empty response to remove the dialog
-		w.Write([]byte(""))
+	// Add SSE endpoint for profile updates
+	s.router.Get("/stream/instance/{instanceId}/device/{deviceId}/profiles", func(w http.ResponseWriter, r *http.Request) {
+		_, kv := natsconn.GetNATSConn()
+		instanceID := chi.URLParam(r, "instanceId")
+		deviceID := chi.URLParam(r, "deviceId")
+
+		log.Info().
+			Str("remote_addr", r.RemoteAddr).
+			Str("user_agent", r.UserAgent()).
+			Msg("New SSE connection")
+
+		// 1. Set proper headers
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Add CORS if needed
+
+		// 2. Create done channel with buffer to prevent goroutine leak
+		done := make(chan bool, 1)
+		defer close(done)
+
+		// 3. Create watcher with proper error handling
+		watcher, err := kv.Watch("instances." + instanceID + ".devices." + deviceID + ".profiles.*")
+
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to create KV watcher")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		defer watcher.Stop()
+
+		// 4. Handle client disconnection
+		go func() {
+			<-r.Context().Done()
+			done <- true
+		}()
+
+		// 5. Main event loop
+		for {
+			select {
+			case <-done:
+				return
+			case entry := <-watcher.Updates():
+				if entry == nil {
+					continue
+				}
+
+				// Re-fetch the updated data on each watcher update
+				updatedDevice := store.GetDevice(instanceID, deviceID)
+				updatedInstance := store.GetInstance(instanceID)
+				updatedProfiles := store.GetProfiles(instanceID, updatedDevice)
+
+				if err := s.sendProfileList(w, r.Context(), updatedInstance, updatedDevice, updatedProfiles); err != nil {
+					if err != context.Canceled {
+						log.Error().Err(err).Msg("Failed to send profile list")
+					}
+					return
+				}
+			}
+		}
 	})
 
-	s.router.Get("/partials/profile/delete-dialog", handlers.HandleProfileDeleteDialog())
+	// REST API routes.
 
 	s.router.Post("/api/profile/create", handlers.HandleProfileCreate)
 	s.router.Delete("/api/profile/delete", handlers.HandleProfileDelete())
 
-	// Add these routes
-	s.router.Get("/partials/page/delete-dialog", handlers.HandlePageDeleteDialog())
-	s.router.Get("/partials/page/close-dialog", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(""))
-	})
 	s.router.Post("/api/page/create", handlers.HandlePageCreate)
-	//s.router.Delete("/api/page/delete", handlers.HandlePageDelete())
+	s.router.Delete("/api/page", handlers.HandlePageDelete())
 }
 
-// Move sendDeviceList outside setupRoutes
 func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, instance types.Instance, devices []types.Device) error {
 	var buf bytes.Buffer
 
@@ -242,6 +288,23 @@ func (s *Server) sendDeviceList(w http.ResponseWriter, ctx context.Context, inst
 	}
 
 	fmt.Fprintf(w, "event: DeviceCardListUpdate\n")
+	fmt.Fprintf(w, "data: %s\n\n", buf.String())
+
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	return nil
+}
+
+func (s *Server) sendProfileList(w http.ResponseWriter, ctx context.Context, instance types.Instance, device *types.Device, profiles []types.Profile) error {
+	var buf bytes.Buffer
+
+	if err := partials.ProfileCardList(instance, device, profiles).Render(ctx, &buf); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(w, "event: ProfileCardListUpdate\n")
 	fmt.Fprintf(w, "data: %s\n\n", buf.String())
 
 	if f, ok := w.(http.Flusher); ok {

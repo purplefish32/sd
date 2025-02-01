@@ -4,121 +4,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"sd/pkg/natsconn"
+	"strconv"
 	"strings"
 
 	"sd/pkg/types"
 
 	"github.com/google/uuid"
-	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 )
 
-func GetPage(instanceID, deviceID, profileID, pageID string) types.Page {
+func GetPage(instanceID, deviceID, profileID, pageID string) *types.Page {
 	_, kv := natsconn.GetNATSConn()
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s", instanceID, deviceID, profileID, pageID)
 
 	entry, err := kv.Get(key)
 	if err != nil {
-		return types.Page{}
+		return nil
 	}
 
 	var page types.Page
 	if err := json.Unmarshal(entry.Value(), &page); err != nil {
 		log.Error().Err(err).Msg("Failed to unmarshal page")
-		return types.Page{}
+		return nil
 	}
 
-	return page
+	return &page
 }
 
-func GetCurrentPage(instanceId string, deviceId string, profileId string) types.Page {
+func CreatePage(instanceID string, device *types.Device, profileID string) (*types.Page, error) {
 	_, kv := natsconn.GetNATSConn()
-
-	// Define the key for the current profile
-	key := "instances." + instanceId + ".devices." + deviceId + ".profiles." + profileId
-
-	// Get current profile
-	entry, err := kv.Get(key)
-
-	if err != nil {
-		if err == nats.ErrKeyNotFound {
-			log.Printf("Device key not found: %s", deviceId)
-			return types.Page{}
-		}
-		log.Printf("Failed to get device: %s, error: %v", deviceId, err)
-		return types.Page{}
-	}
-
-	// Parse the value into a Page struct
-	var profile types.Profile
-
-	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
-		log.Error().Err(err).Msg("Failed to parse JSON")
-		return types.Page{}
-	}
-
-	key = "instances." + instanceId + ".devices." + deviceId + ".profiles." + profileId + ".pages." + profile.CurrentPage
-
-	entry, err = kv.Get(key)
-
-	if err != nil {
-		if err == nats.ErrKeyNotFound {
-			log.Printf("Page key not found: %s", deviceId)
-
-			return types.Page{}
-		}
-		log.Printf("Failed to get page: %s, error: %v", deviceId, err)
-
-		return types.Page{}
-	}
-
-	var page types.Page
-
-	if err := json.Unmarshal(entry.Value(), &page); err != nil {
-		log.Error().Err(err).Msg("Failed to parse JSON")
-
-		return types.Page{}
-	}
-
-	return page
-}
-
-func SetCurrentPage(instanceId string, deviceId string, profileId string, pageId string) error {
-	_, kv := natsconn.GetNATSConn()
-
-	// Define the key for the profile
-	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s",
-		instanceId, deviceId, profileId)
-
-	// Get the profile
-	entry, err := kv.Get(key)
-
-	if err != nil {
-		return err
-	}
-
-	var profile types.Profile
-
-	if err := json.Unmarshal(entry.Value(), &profile); err != nil {
-		return err
-	}
-
-	profile.CurrentPage = pageId
-
-	profileData, err := json.Marshal(profile)
-
-	if err != nil {
-		return err
-	}
-
-	kv.Put(key, profileData)
-
-	return nil
-}
-
-func CreatePage(instanceID string, deviceID string, profileID string) (types.Page, error) {
-	_, kv := natsconn.GetNATSConn()
-	log.Printf("Creating Page for Instance: %v, device: %v, profile: %v", instanceID, deviceID, profileID)
+	log.Printf("Creating Page for Instance: %v, device: %v, profile: %v", instanceID, device.ID, profileID)
 
 	// Generate a new UUID
 	id := uuid.New()
@@ -126,53 +41,64 @@ func CreatePage(instanceID string, deviceID string, profileID string) (types.Pag
 
 	// Define the key for the current profile
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s",
-		instanceID, deviceID, profileID, idStr)
+		instanceID, device.ID, profileID, idStr)
 
 	// Define a new page
-	p := types.Page{
+	newPage := types.Page{
 		ID: idStr,
 	}
 
 	// Serialize the Profile struct to JSON
-	data, err := json.Marshal(p)
+	data, err := json.Marshal(newPage)
+
 	if err != nil {
-		return types.Page{}, fmt.Errorf("failed to serialize page data: %w", err)
+		return nil, fmt.Errorf("failed to serialize page data: %w", err)
 	}
 
 	// Put the serialized data into the KV store
 	_, err = kv.Put(key, data)
+
 	if err != nil {
-		return types.Page{}, fmt.Errorf("failed to create page in KV store: %w", err)
+		return nil, fmt.Errorf("failed to create page in KV store: %w", err)
 	}
 
-	log.Printf("Page created successfully: %+v", p)
-
 	// After creating the page, update the profile
-	profile := GetProfile(instanceID, deviceID, profileID)
-	profile.Pages = append(profile.Pages, types.Page{ID: p.ID})
-	profile.CurrentPage = p.ID
+	profile := GetProfile(instanceID, device, profileID)
+	profile.Pages = append(profile.Pages, types.Page{ID: newPage.ID})
+	profile.CurrentPage = newPage.ID
 
 	// Update profile in KV store
 	profileData, err := json.Marshal(profile)
+
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to marshal profile")
-		return p, err
+		return &newPage, err
 	}
 
-	_, err = kv.Put(fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, deviceID, profileID), profileData)
+	_, err = kv.Put(fmt.Sprintf("instances.%s.devices.%s.profiles.%s", instanceID, device.ID, profileID), profileData)
+
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to update profile")
-		return p, err
+		return &newPage, err
 	}
 
-	return p, nil
+	log.Info().Str("device_type", device.Type).Msg("device.Type")
+
+	if device.Type == "xl" {
+		// Create 32 buttons for the page
+		for i := 0; i < 32; i++ {
+			CreateButton(instanceID, device, profileID, newPage.ID, strconv.Itoa(i+1))
+		}
+	}
+
+	return &newPage, nil
 }
 
-func GetPages(instanceId string, deviceId string, profileId string) []types.Page {
+func GetPages(instanceID string, device *types.Device, profileID string) []types.Page {
 	_, kv := natsconn.GetNATSConn()
 
 	// Define the key prefix to search for pages
-	var prefix = "instances." + instanceId + ".devices." + deviceId + ".profiles." + profileId + ".pages."
+	var prefix = "instances." + instanceID + ".devices." + device.ID + ".profiles." + profileID + ".pages."
 
 	// List the keys in the NATS KV store under the given prefix
 	keyLister, err := kv.ListKeys()
@@ -220,12 +146,11 @@ func GetPages(instanceId string, deviceId string, profileId string) []types.Page
 	return pages
 }
 
-func DeletePage(instanceID string, deviceID string, profileID string, pageID string) error {
-	log.Info().Str("instanceId", instanceID).Str("deviceId", deviceID).Str("profileId", profileID).Str("pageId", pageID).Msg("Deleting page")
+func DeletePage(instanceID string, device *types.Device, profileID string, pageID string) error {
 	_, kv := natsconn.GetNATSConn()
 
-	// I want to delete all buttons in the page
-	b, err := GetButtons(instanceID, deviceID, profileID, pageID)
+	// Get all buttons in the page
+	b, err := GetButtons(instanceID, device, profileID, pageID)
 	log.Info().Interface("buttons", b).Msg("Buttons")
 
 	if err != nil {
@@ -233,16 +158,49 @@ func DeletePage(instanceID string, deviceID string, profileID string, pageID str
 		return err
 	}
 
+	// Delete all buttons in the page
 	for _, button := range b {
 		log.Info().Str("button_id", button.ID).Msg("Deleting button")
-		DeleteButton(instanceID, deviceID, profileID, pageID, button.ID)
+		DeleteButton(instanceID, device, profileID, pageID, button.ID)
 	}
 
-	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s", instanceID, deviceID, profileID, pageID)
-
+	// Delete the page
+	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.pages.%s", instanceID, device.ID, profileID, pageID)
 	log.Info().Str("key", key).Msg("Deleting page")
-
 	kv.Delete(key)
+
+	// Update the profile
+	profile := GetProfile(instanceID, device, profileID)
+
+	// Remove the page from the profile
+
+	if len(profile.Pages) > 0 {
+		for i, p := range profile.Pages {
+			if p.ID == pageID {
+				profile.Pages = append(profile.Pages[:i], profile.Pages[i+1:]...)
+
+				// If the page is removed the current page should be the previous page
+				if i > 1 {
+					profile.CurrentPage = profile.Pages[i-1].ID
+				} else {
+					profile.CurrentPage = profile.Pages[0].ID // TODO there is a bug here
+				}
+
+				break
+			}
+		}
+	} else {
+		page, err := CreatePage(instanceID, device, profileID)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to create page")
+			return err
+		}
+		profile.CurrentPage = page.ID
+	}
+
+	UpdateProfile(instanceID, device, profile)
+
+	log.Info().Interface("profile", profile).Msg("Profile")
 
 	return nil
 }

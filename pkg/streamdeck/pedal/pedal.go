@@ -8,7 +8,6 @@ import (
 	"sd/pkg/store"
 	"sd/pkg/types"
 	"sd/pkg/util"
-	"strconv"
 
 	"github.com/karalabe/hid"
 	"github.com/nats-io/nats.go"
@@ -90,37 +89,19 @@ func (pedal *Pedal) ensureDefaultProfile() error {
 		return nil
 	}
 
-	profile, err := store.CreateProfile(pedal.instanceID, pedal.device.Serial, "Default")
+	_, err := store.CreateProfile(pedal.instanceID, device, "Default")
 	if err != nil {
 		return fmt.Errorf("failed to create default profile: %w", err)
 	}
 
-	store.SetCurrentProfile(pedal.instanceID, pedal.device.Serial, profile.ID)
-
-	page, err := store.CreatePage(pedal.instanceID, pedal.device.Serial, profile.ID)
-	if err != nil {
-		return fmt.Errorf("failed to create default page: %w", err)
-	}
-
-	store.SetCurrentPage(pedal.instanceID, pedal.device.Serial, profile.ID, page.ID)
-
-	// Create blank switches for pedal (3 switches)
-	for i := 0; i < numKeys; i++ {
-		if err := store.CreateButton(pedal.instanceID, pedal.device.Serial, profile.ID, page.ID, strconv.Itoa(i+1)); err != nil {
-			return fmt.Errorf("failed to create switch %d: %w", i+1, err)
-		}
-	}
 	return nil
 }
 
 func (pedal *Pedal) handleButtonPress(buttonIndex int, nc *nats.Conn, kv nats.KeyValue) error {
-	currentProfile := store.GetCurrentProfile(pedal.instanceID, pedal.device.Serial)
-	if currentProfile.IsEmpty() {
-		return fmt.Errorf("no current profile found")
-	}
+	device := store.GetDevice(pedal.instanceID, pedal.device.Serial)
 
 	key := fmt.Sprintf("instances.%s.devices.%s.profiles.%s.switches.%d",
-		pedal.instanceID, pedal.device.Serial, currentProfile.ID, buttonIndex)
+		pedal.instanceID, pedal.device.Serial, device.CurrentProfile, buttonIndex)
 
 	entry, err := kv.Get(key)
 	if err != nil {

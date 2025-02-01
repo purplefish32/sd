@@ -12,7 +12,7 @@ templ DevicePage(
 	profiles []types.Profile,
 	pages []types.Page,
 	instance types.Instance,
-	device types.Device,
+	device *types.Device,
 ) {
 	@layouts.Base("Home") {
 		<div class="flex h-full">

@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetDevice(instanceID string, deviceID string) types.Device {
+func GetDevice(instanceID string, deviceID string) *types.Device {
 	_, kv := natsconn.GetNATSConn()
 
 	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, deviceID)
@@ -19,17 +19,17 @@ func GetDevice(instanceID string, deviceID string) types.Device {
 	entry, err := kv.Get(key)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to get device")
-		return types.Device{}
+		return nil
 	}
 
 	var device types.Device
 
 	if err := json.Unmarshal(entry.Value(), &device); err != nil {
 		log.Error().Err(err).Msg("Unmarshal error")
-		return types.Device{}
+		return nil
 	}
 
-	return device
+	return &device
 }
 
 func GetDevices(instanceID string) []types.Device {
@@ -80,4 +80,26 @@ func GetDevices(instanceID string) []types.Device {
 	}
 
 	return devices
+}
+
+func UpdateDevice(instanceID string, device *types.Device) (*types.Device, error) {
+	if instanceID == "" || device == nil {
+		return nil, fmt.Errorf("instanceID, and device are required")
+	}
+	_, kv := natsconn.GetNATSConn()
+
+	key := fmt.Sprintf("instances.%s.devices.%s", instanceID, device.ID)
+
+	json, err := json.Marshal(device)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal device: %w", err)
+	}
+
+	_, err = kv.Put(key, json)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save device: %w", err)
+	}
+
+	return device, nil
 }
